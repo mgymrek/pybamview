@@ -1,0 +1,16 @@
+when jump to location, read in +/-Xkb of fasta plus reads to memory so can scroll efficiently
+function to display alignments
+
+
+- Reads
+option to click on read and get read info, also highlight his pair
+
+Main page:
+list bam files to view
+
+Organization:
+TOP: gotobox at top (plus other options: color by, sort by (tag value/smaple), 
+Position track
+Reference genome track, bold, N's if none
+Alignments (separator between each thing being sorted by? different divs?)
+SIDE: scroll (single bp, chunk, left/right)

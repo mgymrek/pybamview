@@ -1,5 +1,6 @@
 import argparse
 from flask import Flask
+from display_html import *
 import os
 import re
 import sys
@@ -29,7 +30,12 @@ def display_bam(bamfile):
 
 @app.route('/<string:bamfile>:<string:region>')
 def display_bam_region(bamfile, region):
-    return "this will show the alignment for bam %s with reference %s at region %s"%(bamfile, REFFILE, region)
+    html = GetHeader(bamfile, region, REFFILE)
+    html += GetToolbar()
+    html += GetReference(REFFILE, region)
+    html += GetAlignment(bamfile, region, REFFILE)
+    html += GetFooter()
+    return html
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview')
