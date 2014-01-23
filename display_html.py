@@ -3,7 +3,7 @@ def GetHeader(bamfile, region, reffile):
     Get header div fo pybamview
     """
     header_html = "<html><head>"
-    header_html += "<style type='text/css'>%s</style>"%open("/home/mgymrek/workspace/pybamview/pybamview.css","r").read()
+    header_html += "<style type='text/css'>%s</style>"%open("/san/melissa/workspace/pybamview/pybamview.css","r").read()
     header_html += "<title>PyBamView: %s</title>"%bamfile
     header_html += "<div class='outer' id='header_wrap'>"
     header_html += "<header class='inner'>"
@@ -19,7 +19,7 @@ def GetFooter():
     """
     Get footer div for pybamview
     """
-    return "<footer>This alignment is being viewed with <a href='https://github.com/mgymrek/pybamview' target='_blank'>PyBamView</a></footer>"
+    return "<div id='footer_wrap' class='outer'><footer class='inner'><div id='footer_info'>This alignment is being viewed with <a href='https://github.com/mgymrek/pybamview' target='_blank'>PyBamView</a></div></footer></div>"
 
 def GetToolbar():
     """

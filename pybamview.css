@@ -34,3 +34,14 @@
   text-shadow: #111 0px 0px 10px;
 }
 
+#footer_wrap {
+  background: #212121;
+}
+
+#footer_info {
+  margin: 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: #111 0px 0px 10px;
+}
