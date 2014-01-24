@@ -1,5 +1,7 @@
 import argparse
+from bam_alignment import *
 from flask import Flask
+from flask import request
 from display_html import *
 import os
 import re
@@ -11,6 +13,8 @@ BAMDIR = "."
 REFFILE = ""
 PORT = 5000
 HOST = "127.0.0.1"
+BAMFILE_TO_BAMVIEW = {}
+SETTINGS = {}
 
 @app.route("/")
 def listbams():
@@ -24,16 +28,30 @@ def listbams():
     html += "</ul>"
     return html
 
-@app.route('/<string:bamfile>')
+@app.route('/<string:bamfile>', methods=['POST', 'GET'])
 def display_bam(bamfile):
-    return display_bam_region(bamfile, 0)
+    region = request.args.get("region","")
+    region.replace("%3A",":")
+    return display_bam_region(bamfile, region)
 
 @app.route('/<string:bamfile>:<string:region>')
 def display_bam_region(bamfile, region):
+    if bamfile not in BAMFILE_TO_BAMVIEW:
+        bv = BamView("%s/%s"%(BAMDIR, bamfile), REFFILE)
+        BAMFILE_TO_BAMVIEW[bamfile] = bv
+    else: bv = BAMFILE_TO_BAMVIEW[bamfile]
+    try:
+        chrom, pos = region.split(":")
+        pos = int(pos)
+    except: chrom, pos = bv.reference.keys()[0], 0
+    bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
+    SETTINGS["region"] = "%s:%s"%(chrom, pos)
     html = GetHeader(bamfile, region, REFFILE)
-    html += GetToolbar()
-    html += GetReference(REFFILE, region)
-    html += GetAlignment(bamfile, region, REFFILE)
+    html += GetToolbar(chrom, pos, SETTINGS)
+    html += "<table>"
+    html += GetReference(bv.GetReferenceTrack(pos))
+    html += GetAlignment(bv.GetAlignmentTrack(pos))
+    html += "</table>"
     html += GetFooter()
     return html
 

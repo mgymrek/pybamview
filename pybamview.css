@@ -18,6 +18,10 @@
   background: linear-gradient(top, #373737, #212121);
 }
 
+#toolbar {
+  background: #BCB9B9;
+}
+
 #display_info {
   margin: 0;
   color: #fff;

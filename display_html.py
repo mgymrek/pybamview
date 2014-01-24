@@ -21,25 +21,48 @@ def GetFooter():
     """
     return "<div id='footer_wrap' class='outer'><footer class='inner'><div id='footer_info'>This alignment is being viewed with <a href='https://github.com/mgymrek/pybamview' target='_blank'>PyBamView</a></div></footer></div>"
 
-def GetToolbar():
+def GetToolbar(chrom, pos, settings):
     """
     Get HTML for the toolbar
     """
-    toolbar_html = ""
-    toolbar_html += "<div>Toolbar options will go here</div>"
+    toolbar_html = "<div class ='outer' id='toolbar'>"
+    toolbar_html += "<form>"
+    toolbar_html += "Enter region: <input type='text' name='region' value=%s>"%settings["region"]
+    toolbar_html += "<input type='submit'>"
+    toolbar_html += "</form>"
+    toolbar_html += "</div>"
     return toolbar_html
 
-def GetReference(reffile, region):
+NUC_TO_COLOR = {
+    "A": "red",
+    'a': "red",
+    "C": "blue",
+    "c": "blue",
+    "G": "green",
+    "g": "green",
+    "T": "orange",
+    "t": "orange"
+}
+def GetReference(reference_string):
     """
     Get HTML to display the reference sequence
     """
-    reference_html = "<div>Reference sequence here</div>"
+    reference_html = ""
+    for i in range(len(reference_string)):
+        color = NUC_TO_COLOR.get(reference_string[i], "black")
+        reference_html += "<td><font color='%s'>%s</font></td>"%(color,reference_string[i])
+    reference_html += "</tr>"
     return reference_html
 
-def GetAlignment(bamfile, reffile, region):
+def GetAlignment(alignment_list):
     """
     Get HTML for the alignment div
     """
     aln_html = ""
-    aln_html += "This will show the alignment for bam %s with ref %s at region %s"%(bamfile, reffile, region)
+    for aln in alignment_list:
+        aln_html += "<tr>"
+        for i in range(len(aln)):
+            color = NUC_TO_COLOR.get(aln[i], "black")
+            aln_html += "<td><font color='%s'>%s</font></td>"%(color, aln[i])
+        aln_html += "</tr>"
     return aln_html
