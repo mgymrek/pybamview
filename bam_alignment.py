@@ -7,6 +7,7 @@ import pyfasta
 
 NUMCHAR = 100
 GAPCHAR = "."
+DELCHAR = "*"
 class AlignmentGrid(object):
     """
     Class for storing a grid of alignments
@@ -63,7 +64,7 @@ class AlignmentGrid(object):
                     currentpos = currentpos+c[1]
                 elif c[0] == 2: # deletion
                     for i in range(c[1]):
-                        rep.append(GAPCHAR)
+                        rep.append(DELCHAR)
             # Fix boundaries
             if position < self.pos:
                 rep = rep[self.pos-position:]
@@ -92,7 +93,42 @@ class AlignmentGrid(object):
         if self.settings.get("SORT","bypos") == "bypos":
             readprops = readprops.sort("pos")
             self.grid = self.grid[["position","reference"] + list(readprops["read"].values)]
-                    
+            self.CollapseGridByPosition()
+
+    def MergeRows(self, row1, row2):
+        x = []
+        for i in range(len(row1)):
+            if row1[i][0] == GAPCHAR and row2[i][0] == GAPCHAR:
+                x.append(row1[i])
+            elif row1[i] == GAPCHAR:
+                x.append(row2[i])
+            else: x.append(row1[i])
+        return x
+                
+    def CollapseGridByPosition(self):
+        """
+        If more than one read can fit on the same line, put it there
+        """
+        cols_to_delete = []
+        col_to_ends = {"dummy":{"end":1000000, "rank":-1}}
+        alncols = [item for item in self.grid.columns if item != "position" and item != "reference"]
+        for col in alncols:
+            track = self.grid.ix[:,col].values
+            x = [i for i in range(len(track)) if track[i][0] != GAPCHAR]
+            start = min(x)
+            end = max(x)
+            if start > min([item["end"] for item in col_to_ends.values()]):
+                mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
+                mincol.sort()
+                mincol = mincol[0][1]
+                self.grid[mincol] = self.MergeRows(list(self.grid[mincol].values), list(self.grid[col].values))
+                cols_to_delete.append(col)
+                t = self.grid.ix[:,mincol].values
+                y = [i for i in range(len(t)) if t[i] != GAPCHAR]
+                col_to_ends[mincol]["end"] = max(y)
+            col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
+        self.grid = self.grid.drop(cols_to_delete, 1)
+            
     def GetReferenceTrack(self, _pos):
         """
         Return string for the reference track
