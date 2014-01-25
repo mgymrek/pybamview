@@ -17,37 +17,44 @@ BAMFILE_TO_BAMVIEW = {}
 SETTINGS = {}
 
 @app.route("/")
-def listbams():
+def listbams(methods=['POST','GET']):
+    bamfiles = request.args.getlist("bamfiles")
+    if len(bamfiles) > 0:
+        return display_bam(bamfiles)
     files = os.listdir(BAMDIR)
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
     html = "<h1>Indexed bam files in this directory</h1>"
-    html += "<ul>"
+    html += "<form>"
+    html += "<input type='submit', value='View selected bams'><br>"
     for f in bamfiles:
-        html += "<li><a href='/%s' target='_blank'>%s</a></li>"%(f,f)
-    html += "</ul>"
+        html += "<input type='checkbox' name='bamfiles', value=%s><a href='/%s' target='_blank'>%s</a><br>"%(f,f,f)
+    html += "</form>"
     return html
 
-@app.route('/<string:bamfile>', methods=['POST', 'GET'])
-def display_bam(bamfile):
+@app.route('/<string:bamfiles>', methods=['POST', 'GET'])
+def display_bam(bamfiles):
+    if type(bamfiles) != list:
+        bamfiles = [bamfiles]
     region = request.args.get("region","")
     region.replace("%3A",":")
-    return display_bam_region(bamfile, region)
+    return display_bam_region(bamfiles, region)
 
 @app.route('/<string:bamfile>:<string:region>')
-def display_bam_region(bamfile, region):
-    if bamfile not in BAMFILE_TO_BAMVIEW:
-        bv = BamView("%s/%s"%(BAMDIR, bamfile), REFFILE)
-        BAMFILE_TO_BAMVIEW[bamfile] = bv
-    else: bv = BAMFILE_TO_BAMVIEW[bamfile]
+def display_bam_region(bamfiles, region):
+    if type(bamfiles) != list: bamfiles = [bamfiles]
+    if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
+        bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
+        BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
+    else: bv = BAMFILE_TO_BAMVIEW[";".join(bamfiles)]
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
     except: chrom, pos = sorted(bv.reference.keys())[0], 0
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
     SETTINGS["region"] = "%s:%s"%(chrom, pos)
-    html = GetHeader(bamfile, region, REFFILE)
-    html += GetToolbar(chrom, pos, SETTINGS)
+    html = GetHeader(bamfiles, region, REFFILE)
+    html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
     html += "<table>"
     html += GetReference(bv.GetReferenceTrack(pos))
     html += GetAlignment(bv.GetAlignmentTrack(pos))

@@ -5,20 +5,21 @@ import pandas as pd
 import pysam
 import pyfasta
 
-NUMCHAR = 100
+NUMCHAR = 1000
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):
     """
     Class for storing a grid of alignments
     """
-    def __init__(self, _bamreader, _ref, _chrom, _pos, _settings={}):
-        self.bamreader = _bamreader
+    def __init__(self, _bamreaders, _read_groups, _ref, _chrom, _pos, _settings={}):
+        self.bamreaders = _bamreaders
+        self.read_groups = _read_groups
         self.ref = _ref
         self.chrom = _chrom
         self.pos = _pos
         self.settings = _settings
-        self.grid = None
+        self.grid_by_sample = {}
         self.LoadGrid()
 
     def LoadGrid(self):
@@ -28,7 +29,6 @@ class AlignmentGrid(object):
         # Get reference
         chromlen = len(self.ref[self.chrom])
         if chromlen <= self.pos:
-            self.grid = None
             return
         elif chromlen <= self.pos+NUMCHAR:
             reference = self.ref[self.chrom][self.pos:]
@@ -37,7 +37,11 @@ class AlignmentGrid(object):
         griddict = {"position": range(self.pos, self.pos+NUMCHAR), "reference": reference}
         # Get reads
         region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+NUMCHAR)))
-        aligned_reads = self.bamreader.fetch(region=region)
+        aligned_reads = []
+        for br in self.bamreaders:
+            try:
+                aligned_reads.extend(list(br.fetch(region=region)))
+            except: pass
         readindex = 0
         read_properties = []
         for read in aligned_reads:
@@ -49,8 +53,9 @@ class AlignmentGrid(object):
             cigar = read.cigar
             # get strand
             strand = not read.is_reverse
-            # get sample - TODO
-            read_properties.append({"pos": position})
+            # get sample
+            rg = self.read_groups.get(dict(read.tags).get("RG",""),"")
+            read_properties.append({"pos": position,"sample":rg})
             # get representation
             rep = []
             currentpos = 0
@@ -79,21 +84,27 @@ class AlignmentGrid(object):
             # Put in dictionary
             griddict["aln%s"%readindex] = rep
             readindex += 1
-        self.grid = pd.DataFrame(griddict)
+        grid = pd.DataFrame(griddict)
         # Fix insertions
-        alncols = [item for item in self.grid.columns if item != "position"]
-        for i in range(self.grid.shape[0]):
-            maxchars = max(self.grid.ix[i,alncols].apply(len))
+        alncols = [item for item in grid.columns if item != "position"]
+        for i in range(grid.shape[0]):
+            maxchars = max(grid.ix[i,alncols].apply(len))
             if maxchars > 1:
                 for col in alncols:
-                    val = self.grid.ix[i, col]
-                    if len(val) < maxchars: self.grid.ix[i,col] = GAPCHAR*(maxchars-len(val)+1) + val
+                    val = grid.ix[i, col]
+                    if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)+1) + val
+        readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
+                                     "sample": [read_properties[i]["sample"] for i in range(readindex)]})
+        # Split by sample
+        samples = set(readprops["sample"])
+        for sample in samples:
+            self.grid_by_sample[sample] = grid[["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)]
         # Sort columns appropriately
-        readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)]})
         if self.settings.get("SORT","bypos") == "bypos":
             readprops = readprops.sort("pos")
-            self.grid = self.grid[["position","reference"] + list(readprops["read"].values)]
-            self.CollapseGridByPosition()
+            for sample in samples:
+                self.grid_by_sample[sample] = \
+                    self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
 
     def MergeRows(self, row1, row2):
         x = []
@@ -105,15 +116,15 @@ class AlignmentGrid(object):
             else: x.append(row1[i])
         return x
                 
-    def CollapseGridByPosition(self):
+    def CollapseGridByPosition(self, grid):
         """
         If more than one read can fit on the same line, put it there
         """
         cols_to_delete = []
         col_to_ends = {"dummy":{"end":1000000, "rank":-1}}
-        alncols = [item for item in self.grid.columns if item != "position" and item != "reference"]
+        alncols = [item for item in grid.columns if item != "position" and item != "reference"]
         for col in alncols:
-            track = self.grid.ix[:,col].values
+            track = grid.ix[:,col].values
             x = [i for i in range(len(track)) if track[i][0] != GAPCHAR]
             start = min(x)
             end = max(x)
@@ -121,20 +132,20 @@ class AlignmentGrid(object):
                 mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
                 mincol.sort()
                 mincol = mincol[0][1]
-                self.grid[mincol] = self.MergeRows(list(self.grid[mincol].values), list(self.grid[col].values))
+                grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
                 cols_to_delete.append(col)
-                t = self.grid.ix[:,mincol].values
+                t = grid.ix[:,mincol].values
                 y = [i for i in range(len(t)) if t[i] != GAPCHAR]
                 col_to_ends[mincol]["end"] = max(y)
             col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
-        self.grid = self.grid.drop(cols_to_delete, 1)
+        return grid.drop(cols_to_delete, 1)
             
     def GetReferenceTrack(self, _pos):
         """
         Return string for the reference track
         """
-        if self.grid is None: return "N"*NUMCHAR
-        refseries = self.grid.reference.values
+        if len(self.grid_by_sample.keys()) == 0: return "N"*NUMCHAR
+        refseries = self.grid_by_sample.values()[0].reference.values
         reference = ""
         for i in range(len(refseries)):
             reference = reference + refseries[i]
@@ -144,11 +155,15 @@ class AlignmentGrid(object):
         """
         Return list of strings for the alignment track
         """
-        alncols = [item for item in self.grid.columns if item != "reference" and item != "position"]
-        alignments = []
-        for col in alncols:
-            alignments.append("".join(self.grid[col].values))
-        return alignments
+        alignments_by_sample = {}
+        for sample in self.grid_by_sample:
+            grid = self.grid_by_sample[sample]
+            alncols = [item for item in grid.columns if item != "reference" and item != "position"]
+            alignments = []
+            for col in alncols:
+                alignments.append("".join(grid[col].values))
+            alignments_by_sample[sample] = alignments
+        return alignments_by_sample
 
     def __str__(self):
         return "[AlignmentGrid: %s:%s]"%(self.chrom, self.pos)
@@ -157,17 +172,29 @@ class BamView(object):
     """
     Class for storing view of Bam Alignments
     """
-    def __init__(self, _bamfile, _reffile):
-        self.bamfile = _bamfile
-        self.bamreader = pysam.Samfile(_bamfile, "rb")
+    def __init__(self, _bamfiles, _reffile):
+        self.bamfiles = _bamfiles
+        self.bamreaders = [pysam.Samfile(bam, "rb") for bam in self.bamfiles]
         self.reference = pyfasta.Fasta(_reffile)
         self.alignment_grid = None
+        self.read_groups = self.LoadRGDictionary()
+
+    def LoadRGDictionary(self):
+        read_groups = {}
+        for br in self.bamreaders:
+            h = br.header.get("RG",[])
+            for r in h:
+                try:
+                    read_groups[r["ID"]] = r["SM"]
+                except: read_groups[r["ID"]] = r["ID"]
+        return read_groups
+
 
     def LoadAlignmentGrid(self, _chrom, _pos, _settings={}):
         """
         Load an alignment grid for a view at a specific chr:pos
         """
-        self.alignment_grid = AlignmentGrid(self.bamreader, self.reference, _chrom, _pos, _settings=_settings)
+        self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, _chrom, _pos, _settings=_settings)
 
     def GetReferenceTrack(self, start_pos):
         """
