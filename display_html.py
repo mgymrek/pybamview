@@ -47,10 +47,10 @@ def GetReference(reference_string):
     """
     Get HTML to display the reference sequence
     """
-    reference_html = ""
+    reference_html = "<tr>"
     for i in range(len(reference_string)):
-        color = NUC_TO_COLOR.get(reference_string[i], "black")
-        reference_html += "<td><font color='%s'>%s</font></td>"%(color,reference_string[i])
+        color = NUC_TO_COLOR.get(reference_string[i], "gray")
+        reference_html += "<td style='background-color:%s;text-align:center;text-valign:center;'><font color='white'><b>%s</b></font></td>"%(color,reference_string[i])
     reference_html += "</tr>"
     return reference_html
 
@@ -63,6 +63,6 @@ def GetAlignment(alignment_list):
         aln_html += "<tr>"
         for i in range(len(aln)):
             color = NUC_TO_COLOR.get(aln[i], "black")
-            aln_html += "<td><font color='%s'>%s</font></td>"%(color, aln[i])
+            aln_html += "<td style='text-align:center;'><font color='%s'>%s</font></td>"%(color, aln[i])
         aln_html += "</tr>"
     return aln_html

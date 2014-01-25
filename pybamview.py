@@ -43,7 +43,7 @@ def display_bam_region(bamfile, region):
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
-    except: chrom, pos = bv.reference.keys()[0], 0
+    except: chrom, pos = sorted(bv.reference.keys())[0], 0
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
     SETTINGS["region"] = "%s:%s"%(chrom, pos)
     html = GetHeader(bamfile, region, REFFILE)
