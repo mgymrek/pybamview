@@ -56,13 +56,10 @@ def GetReference(reference_string):
     reference_html += "</tr>"
     return reference_html
 
-def GetAlignment(alignments_by_sample):
+def GetAlignment(alignments_by_sample, numcols):
     """
     Get HTML for the alignment div
     """
-    try:
-        numcols = len(alignments_by_sample.values()[0][0])
-    except: numcols = 0
     aln_html = ""
     for sample in alignments_by_sample:
         aln_html += "<tr><td colspan='%s' style='background-color:lightgray;'><b>Sample:</b> %s</td></tr>"%(numcols, sample)

@@ -52,12 +52,13 @@ def display_bam_region(bamfiles, region):
         pos = int(pos)
     except: chrom, pos = sorted(bv.reference.keys())[0], 0
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
-    SETTINGS["region"] = "%s:%s"%(chrom, pos)
+    region = "%s:%s"%(chrom, pos)
+    SETTINGS["region"] = region
     html = GetHeader(bamfiles, region, REFFILE)
     html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
     html += "<table>"
     html += GetReference(bv.GetReferenceTrack(pos))
-    html += GetAlignment(bv.GetAlignmentTrack(pos))
+    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)))
     html += "</table>"
     html += GetFooter()
     return html

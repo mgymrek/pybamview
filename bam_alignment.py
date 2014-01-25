@@ -19,7 +19,8 @@ class AlignmentGrid(object):
         self.chrom = _chrom
         self.pos = _pos
         self.settings = _settings
-        self.grid_by_sample = {}
+        self.samples = set(self.read_groups.values())
+        self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.LoadGrid()
 
     def LoadGrid(self):
@@ -96,15 +97,18 @@ class AlignmentGrid(object):
         readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
                                      "sample": [read_properties[i]["sample"] for i in range(readindex)]})
         # Split by sample
-        samples = set(readprops["sample"])
-        for sample in samples:
-            self.grid_by_sample[sample] = grid[["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)]
+        for sample in self.samples:
+            if readprops.shape[0] > 0:
+                self.grid_by_sample[sample] = grid[["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)]
+            else: self.grid_by_sample[sample] = grid[["position","reference"]]
         # Sort columns appropriately
         if self.settings.get("SORT","bypos") == "bypos":
             readprops = readprops.sort("pos")
-            for sample in samples:
-                self.grid_by_sample[sample] = \
-                    self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
+            for sample in self.samples:
+                if readprops.shape[0] > 0:
+                    self.grid_by_sample[sample] = \
+                        self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
+                else: pass
 
     def MergeRows(self, row1, row2):
         x = []

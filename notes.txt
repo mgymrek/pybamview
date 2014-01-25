@@ -9,3 +9,5 @@ option to click on read and get read info, also highlight his pair
 
 Organization:
 SIDE: scroll (single bp, chunk, left/right)
+
+easy select all
