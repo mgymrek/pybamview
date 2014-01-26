@@ -5,7 +5,7 @@ import pandas as pd
 import pysam
 import pyfasta
 
-NUMCHAR = 1000
+NUMCHAR = 100
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):
@@ -60,17 +60,26 @@ class AlignmentGrid(object):
             # get representation
             rep = []
             currentpos = 0
+            wasinsert = False
             for c in cigar:
                 if c[0] == 0: # match
                     for i in range(c[1]):
-                        rep.append(nucs[currentpos])
+                        if wasinsert:
+                            rep[-1] = rep[-1] + nucs[currentpos]
+                        else: rep.append(nucs[currentpos])
+                        wasinsert = False
                         currentpos += 1
+                    wasinsert = False
                 elif c[0] == 1: # put insertion in next base position
                     rep.append(nucs[currentpos:currentpos+c[1]])
                     currentpos = currentpos+c[1]
+                    wasinsert = True
                 elif c[0] == 2: # deletion
                     for i in range(c[1]):
-                        rep.append(DELCHAR)
+                        if wasinsert:
+                            rep[-1] = rep[-1] + DELCHAR
+                        else: rep.append(DELCHAR)
+                        wasinsert = False
             # Fix boundaries
             if position < self.pos:
                 rep = rep[self.pos-position:]
@@ -91,9 +100,10 @@ class AlignmentGrid(object):
         for i in range(grid.shape[0]):
             maxchars = max(grid.ix[i,alncols].apply(len))
             if maxchars > 1:
+                print i,maxchars
                 for col in alncols:
                     val = grid.ix[i, col]
-                    if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)+1) + val
+                    if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)) + val
         readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
                                      "sample": [read_properties[i]["sample"] for i in range(readindex)]})
         # Split by sample

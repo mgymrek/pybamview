@@ -33,7 +33,7 @@
 #param_info {
   margin: 0;
   color: #fff;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
   text-shadow: #111 0px 0px 10px;
 }
@@ -48,4 +48,13 @@
   font-size: 12px;
   font-weight: 700;
   text-shadow: #111 0px 0px 10px;
+}
+
+.ref {
+    color: white;
+    font-family: Courier;
+}
+
+.read {
+    font-family: Courier;
 }

@@ -1,9 +1,10 @@
-def GetHeader(bamfiles, region, reffile):
+def GetHeader(bamfiles, region, reffile, samples):
     """
     Get header div fo pybamview
     """
     header_html = "<html><head>"
     header_html += "<style type='text/css'>%s</style>"%open("/san/melissa/workspace/pybamview/pybamview.css","r").read()
+    header_html += "<script language=javascript type='text/javascript'>%s</script>"%open("/san/melissa/workspace/pybamview/pybamview.js","r").read()
     header_html += "<title>PyBamView: %s</title>"%",".join(bamfiles)
     header_html += "<div class='outer' id='header_wrap'>"
     header_html += "<header class='inner'>"
@@ -11,6 +12,10 @@ def GetHeader(bamfiles, region, reffile):
     header_html += "<div id='param_info'>Bam file: %s</div>"%",".join(bamfiles)
     header_html += "<div id='param_info'>Reference: %s</div>"%reffile
     header_html += "<div id='param_info'>Region: %s</div>"%region
+    header_html += "<div id='param_info'>Samples:<br>"
+    for sample in samples:
+        header_html += "<a href='#%s'><font color='white'>%s</font></a> "%(sample, sample)
+    header_html += "</div>"
     header_html += "</header>"
     header_html += "</div></head>"
     return header_html
@@ -49,11 +54,11 @@ def GetReference(reference_string):
     """
     Get HTML to display the reference sequence
     """
-    reference_html = "<tr>"
+    reference_html = "<table><tr>"
     for i in range(len(reference_string)):
         color = NUC_TO_COLOR.get(reference_string[i], "gray")
-        reference_html += "<td style='background-color:%s;text-align:center;text-valign:center;'><font color='white'><b>%s</b></font></td>"%(color,reference_string[i])
-    reference_html += "</tr>"
+        reference_html += "<td style='background-color:%s;'><font class='ref'><b>%s</b></font></td>"%(color,reference_string[i])
+    reference_html += "</tr></table>"
     return reference_html
 
 def GetAlignment(alignments_by_sample, numcols):
@@ -62,12 +67,16 @@ def GetAlignment(alignments_by_sample, numcols):
     """
     aln_html = ""
     for sample in alignments_by_sample:
-        aln_html += "<tr><td colspan='%s' style='background-color:lightgray;'><b>Sample:</b> %s</td></tr>"%(numcols, sample)
+        aln_html += "<div style='background-color:lightgray;' onclick='toggleDiv(\"%s\");'><a name='%s'>%s</a></div>"%(sample, sample, sample)
+        aln_html += "<div id='%s' style:'background-color:red;'>"%sample
+        aln_html += "<table>"
         alignment_list = alignments_by_sample[sample]
         for aln in alignment_list:
             aln_html += "<tr>"
             for i in range(len(aln)):
                 color = NUC_TO_COLOR.get(aln[i], "black")
-                aln_html += "<td style='text-align:center;'><font color='%s'>%s</font></td>"%(color, aln[i])
+                aln_html += "<td style='text-align:center;'><font class='read' color='%s'>%s</font></td>"%(color, aln[i])
             aln_html += "</tr>"
+        aln_html += "</table>"
+        aln_html += "</div><br>"
     return aln_html
