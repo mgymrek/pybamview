@@ -5,7 +5,7 @@ import pandas as pd
 import pysam
 import pyfasta
 
-NUMCHAR = 100
+NUMCHAR = 150
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):

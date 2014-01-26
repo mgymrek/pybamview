@@ -1,10 +1,19 @@
+.alignments {
+}
+
+.fixedElement {
+    background-color: white;
+    top: 0px;
+    z-index: 1;
+    width: 100%;
+}
+
 .outer {
   width: 100%;
 }
 
 .inner {
   position: relative;
-  max-width: 940px;
   padding: 10px 10px;
   margin: 0;
 }
@@ -16,6 +25,11 @@
   background: -ms-linear-gradient(top, #373737, #212121);
   background: -o-linear-gradient(top, #373737, #212121);
   background: linear-gradient(top, #373737, #212121);
+}
+
+#reference {
+   background: white;
+   position: fixed;
 }
 
 #toolbar {
@@ -40,6 +54,8 @@
 
 #footer_wrap {
   background: #212121;
+  position: relative;
+  bottom: 0px;
 }
 
 #footer_info {

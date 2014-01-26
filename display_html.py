@@ -2,11 +2,13 @@ def GetHeader(bamfiles, region, reffile, samples):
     """
     Get header div fo pybamview
     """
-    header_html = "<html><head>"
+    header_html = "<head>"
     header_html += "<style type='text/css'>%s</style>"%open("/san/melissa/workspace/pybamview/pybamview.css","r").read()
     header_html += "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
     header_html += "<script language=javascript type='text/javascript'>%s</script>"%open("/san/melissa/workspace/pybamview/pybamview.js","r").read()
     header_html += "<title>PyBamView: %s</title>"%",".join(bamfiles)
+    header_html += "</head>"
+    header_html += "<div class='fixedElement'>" # begin fixed
     header_html += "<div class='outer' id='header_wrap'>"
     header_html += "<header class='inner'>"
     header_html += "<h1 id='display_info'>PyBamView</h1>"
@@ -17,8 +19,7 @@ def GetHeader(bamfiles, region, reffile, samples):
     for sample in samples:
         header_html += "<a href='#%s'><font color='white'>%s</font></a> "%(sample, sample)
     header_html += "</div>"
-    header_html += "</header>"
-    header_html += "</div></head>"
+    header_html += "</div></header>"
     return header_html
 
 def GetFooter():
@@ -57,21 +58,23 @@ def GetReference(reference_string, chrom, positions):
     Get HTML to display the reference sequence
     """
     reference_string
-    reference_html = "<table>"
+    reference_html = "<div class='reference'><table>"
     reference_html += "<tr>"
     for i in range(len(reference_string)):
         color = NUC_TO_COLOR.get(reference_string[i], "gray")
         reference_html += "<td class='%s_%s' style='background-color:%s;'><font class='ref'><b>%s</b></font></div></td>"%(chrom, positions[i], color,reference_string[i])
-    reference_html += "</tr></table>"
+    reference_html += "</tr></table></div>"
+    reference_html += "</div>" # end fixed
     return reference_html
 
 def GetAlignment(alignments_by_sample, numcols, chrom, positions):
     """
     Get HTML for the alignment div
     """
-    aln_html = ""
+    aln_html = "<div class='alignments'>"
     for sample in alignments_by_sample:
-        aln_html += "<div style='background-color:lightgray;' onclick='toggleDiv(\"%s\");'><a name='%s'>%s</a></div>"%(sample, sample, sample)
+        aln_html += "<a name='%s'></a>"%sample
+        aln_html += "<div style='background-color:lightgray;' onclick='toggleDiv(\"%s\");'>%s (show/hide)</div>"%(sample, sample)
         aln_html += "<div id='%s' style:'background-color:red;'>"%sample
         aln_html += "<table>"
         alignment_list = alignments_by_sample[sample]
@@ -83,4 +86,5 @@ def GetAlignment(alignments_by_sample, numcols, chrom, positions):
             aln_html += "</tr>"
         aln_html += "</table>"
         aln_html += "</div><br>"
+    aln_html += "</div>"
     return aln_html
