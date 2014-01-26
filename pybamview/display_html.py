@@ -2,7 +2,6 @@ import sys
 CSS_PREFIX = sys.prefix + "/pybamview/css"
 JS_PREFIX = sys.prefix + "/pybamview/javascript"
 NUMCHARS = 120 # how many characters to display at once
-ENDCHAR = "?"
 
 def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
     """
@@ -103,10 +102,7 @@ def GetAlignment(alignments_by_sample, numcols, chrom, pos, positions):
                 color = NUC_TO_COLOR.get(aln[i], "black")
                 display = ""
                 if positions[i] < min_pos or positions[i] > max_pos: display = "display:none;"
-                if aln[i] == ENDCHAR:
-                    alnchar = ""
-                else: alnchar = aln[i]
-                aln_html += "<td class='%s_%s' style='text-align:center;%s'><font class='read' color='%s'>%s</font></td>"%(chrom, positions[i], display, color, alnchar)
+                aln_html += "<td class='%s_%s' style='text-align:center;%s'><font class='read' color='%s'>%s</font></td>"%(chrom, positions[i], display, color, aln[i])
             aln_html += "</tr>"
         aln_html += "</table>"
         aln_html += "</div><br>"

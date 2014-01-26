@@ -6,7 +6,7 @@ import pysam
 import pyfasta
 
 NUMCHAR = 500 # how many bp to load at once
-ENDCHAR = "?"
+ENDCHAR = "-"
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):
@@ -119,18 +119,18 @@ class AlignmentGrid(object):
         # Sort columns appropriately
         if self.settings.get("SORT","bypos") == "bypos":
             readprops = readprops.sort("pos")
-            for sample in self.samples:
-                if readprops.shape[0] > 0:
+            if readprops.shape[0] > 0:
+                for sample in self.samples:
                     self.grid_by_sample[sample] = \
                         self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
-                else: pass
+            else: pass
 
     def MergeRows(self, row1, row2):
         x = []
         for i in range(len(row1)):
-            if row1[i][0] == GAPCHAR and row2[i][0] == GAPCHAR:
+            if row1[i][0] == ENDCHAR and row2[i][0] == ENDCHAR:
                 x.append(row1[i])
-            elif row1[i] == GAPCHAR:
+            elif row1[i] == ENDCHAR:
                 x.append(row2[i])
             else: x.append(row1[i])
         return x
@@ -144,7 +144,7 @@ class AlignmentGrid(object):
         alncols = [item for item in grid.columns if item != "position" and item != "reference"]
         for col in alncols:
             track = grid.ix[:,col].values
-            x = [i for i in range(len(track)) if track[i][0] != GAPCHAR]
+            x = [i for i in range(len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
             start = min(x)
             end = max(x)
             if start > min([item["end"] for item in col_to_ends.values()]):
@@ -154,7 +154,7 @@ class AlignmentGrid(object):
                 grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
                 cols_to_delete.append(col)
                 t = grid.ix[:,mincol].values
-                y = [i for i in range(len(t)) if t[i] != GAPCHAR]
+                y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
                 col_to_ends[mincol]["end"] = max(y)
             col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
         return grid.drop(cols_to_delete, 1)
