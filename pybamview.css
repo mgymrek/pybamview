@@ -58,3 +58,5 @@
 .read {
     font-family: Courier;
 }
+
+.hover { background-color: pink; }

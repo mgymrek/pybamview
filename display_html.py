@@ -4,6 +4,7 @@ def GetHeader(bamfiles, region, reffile, samples):
     """
     header_html = "<html><head>"
     header_html += "<style type='text/css'>%s</style>"%open("/san/melissa/workspace/pybamview/pybamview.css","r").read()
+    header_html += "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
     header_html += "<script language=javascript type='text/javascript'>%s</script>"%open("/san/melissa/workspace/pybamview/pybamview.js","r").read()
     header_html += "<title>PyBamView: %s</title>"%",".join(bamfiles)
     header_html += "<div class='outer' id='header_wrap'>"
@@ -36,6 +37,7 @@ def GetToolbar(chrom, pos, bamfiles, settings):
         toolbar_html += "<input type='hidden' name='bamfiles', value='%s'>"%bam
     toolbar_html += "Enter region: <input type='text' name='region' value=%s>"%settings["region"]
     toolbar_html += "<input type='submit'>"
+    toolbar_html += "<div id='selected'>Selected: </div>"
     toolbar_html += "</form>"
     toolbar_html += "</div>"
     return toolbar_html
@@ -50,18 +52,20 @@ NUC_TO_COLOR = {
     "T": "orange",
     "t": "orange"
 }
-def GetReference(reference_string):
+def GetReference(reference_string, chrom, positions):
     """
     Get HTML to display the reference sequence
     """
-    reference_html = "<table><tr>"
+    reference_string
+    reference_html = "<table>"
+    reference_html += "<tr>"
     for i in range(len(reference_string)):
         color = NUC_TO_COLOR.get(reference_string[i], "gray")
-        reference_html += "<td style='background-color:%s;'><font class='ref'><b>%s</b></font></td>"%(color,reference_string[i])
+        reference_html += "<td class='%s_%s' style='background-color:%s;'><font class='ref'><b>%s</b></font></div></td>"%(chrom, positions[i], color,reference_string[i])
     reference_html += "</tr></table>"
     return reference_html
 
-def GetAlignment(alignments_by_sample, numcols):
+def GetAlignment(alignments_by_sample, numcols, chrom, positions):
     """
     Get HTML for the alignment div
     """
@@ -75,7 +79,7 @@ def GetAlignment(alignments_by_sample, numcols):
             aln_html += "<tr>"
             for i in range(len(aln)):
                 color = NUC_TO_COLOR.get(aln[i], "black")
-                aln_html += "<td style='text-align:center;'><font class='read' color='%s'>%s</font></td>"%(color, aln[i])
+                aln_html += "<td class='%s_%s' style='text-align:center;'><font class='read' color='%s'>%s</font></td>"%(chrom, positions[i], color, aln[i])
             aln_html += "</tr>"
         aln_html += "</table>"
         aln_html += "</div><br>"

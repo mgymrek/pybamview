@@ -168,6 +168,14 @@ class AlignmentGrid(object):
             reference = reference + refseries[i]
         return reference.upper()
 
+    def GetPositions(self, _pos):
+        positions = []
+        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+NUMCHAR)
+        refseries = self.grid_by_sample.values()[0].reference.values
+        for i in range(len(refseries)):
+            positions.extend([self.pos+i]*len(refseries[i]))
+        return positions
+
     def GetAlignmentTrack(self, _pos):
         """
         Return list of strings for the alignment track
@@ -208,6 +216,11 @@ class BamView(object):
                 except: read_groups[r["ID"]] = r["ID"]
         return read_groups
 
+    def GetPositions(self, start_pos):
+        """
+        Get vector of positions for columns
+        """
+        return self.alignment_grid.GetPositions(start_pos)
 
     def LoadAlignmentGrid(self, _chrom, _pos, _settings={}):
         """
