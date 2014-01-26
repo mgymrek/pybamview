@@ -123,6 +123,7 @@ class AlignmentGrid(object):
                 for sample in self.samples:
                     self.grid_by_sample[sample] = \
                         self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
+                    pass
             else: pass
 
     def MergeRows(self, row1, row2):
@@ -130,7 +131,7 @@ class AlignmentGrid(object):
         for i in range(len(row1)):
             if row1[i][0] == ENDCHAR and row2[i][0] == ENDCHAR:
                 x.append(row1[i])
-            elif row1[i] == ENDCHAR:
+            elif row1[i][0] == ENDCHAR or row1[i][-1] == ENDCHAR:
                 x.append(row2[i])
             else: x.append(row1[i])
         return x
@@ -154,7 +155,7 @@ class AlignmentGrid(object):
                 grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
                 cols_to_delete.append(col)
                 t = grid.ix[:,mincol].values
-                y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
+                y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
                 col_to_ends[mincol]["end"] = max(y)
             col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
         return grid.drop(cols_to_delete, 1)

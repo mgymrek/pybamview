@@ -62,7 +62,8 @@ NUC_TO_COLOR = {
     "G": "green",
     "g": "green",
     "T": "orange",
-    "t": "orange"
+    "t": "orange",
+    "-": "white"
 }
 def GetReference(reference_string, chrom, pos, positions):
     """
