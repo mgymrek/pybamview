@@ -50,7 +50,10 @@ def display_bam_region(bamfiles, region):
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
-    except: chrom, pos = sorted(bv.reference.keys())[0], 0
+    except: 
+        try:
+            chrom, pos = sorted(bv.reference.keys())[0], 0
+        except: chrom, pos = "None", 0
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
     region = "%s:%s"%(chrom, pos)
     SETTINGS["region"] = region

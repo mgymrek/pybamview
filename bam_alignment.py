@@ -28,13 +28,16 @@ class AlignmentGrid(object):
         Load grid of alingments with buffer around start pos
         """
         # Get reference
-        chromlen = len(self.ref[self.chrom])
-        if chromlen <= self.pos:
-            return
-        elif chromlen <= self.pos+NUMCHAR:
-            reference = self.ref[self.chrom][self.pos:]
-        else: reference = self.ref[self.chrom][self.pos:self.pos+NUMCHAR]
-        reference = [reference[i] for i in range(len(reference))]
+        if self.ref is None:
+            reference = ["N"]*NUMCHAR
+        else:
+            chromlen = len(self.ref[self.chrom])
+            if chromlen <= self.pos:
+                return
+            elif chromlen <= self.pos+NUMCHAR:
+                reference = self.ref[self.chrom][self.pos:]
+            else: reference = self.ref[self.chrom][self.pos:self.pos+NUMCHAR]
+            reference = [reference[i] for i in range(len(reference))]
         griddict = {"position": range(self.pos, self.pos+NUMCHAR), "reference": reference}
         # Get reads
         region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+NUMCHAR)))
@@ -189,7 +192,9 @@ class BamView(object):
     def __init__(self, _bamfiles, _reffile):
         self.bamfiles = _bamfiles
         self.bamreaders = [pysam.Samfile(bam, "rb") for bam in self.bamfiles]
-        self.reference = pyfasta.Fasta(_reffile)
+        if _reffile != "":
+            self.reference = pyfasta.Fasta(_reffile)
+        else: self.reference = None
         self.alignment_grid = None
         self.read_groups = self.LoadRGDictionary()
 
