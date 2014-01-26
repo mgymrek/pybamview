@@ -6,6 +6,7 @@ import pysam
 import pyfasta
 
 NUMCHAR = 500 # how many bp to load at once
+ENDCHAR = "?"
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):
@@ -89,10 +90,10 @@ class AlignmentGrid(object):
             if position < self.pos:
                 rep = rep[self.pos-position:]
             else:
-                for i in range(position-self.pos): rep = [GAPCHAR] + rep
+                for i in range(position-self.pos): rep = [ENDCHAR] + rep
             if len(rep) > len(reference):
                 rep = rep[0:len(reference)]
-            rep.extend(GAPCHAR*(len(reference)-len(rep)))
+            rep.extend(ENDCHAR*(len(reference)-len(rep)))
             # Check if reverse
             if not strand:
                 rep = map(str.lower, rep)
