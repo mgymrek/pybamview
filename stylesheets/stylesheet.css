@@ -245,3 +245,46 @@ a {
 .cf {
   zoom:1;
 }
+
+/* Navigation */
+#navigation
+{
+        float: left;
+        width: 100%;
+}
+
+#navigation ul
+{
+        margin: 0;
+        padding: 0;
+}
+
+#navigation ul li
+{
+        list-style-type: none;
+        display: inline;
+}
+
+#navigation ul li:before
+{
+    content: "";
+}
+
+#navigation li a
+{
+        display: block;
+        float: left;
+        padding: 5px 10px;
+        color: #fff;
+        text-decoration: none;
+        border-right: 1px solid #fff;
+}
+
+#navigation li a:hover { background: #383; }
+
+.inner {
+  position: relative;
+  width: 100%;
+  padding: 20px 10px;
+  margin: 0 auto;
+}

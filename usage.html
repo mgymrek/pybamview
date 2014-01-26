@@ -1,0 +1,48 @@
+---
+---
+<!DOCTYPE html>
+<html>
+{% include header.html %}
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pybamview</h1>
+        <h2>Browser based application for viewing bam alignments</h2>
+	{% include menu.html %}<br>
+      </div>
+    </header>
+    <div class="container">
+      <section id="main_content">
+        <h1>getting started</h1>
+	To get started with PyBamView, navigate to a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Then simply type:
+	{% highlight python %}
+pybamview
+	{% endhighlight %}
+	This will by default give you a localhost URL for port 5000. Navigate to 127.0.0.1:4000 in your web browser.
+	<p>
+	PyBamView will look for any indexed bams in that directory and display them as a checklist. If no files are showing up, make sure you have indexed your bam files. Select which files you would like to view and click "View selected bams".
+	<p>
+	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all "N"'s). Below the reference is a section for each sample contained in the bam files. PyBamView uses the sample specified in the read group of each read to determine how many unique samples are present. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
+	<h1>full usage</h1>
+	To see the usage information for PyBamView, type:
+	{% highlight python %}
+>pybamview --help
+usage: pybamview [-h] [--bamdir BAMDIR] [--ref REF] [--ip IP] [--port PORT]
+
+pybamview: An Python-based BAM alignment viewer.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --bamdir BAMDIR  Directory to look for bam files. Bam files must be indexed.
+  --ref REF        Path to reference fasta file. If no reference is given, the
+                   reference track is displayed as "N"'s
+  --ip IP          Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
+                   have the server available externally.
+  --port PORT      The port of the webserver. Defaults to 5000.
+	{% endhighlight %}
+      </section>
+    </div>
+    
+  </body>
+</html>
