@@ -5,7 +5,7 @@ import pandas as pd
 import pysam
 import pyfasta
 
-NUMCHAR = 150
+NUMCHAR = 500 # how many bp to load at once
 GAPCHAR = "."
 DELCHAR = "*"
 class AlignmentGrid(object):
@@ -17,7 +17,9 @@ class AlignmentGrid(object):
         self.read_groups = _read_groups
         self.ref = _ref
         self.chrom = _chrom
-        self.pos = _pos
+        self.startpos = _pos
+        self.pos = self.startpos-int(NUMCHAR*0.5)
+        if self.pos < 0: self.pos = 0
         self.settings = _settings
         self.samples = set(self.read_groups.values())
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
@@ -103,7 +105,6 @@ class AlignmentGrid(object):
         for i in range(grid.shape[0]):
             maxchars = max(grid.ix[i,alncols].apply(len))
             if maxchars > 1:
-                print i,maxchars
                 for col in alncols:
                     val = grid.ix[i, col]
                     if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)) + val

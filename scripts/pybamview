@@ -65,10 +65,10 @@ def display_bam_region(bamfiles, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     SETTINGS["region"] = region
-    html = GetHeader(bamfiles, region, REFFILE, set(bv.read_groups.values()))
+    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()))
     html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
-    html += GetReference(bv.GetReferenceTrack(pos), chrom, positions)
-    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, positions)
+    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions)
+    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions)
     html += GetFooter()
     return html
 
