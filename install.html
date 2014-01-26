@@ -1,0 +1,73 @@
+---
+---
+<!DOCTYPE html>
+<html>
+{% include header.html %}
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pybamview</h1>
+        <h2>Browser based application for viewing bam alignments</h2>
+	{% include menu.html %}<br>
+        <section id="downloads">
+          <a href="https://github.com/mgymrek/pybamview/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/mgymrek/pybamview/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/mgymrek/pybamview" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+    <div class="container">
+      <section id="main_content">
+<h1>get the source code</h1>
+To install pybamview, first obtain the source code by either:
+<ul>
+<li>Downloading the tarball
+{% highlight python %}
+tar -xzvf mgymrek-pybamview-[version].tar.gz
+cd mgymrek-pybamview-[version]
+{% endhighlight %}
+</li>
+<li>Downloading the zip file
+{% highlight python %}
+unzip mgymrek-pybamview-[version].zip
+cd mgymrek-pybamview-[version]
+{% endhighlight %}
+</li>
+<li>Cloning the git repository
+{% highlight python %}
+git clone https://github.com/mgymrek/pybamview.git
+cd pybamview
+{% endhighlight %}
+</li>
+</ul>
+
+<h1>install requirements</h1>
+Then, make sure you have the required python packages installed:
+<ul>
+<li><a href="http://flask.pocoo.org/">Flask</a></li>
+<li><a href="http://pandas.pydata.org/">pandas</a></li>
+<li><a href="https://pypi.python.org/pypi/pyfasta/">pyfasta</a></li>
+<li><a href="https://code.google.com/p/pysam/">pysam</a></li>
+</ul>
+You can install these using easy_install:
+{% highlight python %}
+sudo easy_install Flask pandas pyfasta pysam
+{% endhighlight %}
+
+<h1>install</h1>
+At the top of the PyBamView source directory, type:
+{% highlight python %}
+sudo python setup.py install
+{% endhighlight %}
+
+To make sure it was installed, type:
+{% highlight python %}
+pybamview --help
+{% endhighlight %}
+and ensure that the help message comes up. Then move on to <a href="usage.html">the usage page</a> to get started!
+      </section>
+    </div>
+    
+  </body>
+</html>
