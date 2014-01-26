@@ -7,6 +7,7 @@ def GetHeader(bamfiles, region, reffile, samples):
     Get header div fo pybamview
     """
     header_html = "<head>"
+    header_html += "<link rel='shortcut icon' href='/favicon.ico'>"
     header_html += "<style type='text/css'>%s</style>"%open("%s/pybamview.css"%CSS_PREFIX,"r").read()
     header_html += "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
     header_html += "<script language=javascript type='text/javascript'>%s</script>"%open("%s/pybamview.js"%JS_PREFIX,"r").read()
