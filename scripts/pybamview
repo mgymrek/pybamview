@@ -7,7 +7,7 @@ from flask import send_from_directory
 import os
 import re
 import sys
-app = Flask(__name__, static_path=sys.prefix+"/pybamview/static")
+app = Flask(__name__, static_path="/usr/local/pybamview/static")
 app.debug = True
 
 BAMDIR = "."
@@ -20,7 +20,7 @@ SETTINGS = {}
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(sys.prefix+'/pybamview/static/',
+    return send_from_directory('/usr/local/pybamview/static/',
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")
