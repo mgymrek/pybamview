@@ -1,14 +1,11 @@
 """
 Module for storing bam alignment info
 """
+from constants import *
 import pandas as pd
 import pysam
 import pyfasta
 
-NUMCHAR = 500 # how many bp to load at once
-ENDCHAR = "-"
-GAPCHAR = "."
-DELCHAR = "*"
 class AlignmentGrid(object):
     """
     Class for storing a grid of alignments

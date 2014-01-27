@@ -1,7 +1,5 @@
 import sys
-CSS_PREFIX = sys.prefix + "/pybamview/css"
-JS_PREFIX = sys.prefix + "/pybamview/javascript"
-NUMCHARS = 120 # how many characters to display at once
+from constants import *
 
 def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
     """
@@ -15,7 +13,7 @@ def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
     header_html += "<style type='text/css'>%s</style>"%open("%s/pybamview.css"%CSS_PREFIX,"r").read()
     header_html += "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
     header_html += "<script language=javascript type='text/javascript'>var NUMSAMPLES=%s;var NUMCHARS=%s;var currentpos=%s;var minpos=%s;var maxpos=%s;var chrom=\"%s\";\n%s</script>"\
-        %(len(samples),NUMCHARS,position,minpos,maxpos-NUMCHARS,chrom,open("%s/pybamview.js"%JS_PREFIX,"r").read())
+        %(len(samples),NUMDISPLAY,position,minpos,maxpos-NUMDISPLAY,chrom,open("%s/pybamview.js"%JS_PREFIX,"r").read())
     header_html += "<title>PyBamView: %s</title>"%",".join(bamfiles)
     header_html += "</head>"
     header_html += "<div class='fixedElement'>" # begin fixed
@@ -54,23 +52,12 @@ def GetToolbar(chrom, pos, bamfiles, settings):
     toolbar_html += "</div>"
     return toolbar_html
 
-NUC_TO_COLOR = {
-    "A": "red",
-    'a': "red",
-    "C": "blue",
-    "c": "blue",
-    "G": "green",
-    "g": "green",
-    "T": "orange",
-    "t": "orange",
-    "-": "white"
-}
 def GetReference(reference_string, chrom, pos, positions):
     """
     Get HTML to display the reference sequence
     """
     min_pos = pos
-    max_pos = pos + NUMCHARS
+    max_pos = pos + NUMDISPLAY
     reference_html = "<div class='reference'>"
     reference_html += "<table>"
     reference_html += "<tr>"
@@ -89,7 +76,7 @@ def GetAlignment(alignments_by_sample, numcols, chrom, pos, positions):
     Get HTML for the alignment div
     """
     min_pos = pos
-    max_pos = pos + NUMCHARS
+    max_pos = pos + NUMDISPLAY
     aln_html = "<div class='alignments'>"
     for sample in alignments_by_sample:
         aln_html += "<a name='%s'></a>"%sample
