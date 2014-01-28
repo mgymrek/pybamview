@@ -1,21 +1,27 @@
-.alignments {
-}
-
-.fixedElement {
-    background-color: white;
-    top: 0px;
-    z-index: 1;
+.sample {
+    background-color: lightgray;
+    position: fixed;
     width: 100%;
 }
 
+.alntables {
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.alignments {
+}
+
 .outer {
-  width: 100%;
+  margin: 0;
+  padding: 0;
+  left: 0px;
+  right: 0px;
 }
 
 .inner {
   position: relative;
   padding: 10px 10px;
-  margin: 0;
 }
 
 #header_wrap {
@@ -54,7 +60,6 @@
 #footer_wrap {
   background: #212121;
   position: relative;
-  bottom: 0px;
 }
 
 #footer_info {
@@ -75,5 +80,3 @@
 }
 
 .hover { background-color: pink; }
-
-.scroll:hover { background-color: pink; }

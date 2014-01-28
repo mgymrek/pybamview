@@ -13,7 +13,7 @@ app.debug = True
 BAMDIR = "."
 REFFILE = ""
 PORT = 5000
-NUMCHAR = 200
+NUMCHAR = 500
 HOST = "127.0.0.1"
 BAMFILE_TO_BAMVIEW = {}
 SETTINGS = {}
@@ -24,22 +24,6 @@ def favicon():
     return send_from_directory('/usr/local/pybamview/static/',
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-get_width_fcn = """
-function SetPageWidth() {
-    var width = $("#reference").width();
-    var form = document.forms[0];
-    form.elements["width"].value = width;
-    return true;
-}
-$(document).ready(function() {
-SetPageWidth();
-});
-$(document).resize(function()
-{
-    SetPageWidth();
-});
-"""
-
 @app.route("/")
 def listbams(methods=['POST','GET']):
     bamfiles = request.args.getlist("bamfiles")
@@ -49,11 +33,9 @@ def listbams(methods=['POST','GET']):
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
     html = "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
-    html += "<script language=javascript type='text/javascript'>%s</script>"%get_width_fcn
     html += "<div id='header_wrap'></div>"
     html += "<h1>Indexed bam files in this directory</h1>"
     html += "<form>"
-    html += "<input type='hidden' name='width'>"
     html += "<input type='submit', value='View selected bams'><br>"
     for f in bamfiles:
         html += "<input type='checkbox' name='bamfiles', value=%s>%s<br>"%(f,f)
@@ -64,15 +46,12 @@ def listbams(methods=['POST','GET']):
 def display_bam(bamfiles):
     if type(bamfiles) != list:
         bamfiles = [bamfiles]
-    try:
-        width = int(request.args.get("width", 1500))
-    except: width = 1500
     region = request.args.get("region","")
     region.replace("%3A",":")
-    return display_bam_region(bamfiles, region, width)
+    return display_bam_region(bamfiles, region)
 
 @app.route('/<string:bamfile>:<string:region>')
-def display_bam_region(bamfiles, region, width):
+def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
         bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
@@ -89,12 +68,24 @@ def display_bam_region(bamfiles, region, width):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     SETTINGS["region"] = region
-    numdisplay = int(width/14)
-    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()), numdisplay)
+    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()))
+    html += "<body>"
     html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
-    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions, numdisplay)
-    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions, numdisplay)
+    html += "<div class='alntables' id='aln'>"
+    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions)
+    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions)
+    html += "</div>"
     html += GetFooter()
+    ## JQuery Initialization Code
+    html += """
+<script> 
+$(function() {
+  var w = $("#ref0").outerWidth()+0.5;
+  $("#aln").scrollLeft(w*%s);
+ });
+</script>
+"""%(NUMCHAR/2)
+    html += "</body></html>"
     return html
 
 if __name__ == "__main__":
@@ -103,7 +94,7 @@ if __name__ == "__main__":
     parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s')
     parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.')
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.')
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.')
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.')
     args = parser.parse_args()
     if args.bamdir is not None:
         BAMDIR = args.bamdir
