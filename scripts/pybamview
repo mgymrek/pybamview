@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 import argparse
 from pybamview import *
-from flask import Flask
+from flask import Flask, request, send_from_directory, render_file
 from flask import request
 from flask import send_from_directory
 import os
