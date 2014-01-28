@@ -16,9 +16,9 @@ class AlignmentGrid(object):
         self.ref = _ref
         self.chrom = _chrom
         self.startpos = _pos
-        self.pos = self.startpos-int(NUMCHAR*0.5)
-        if self.pos < 0: self.pos = 0
         self.settings = _settings
+        self.pos = self.startpos-int(self.settings["NUMCHAR"]*0.5)
+        if self.pos < 0: self.pos = 0
         self.samples = set(self.read_groups.values())
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.LoadGrid()
@@ -29,18 +29,18 @@ class AlignmentGrid(object):
         """
         # Get reference
         if self.ref is None:
-            reference = ["N"]*NUMCHAR
+            reference = ["N"]*self.settings["NUMCHAR"]
         else:
             chromlen = len(self.ref[self.chrom])
             if chromlen <= self.pos:
                 return
-            elif chromlen <= self.pos+NUMCHAR:
+            elif chromlen <= self.pos+self.settings["NUMCHAR"]:
                 reference = self.ref[self.chrom][self.pos:]
-            else: reference = self.ref[self.chrom][self.pos:self.pos+NUMCHAR]
+            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["NUMCHAR"]]
             reference = [reference[i] for i in range(len(reference))]
-        griddict = {"position": range(self.pos, self.pos+NUMCHAR), "reference": reference}
+        griddict = {"position": range(self.pos, self.pos+self.settings["NUMCHAR"]), "reference": reference}
         # Get reads
-        region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+NUMCHAR)))
+        region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+self.settings["NUMCHAR"])))
         aligned_reads = []
         for br in self.bamreaders:
             try:
@@ -161,7 +161,7 @@ class AlignmentGrid(object):
         """
         Return string for the reference track
         """
-        if len(self.grid_by_sample.keys()) == 0: return "N"*NUMCHAR
+        if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["NUMCHAR"]
         refseries = self.grid_by_sample.values()[0].reference.values
         reference = ""
         for i in range(len(refseries)):
@@ -170,7 +170,7 @@ class AlignmentGrid(object):
 
     def GetPositions(self, _pos):
         positions = []
-        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+NUMCHAR)
+        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["NUMCHAR"])
         refseries = self.grid_by_sample.values()[0].reference.values
         for i in range(len(refseries)):
             positions.extend([self.pos+i]*len(refseries[i]))
@@ -226,7 +226,12 @@ class BamView(object):
         """
         Load an alignment grid for a view at a specific chr:pos
         """
-        self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, _chrom, _pos, _settings=_settings)
+        reload = True
+        if self.alignment_grid is not None:
+            if (self.alignment_grid.chrom == _chrom) and (self.alignment_grid.startpos >= (_pos-5)) and (self.alignment_grid.startpos <= (_pos+5)):
+                reload = False
+        if reload:
+            self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, _chrom, _pos, _settings=_settings)
 
     def GetReferenceTrack(self, start_pos):
         """

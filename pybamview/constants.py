@@ -5,8 +5,6 @@ import sys
 PREFIX = "/usr/local/"
 CSS_PREFIX = PREFIX + "/pybamview/css"
 JS_PREFIX = PREFIX + "/pybamview/javascript"
-NUMDISPLAY = 120 # how many characters to display at once
-NUMCHAR = 200 # how many bp to load at once
 ENDCHAR = "-"
 GAPCHAR = "."
 DELCHAR = "*"

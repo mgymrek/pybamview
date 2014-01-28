@@ -1,7 +1,7 @@
 import sys
 from constants import *
 
-def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
+def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples, numdisplay):
     """
     Get header div fo pybamview
     """
@@ -13,7 +13,7 @@ def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
     header_html += "<style type='text/css'>%s</style>"%open("%s/pybamview.css"%CSS_PREFIX,"r").read()
     header_html += "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
     header_html += "<script language=javascript type='text/javascript'>var NUMSAMPLES=%s;var NUMCHARS=%s;var currentpos=%s;var minpos=%s;var maxpos=%s;var chrom=\"%s\";\n%s</script>"\
-        %(len(samples),NUMDISPLAY,position,minpos,maxpos-NUMDISPLAY,chrom,open("%s/pybamview.js"%JS_PREFIX,"r").read())
+        %(len(samples),numdisplay,position,minpos,maxpos-numdisplay,chrom,open("%s/pybamview.js"%JS_PREFIX,"r").read())
     header_html += "<title>PyBamView: %s</title>"%",".join(bamfiles)
     header_html += "</head>"
     header_html += "<div class='fixedElement'>" # begin fixed
@@ -45,6 +45,7 @@ def GetToolbar(chrom, pos, bamfiles, settings):
     toolbar_html += "<form>"
     for bam in bamfiles:
         toolbar_html += "<input type='hidden' name='bamfiles', value='%s'>"%bam
+    toolbar_html += "<input type='hidden' name='width'>"
     toolbar_html += "Enter region: <input type='text' name='region' value=%s>"%settings["region"]
     toolbar_html += "<input type='submit'>"
     toolbar_html += "<div id='selected'>Selected: </div>"
@@ -52,13 +53,13 @@ def GetToolbar(chrom, pos, bamfiles, settings):
     toolbar_html += "</div>"
     return toolbar_html
 
-def GetReference(reference_string, chrom, pos, positions):
+def GetReference(reference_string, chrom, pos, positions, numdisplay):
     """
     Get HTML to display the reference sequence
     """
     min_pos = pos
-    max_pos = pos + NUMDISPLAY
-    reference_html = "<div class='reference'>"
+    max_pos = pos + numdisplay
+    reference_html = "<div class='reference' id='reference'>"
     reference_html += "<table>"
     reference_html += "<tr>"
     for i in range(len(reference_string)):
@@ -71,12 +72,12 @@ def GetReference(reference_string, chrom, pos, positions):
     reference_html += "</div>" # end fixed
     return reference_html
 
-def GetAlignment(alignments_by_sample, numcols, chrom, pos, positions):
+def GetAlignment(alignments_by_sample, numcols, chrom, pos, positions, numdisplay):
     """
     Get HTML for the alignment div
     """
     min_pos = pos
-    max_pos = pos + NUMDISPLAY
+    max_pos = pos + numdisplay
     aln_html = "<div class='alignments'>"
     for sample in alignments_by_sample:
         aln_html += "<a name='%s'></a>"%sample

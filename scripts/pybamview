@@ -13,6 +13,7 @@ app.debug = True
 BAMDIR = "."
 REFFILE = ""
 PORT = 5000
+NUMCHAR = 200
 HOST = "127.0.0.1"
 BAMFILE_TO_BAMVIEW = {}
 SETTINGS = {}
@@ -23,6 +24,22 @@ def favicon():
     return send_from_directory('/usr/local/pybamview/static/',
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+get_width_fcn = """
+function SetPageWidth() {
+    var width = $("#reference").width();
+    var form = document.forms[0];
+    form.elements["width"].value = width;
+    return true;
+}
+$(document).ready(function() {
+SetPageWidth();
+});
+$(document).resize(function()
+{
+    SetPageWidth();
+});
+"""
+
 @app.route("/")
 def listbams(methods=['POST','GET']):
     bamfiles = request.args.getlist("bamfiles")
@@ -31,11 +48,15 @@ def listbams(methods=['POST','GET']):
     files = os.listdir(BAMDIR)
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
-    html = "<h1>Indexed bam files in this directory</h1>"
+    html = "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
+    html += "<script language=javascript type='text/javascript'>%s</script>"%get_width_fcn
+    html += "<div id='header_wrap'></div>"
+    html += "<h1>Indexed bam files in this directory</h1>"
     html += "<form>"
+    html += "<input type='hidden' name='width'>"
     html += "<input type='submit', value='View selected bams'><br>"
     for f in bamfiles:
-        html += "<input type='checkbox' name='bamfiles', value=%s><a href='/%s' target='_blank'>%s</a><br>"%(f,f,f)
+        html += "<input type='checkbox' name='bamfiles', value=%s>%s<br>"%(f,f)
     html += "</form>"
     return html
 
@@ -43,12 +64,13 @@ def listbams(methods=['POST','GET']):
 def display_bam(bamfiles):
     if type(bamfiles) != list:
         bamfiles = [bamfiles]
+    width = int(request.args.get("width", 1500))
     region = request.args.get("region","")
     region.replace("%3A",":")
-    return display_bam_region(bamfiles, region)
+    return display_bam_region(bamfiles, region, width)
 
 @app.route('/<string:bamfile>:<string:region>')
-def display_bam_region(bamfiles, region):
+def display_bam_region(bamfiles, region, width):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
         bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
@@ -65,10 +87,11 @@ def display_bam_region(bamfiles, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     SETTINGS["region"] = region
-    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()))
+    numdisplay = int(width/14)
+    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()), numdisplay)
     html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
-    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions)
-    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions)
+    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions, numdisplay)
+    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions, numdisplay)
     html += GetFooter()
     return html
 
@@ -90,5 +113,5 @@ if __name__ == "__main__":
         HOST = args.ip
     if args.buffer is not None:
         NUMCHAR = int(args.buffer)
-        if NUMCHAR < NUMDISPLAY: NUMDISPLAY = NUMCHAR
+    SETTINGS["NUMCHAR"] = NUMCHAR
     app.run(port=PORT, host=HOST)

@@ -7,7 +7,6 @@ function toggleDiv(divname) {
     }
 }
 
-// Functions to scroll through alignment
 function ScrollLeft() {
     // If scrolling left goes out of bounds, do nothing
     if (currentpos == minpos) {
@@ -73,9 +72,41 @@ $(document).keydown(function(e){
     }
 });
 
+// Get the width of the page to know how many bp to display
+function SetPageWidth() {
+    var width = $("#header_wrap").width();
+    var form = document.forms[0];
+    form.elements["width"].value = width;
+    return true;
+}
+
+function UpdateTable() {
+    // Set all table elements to none
+    for (var i = currentpos - NUMCHARS; i < currentpos + NUMCHARS*2; i++) {
+	elems = document.getElementsByClassName(chrom + "_" + i);
+	for (var j = 0; j < elems.length; j++) {
+	    elems[j].style.display = "none";
+	}	
+    }
+    // Set the right ones to visible
+    var form = document.forms[0];
+    for (var i = currentpos; i < currentpos + (form.elements["width"].value/14); i++) {
+	elems = document.getElementsByClassName(chrom + "_" + i);
+	for (var j = 0; j < elems.length; j++) {
+	    elems[j].style.display = "block";
+	}
+    }
+}
+
+$(window).resize(function()
+{
+    SetPageWidth();
+    UpdateTable();
+});
 // Select columns by colgroup
 $(document).ready(function()
 {
+    SetPageWidth();
 $("td, th").hover
     (
      // mouseover
