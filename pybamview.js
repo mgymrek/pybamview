@@ -57,17 +57,17 @@ $(document).keydown(function(e){
 	ScrollRight();
 	return true;
     }
-    // Big scroll right (spacebar)
-    if (e.keyCode == 32) {
+    // Big scroll left (r)
+    if (e.keyCode == 82) {
 	for (var i = 0; i < 10; i++) {
-	    ScrollRight();
+	    ScrollLeft();
 	}
 	return true;
     }
-    // Big scroll left (backspace)
-    if (e.keyCode == 8) {
+    // Big scroll right (a)
+    if (e.keyCode == 65) {
 	for (var i = 0; i < 10; i++) {
-	    ScrollLeft();
+	    ScrollRight();
 	}
 	return true;
     }

@@ -27,7 +27,7 @@ def GetHeader(bamfiles, region, minpos, maxpos, reffile, samples):
     for sample in samples:
         header_html += "<a href='#%s'><font color='white'>%s</font></a> "%(sample, sample)
     header_html += "</div>"
-    header_html += "<div id='param_info'>Keyboard commands: [left],[right] scroll by one, [space],[backspace] scroll by 10</div>"
+    header_html += "<div id='param_info'>Keyboard commands: [left],[right] scroll by one, [a](advance),[r](reverse) scroll by 10</div>"
     header_html += "</div></header>"
     return header_html
 

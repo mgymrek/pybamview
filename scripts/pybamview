@@ -78,6 +78,7 @@ if __name__ == "__main__":
     parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s')
     parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.')
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.')
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.')
     args = parser.parse_args()
     if args.bamdir is not None:
         BAMDIR = args.bamdir
@@ -87,4 +88,7 @@ if __name__ == "__main__":
         PORT = int(args.port)
     if args.ip is not None:
         HOST = args.ip
+    if args.buffer is not None:
+        NUMCHAR = int(args.buffer)
+        if NUMCHAR < NUMDISPLAY: NUMDISPLAY = NUMCHAR
     app.run(port=PORT, host=HOST)
