@@ -9,17 +9,3 @@ ENDCHAR = "-"
 GAPCHAR = "."
 DELCHAR = "*"
 
-NUC_TO_COLOR = {
-    "A": "red",
-    'a': "red",
-    "C": "blue",
-    "c": "blue",
-    "G": "green",
-    "g": "green",
-    "T": "orange",
-    "t": "orange",
-    "-": "white"
-}
-
-
-

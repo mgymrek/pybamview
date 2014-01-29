@@ -6,10 +6,10 @@ import os
 import re
 import sys
 
-PREFIX = "/usr/local/pybamview/" # TODO this should probably not be hardcoded
-app = Flask(__name__, static_folder="%s/"%PREFIX, \
-                static_path="%s/"%PREFIX,\
-                template_folder="%s/templates/"%PREFIX)
+SPREFIX = PREFIX + "/pybamview/" # TODO this should probably not be hardcoded
+app = Flask(__name__, static_folder="%s/"%SPREFIX, \
+                static_path="%s/"%SPREFIX,\
+                template_folder="%s/templates/"%SPREFIX)
 app.debug = True
 
 BAMDIR = "."
