@@ -46,7 +46,9 @@ def listbams(methods=['POST','GET']):
     bamfiles = request.args.getlist("bamfiles")
     if len(bamfiles) > 0:
         return display_bam(bamfiles)
-    files = os.listdir(BAMDIR)
+    try:
+        files = os.listdir(BAMDIR)
+    except OSError: files = []
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
     return render_template("index.html", bamfiles=bamfiles, title="PyBamView - %s"%BAMDIR)
@@ -62,6 +64,9 @@ def display_bam(bamfiles):
 @app.route('/test/<string:bamfiles>')
 def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
+    for bam in bamfiles:
+        if not os.path.exists(BAMDIR + bam):
+            sys.stderr.write("WARNING: bam file %s does not exist.\n"%bam)
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
         bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
         BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
@@ -98,6 +103,16 @@ if __name__ == "__main__":
     if args.ip is not None:
         HOST = args.ip
     if args.buffer is not None:
-        NUMCHAR = int(args.buffer)
+        try:
+            NUMCHAR = int(args.buffer)
+        except:
+            sys.stderr.write("ERROR: invalid argument to --buffer.\n")
+            sys.exit(1)
     SETTINGS["NUMCHAR"] = NUMCHAR
+    if not os.path.exists(REFFILE):
+        REFFILE = "Could not find reference file %s"%REFFILE
+    else:
+        try:
+            x = pyfasta.Fasta(REFFILE)
+        except: REFFILE = "Invalid fasta file %s"%REFFILE
     app.run(port=PORT, host=HOST)

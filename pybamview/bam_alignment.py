@@ -5,6 +5,7 @@ from constants import *
 import pandas as pd
 import pysam
 import pyfasta
+import sys
 
 class AlignmentGrid(object):
     """
@@ -28,7 +29,7 @@ class AlignmentGrid(object):
         Load grid of alingments with buffer around start pos
         """
         # Get reference
-        if self.ref is None:
+        if self.ref is None or self.chrom not in self.ref.keys():
             reference = ["N"]*self.settings["NUMCHAR"]
         else:
             chromlen = len(self.ref[self.chrom])
@@ -199,9 +200,18 @@ class BamView(object):
     """
     def __init__(self, _bamfiles, _reffile):
         self.bamfiles = _bamfiles
-        self.bamreaders = [pysam.Samfile(bam, "rb") for bam in self.bamfiles]
+        self.bamreaders = []
+        for bam in self.bamfiles:
+            try:
+                br = pysam.Samfile(bam, "rb")
+                self.bamreaders.append(br)
+            except:
+                sys.stderr.write("ERROR: could not open %s. Is this a valid bam file?\n"%bam)
         if _reffile != "":
-            self.reference = pyfasta.Fasta(_reffile)
+            try:
+                self.reference = pyfasta.Fasta(_reffile)
+            except:
+                self.reference = None
         else: self.reference = None
         self.alignment_grid = None
         self.read_groups = self.LoadRGDictionary()

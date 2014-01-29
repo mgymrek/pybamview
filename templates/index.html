@@ -11,9 +11,13 @@
     <h1>Indexed bam files in this directory</h1>
     <form>
       <input type='submit', value='View selected bams'><br>
+      {% if bamfiles|length != 0 %}
       {% for f in bamfiles %}
       <input type='checkbox' name='bamfiles', value={{ f }}>{{ f }}<br>
       {% endfor %}
+      {% else %}
+      <h2>No indexed bam files found. Check that this directory exists and that there are indexed bam files present.</h2>
+      {% endif %}
     </form>
     
     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
