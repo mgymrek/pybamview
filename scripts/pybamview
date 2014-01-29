@@ -1,13 +1,15 @@
 #!/usr/local/bin/python
 import argparse
 from pybamview import *
-from flask import Flask, request, send_from_directory, render_file
-from flask import request
-from flask import send_from_directory
+from flask import Flask, request, send_from_directory, render_template, url_for
 import os
 import re
 import sys
-app = Flask(__name__, static_path="/usr/local/pybamview/static")
+
+PREFIX = "/usr/local/pybamview/" # TODO this should probably not be hardcoded
+app = Flask(__name__, static_folder="%s/"%PREFIX, \
+                static_path="%s/"%PREFIX,\
+                template_folder="%s/templates/"%PREFIX)
 app.debug = True
 
 BAMDIR = "."
@@ -17,6 +19,21 @@ NUMCHAR = 500
 HOST = "127.0.0.1"
 BAMFILE_TO_BAMVIEW = {}
 SETTINGS = {}
+
+NUC_TO_COLOR = {
+    "A": "red",
+    'a': "red",
+    "C": "blue",
+    "c": "blue",
+    "G": "green",
+    "g": "green",
+    "T": "orange",
+    "t": "orange",
+    "N": "white",
+    "n": "white",
+    "-": "white",
+    ".": "gray",
+}
 
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
@@ -32,15 +49,7 @@ def listbams(methods=['POST','GET']):
     files = os.listdir(BAMDIR)
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
-    html = "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js\"></script>"
-    html += "<div id='header_wrap'></div>"
-    html += "<h1>Indexed bam files in this directory</h1>"
-    html += "<form>"
-    html += "<input type='submit', value='View selected bams'><br>"
-    for f in bamfiles:
-        html += "<input type='checkbox' name='bamfiles', value=%s>%s<br>"%(f,f)
-    html += "</form>"
-    return html
+    return render_template("index.html", bamfiles=bamfiles, title="PyBamView - %s"%BAMDIR)
 
 @app.route('/<string:bamfiles>', methods=['POST', 'GET'])
 def display_bam(bamfiles):
@@ -50,7 +59,7 @@ def display_bam(bamfiles):
     region.replace("%3A",":")
     return display_bam_region(bamfiles, region)
 
-@app.route('/<string:bamfile>:<string:region>')
+@app.route('/test/<string:bamfiles>')
 def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
@@ -67,26 +76,10 @@ def display_bam_region(bamfiles, region):
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
-    SETTINGS["region"] = region
-    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()))
-    html += "<body>"
-    html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
-    html += "<div class='alntables' id='aln'>"
-    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions)
-    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions)
-    html += "</div>"
-    html += GetFooter()
-    ## JQuery Initialization Code
-    html += """
-<script> 
-$(function() {
-  var w = $("#ref0").outerWidth()+0.5;
-  $("#aln").scrollLeft(w*%s);
- });
-</script>
-"""%(NUMCHAR/2)
-    html += "</body></html>"
-    return html
+    return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=list(set(bv.read_groups.values())),\
+                               REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
+                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')

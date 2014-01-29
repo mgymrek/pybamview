@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel='shortcut icon' href='/favicon.ico'>
+    <link rel="stylesheet" type="test/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+  </head>  
+  <body>
+    <div class='outer' id='header_wrap'>
+      <header class='inner'>
+	<h1 id='display_info'>PyBamView</h1>
+	<div id='param_info'>Bam file: {{ BAM_FILES|join(',' ) }}</div>
+	<div id='param_info'>Reference: {{ REF_FILE }}</div>
+	<div id='param_info'>Region: {{ REGION }}</div>
+	<div id='param_info'>Samples:
+	  {% for sample in SAMPLES %}
+	  <font color="white">{{ sample }}</font>
+	  {% endfor %}
+	</div>
+      </header>
+    </div>
+
+    <div class ='outer' id='toolbar'>
+      <form>
+	{% for f in BAM_FILES %}
+	<input type='hidden' name='bamfiles', value='{{ f }}'>
+	{% endfor %}
+	Enter region: <input type='text' name='region' value='{{ REGION }}'>
+	<input type='submit'>
+	<div id='selected'>Selected: </div>
+      </form>
+    </div>
+    
+    <div class='alntables' id='aln'>
+      <div class='reference' id='reference'>
+	<table>
+	  <tr>
+	    {% for i in range(REFERENCE|length) %}
+	    {% if (REFERENCE[i]) == "N" or (REFERENCE[i]) == "n" %}
+	    <td class="{{ CHROM }}_{{ POSITIONS[i] }}" id="ref{{ i }}" style="background-color:gray;">
+	      <font class="ref"><b>{{ REFERENCE[i] }}</b></font>
+	    </td>
+	    {% else %}
+	    <td class="{{ CHROM }}_{{ POSITIONS[i] }}" id="ref{{ i }}" style="background-color:{{ NUC_TO_COLOR[REFERENCE[i]] }};">
+	      <font class="ref"><b>{{ REFERENCE[i] }}</b></font>
+	    </td>
+	    {% endif %}
+	    {% endfor %}
+	  </tr>
+	</table>
+      </div>
+      
+      <div class='alignments'>
+	{% for sample in SAMPLES %}
+	<a name='{{ sample }}'></a>
+	<div class='sample' onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div><div>how did you find me?</div>
+	<div id="{{ sample }}">
+	  <table>
+	    {% for aln in ALIGNMENTS[sample] %}
+	    <tr>
+	      {% for i in range(aln|length) %}
+	      <td class="{{ CHROM }}_{{ POSITIONS[i] }}">
+		<font class='read' color="{{ NUC_TO_COLOR[aln[i]] }}">{{ aln[i] }}</font>
+	      </td>
+	      {% endfor %}
+	    </tr>
+	    {% endfor %}
+	  </table>
+	</div><br>
+	{% endfor %}
+      </div>
+    </div>
+    
+    <div id='footer_wrap' class='outer'>
+      <footer class='inner'>
+	<div id='footer_info'>This alignment is being viewed with <a href='https://github.com/mgymrek/pybamview' target='_blank'>PyBamView</a>
+	</div>
+      </footer>
+    </div>
+    
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>    
+    <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
+  </body>
+</html>

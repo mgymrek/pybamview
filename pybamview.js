@@ -7,28 +7,12 @@ function toggleDiv(divname) {
     }
 }
 
-function ScrollLeft() {
-    // If scrolling left goes out of bounds, do nothing
-    if (currentpos == minpos) {
-	return;
-    }
-    // Set currentpos - 1 to visible
-    var elemsleft = document.getElementsByClassName(chrom + "_" + (currentpos-1));
-    for (var i = 0; i < elemsleft.length; i++) {
-	elemsleft[i].style.display = "block";
-    }
-    // Set currentpos + NUMCHAR to invisible
-    var elemsright = document.getElementsByClassName(chrom + "_" + (currentpos + NUMCHARS));
-    for (var i = 0; i < elemsright.length; i++) {
-	elemsright[i].style.display = "none";
-    }
-    // set currentpos to currentpos - 1
-    currentpos = currentpos - 1;
-}
-
 // Select columns by colgroup
 $(document).ready(function()
 {
+var w = $("#ref0").outerWidth()+0.5;
+$("#aln").scrollLeft(w*250);
+
 $("td, th").hover
     (
      // mouseover

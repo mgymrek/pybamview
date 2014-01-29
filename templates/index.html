@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  
+  <body>
+    
+    <div id='header_wrap'></div>
+    <h1>Indexed bam files in this directory</h1>
+    <form>
+      <input type='submit', value='View selected bams'><br>
+      {% for f in bamfiles %}
+      <input type='checkbox' name='bamfiles', value={{ f }}>{{ f }}<br>
+      {% endfor %}
+    </form>
+    
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>    
+  </body>
+</html>
