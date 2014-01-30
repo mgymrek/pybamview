@@ -1,0 +1,5 @@
+Shout outs to:
+
+Assaf Gordon for helping out with setting up templates, serving the example on Amazon, and saving me from diving into a Javascript pit of despair
+
+Thomas Willems for trying out the alignment viewer.
