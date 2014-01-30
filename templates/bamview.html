@@ -3,7 +3,7 @@
   <head>
     <title>{{ title }}</title>
     <link rel='shortcut icon' href='/favicon.ico'>
-    <link rel="stylesheet" type="test/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
   </head>  
   <body>
     <div class='outer' id='header_wrap'>
@@ -53,7 +53,7 @@
       <div class='alignments'>
 	{% for sample in SAMPLES %}
 	<a name='{{ sample }}'></a>
-	<div class='sample' onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div><div>how did you find me?</div>
+	<div class='sample' onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div><div>?</div>
 	<div id="{{ sample }}">
 	  <table>
 	    {% for aln in ALIGNMENTS[sample] %}
@@ -77,9 +77,8 @@
 	</div>
       </footer>
     </div>
-    
-    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>    
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
     <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
   </body>
 </html>
