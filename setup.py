@@ -8,7 +8,7 @@ AUTHOR_EMAIL = "mgymrek@mit.edu"
 MAINTAINER = "Melissa Gymrek"
 MAINTAINER_EMAIL = "mgymrek@mit.edu"
 DOWNLOAD_URL = 'http://github.com/mgymrek/pybamview'
-LICENSE = 'BSD'
+LICENSE = 'MIT'
 
 VERSION = '0.0.1'
 
