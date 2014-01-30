@@ -1,3 +1,8 @@
+highlight snps
+deal with other cigar things
+
+
+read tag info
 option to click on read and get read info, also highlight pairs
 load VCF file, when mouse over location show variant call info for each sample in their div elements. star reference locations that have VCF info
 option to click on variant call and get new page with more info about it
