@@ -1,21 +1,39 @@
 #!/usr/local/bin/python
 import argparse
 from pybamview import *
-from flask import Flask
-from flask import request
-from flask import send_from_directory
+from flask import Flask, request, send_from_directory, render_template, url_for
 import os
 import re
 import sys
-app = Flask(__name__, static_path="/usr/local/pybamview/static")
+
+SPREFIX = PREFIX + "/pybamview/" # TODO this should probably not be hardcoded
+app = Flask(__name__, static_folder="%s/"%SPREFIX, \
+                static_path="%s/"%SPREFIX,\
+                template_folder="%s/templates/"%SPREFIX)
 app.debug = True
 
 BAMDIR = "."
 REFFILE = ""
 PORT = 5000
+NUMCHAR = 500
 HOST = "127.0.0.1"
 BAMFILE_TO_BAMVIEW = {}
 SETTINGS = {}
+
+NUC_TO_COLOR = {
+    "A": "red",
+    'a': "red",
+    "C": "blue",
+    "c": "blue",
+    "G": "green",
+    "g": "green",
+    "T": "orange",
+    "t": "orange",
+    "N": "white",
+    "n": "white",
+    "-": "white",
+    ".": "gray",
+}
 
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
@@ -28,16 +46,12 @@ def listbams(methods=['POST','GET']):
     bamfiles = request.args.getlist("bamfiles")
     if len(bamfiles) > 0:
         return display_bam(bamfiles)
-    files = os.listdir(BAMDIR)
+    try:
+        files = os.listdir(BAMDIR)
+    except OSError: files = []
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
-    html = "<h1>Indexed bam files in this directory</h1>"
-    html += "<form>"
-    html += "<input type='submit', value='View selected bams'><br>"
-    for f in bamfiles:
-        html += "<input type='checkbox' name='bamfiles', value=%s><a href='/%s' target='_blank'>%s</a><br>"%(f,f,f)
-    html += "</form>"
-    return html
+    return render_template("index.html", bamfiles=bamfiles, title="PyBamView - %s"%BAMDIR)
 
 @app.route('/<string:bamfiles>', methods=['POST', 'GET'])
 def display_bam(bamfiles):
@@ -47,9 +61,12 @@ def display_bam(bamfiles):
     region.replace("%3A",":")
     return display_bam_region(bamfiles, region)
 
-@app.route('/<string:bamfile>:<string:region>')
+@app.route('/test/<string:bamfiles>')
 def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
+    for bam in bamfiles:
+        if not os.path.exists(BAMDIR + bam):
+            sys.stderr.write("WARNING: bam file %s does not exist.\n"%bam)
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
         bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
         BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
@@ -64,13 +81,10 @@ def display_bam_region(bamfiles, region):
     bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
-    SETTINGS["region"] = region
-    html = GetHeader(bamfiles, region, min(positions), max(positions), REFFILE, set(bv.read_groups.values()))
-    html += GetToolbar(chrom, pos, bamfiles, SETTINGS)
-    html += GetReference(bv.GetReferenceTrack(pos), chrom, pos, positions)
-    html += GetAlignment(bv.GetAlignmentTrack(pos), len(bv.GetReferenceTrack(pos)), chrom, pos, positions)
-    html += GetFooter()
-    return html
+    return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=list(set(bv.read_groups.values())),\
+                               REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
+                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')
@@ -78,6 +92,7 @@ if __name__ == "__main__":
     parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s')
     parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.')
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.')
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.')
     args = parser.parse_args()
     if args.bamdir is not None:
         BAMDIR = args.bamdir
@@ -87,4 +102,17 @@ if __name__ == "__main__":
         PORT = int(args.port)
     if args.ip is not None:
         HOST = args.ip
+    if args.buffer is not None:
+        try:
+            NUMCHAR = int(args.buffer)
+        except:
+            sys.stderr.write("ERROR: invalid argument to --buffer.\n")
+            sys.exit(1)
+    SETTINGS["NUMCHAR"] = NUMCHAR
+    if not os.path.exists(REFFILE):
+        REFFILE = "Could not find reference file %s"%REFFILE
+    else:
+        try:
+            x = pyfasta.Fasta(REFFILE)
+        except: REFFILE = "Invalid fasta file %s"%REFFILE
     app.run(port=PORT, host=HOST)

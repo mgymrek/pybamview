@@ -1,13 +1,3 @@
-select table or list of tables, show which genome position is higlighted
-
-when jump to location, read in +/-Xkb of fasta plus reads to memory so can scroll efficiently
-function to display alignments
-
-
-- Reads
-option to click on read and get read info, also highlight his pair
-
-Organization:
-SIDE: scroll (single bp, chunk, left/right)
-
-easy select all
+option to click on read and get read info, also highlight pairs
+load VCF file, when mouse over location show variant call info for each sample in their div elements. star reference locations that have VCF info
+option to click on variant call and get new page with more info about it
