@@ -26,7 +26,7 @@ pybamview
 	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all "N"'s). Below the reference is a section for each sample contained in the bam files. PyBamView uses the sample specified in the read group of each read to determine how many unique samples are present. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
 	<h1>full usage</h1>
 	To see the usage information for PyBamView, type:
-	{% highlight python %}
+	{% highlight bash %}
 >pybamview --help
 usage: pybamview [-h] [--bamdir BAMDIR] [--ref REF] [--ip IP] [--port PORT]
 
@@ -40,6 +40,9 @@ optional arguments:
   --ip IP          Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
                    have the server available externally.
   --port PORT      The port of the webserver. Defaults to 5000.
+  --buffer BUFFER  How many nucleotides to load into memory. Default: 500.
+                   Buffering more allows you to scroll farther. Buffering less
+                   is faster.
 	{% endhighlight %}
       </section>
     </div>

@@ -1,0 +1,80 @@
+.alignments {
+}
+
+.fixedElement {
+    background-color: white;
+    top: 0px;
+    z-index: 1;
+    width: 100%;
+}
+
+.outer {
+  width: 100%;
+}
+
+.inner {
+  position: relative;
+  padding: 10px 10px;
+  margin: 0;
+}
+
+#header_wrap {
+  background: #212121;
+  background: -moz-linear-gradient(top, #373737, #212121);
+  background: -webkit-linear-gradient(top, #373737, #212121);
+  background: -ms-linear-gradient(top, #373737, #212121);
+  background: -o-linear-gradient(top, #373737, #212121);
+  background: linear-gradient(top, #373737, #212121);
+}
+
+#reference {
+   background: white;
+   position: fixed;
+}
+
+#toolbar {
+  background: #BCB9B9;
+}
+
+#display_info {
+  margin: 0;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+  text-shadow: #111 0px 0px 10px;
+}
+
+#param_info {
+  margin: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-shadow: #111 0px 0px 10px;
+}
+
+#footer_wrap {
+  background: #212121;
+  position: relative;
+  bottom: 0px;
+}
+
+#footer_info {
+  margin: 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: #111 0px 0px 10px;
+}
+
+.ref {
+    color: white;
+    font-family: Courier;
+}
+
+.read {
+    font-family: Courier;
+}
+
+.hover { background-color: pink; }
+
+.scroll:hover { background-color: pink; }
