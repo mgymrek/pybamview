@@ -31,7 +31,7 @@ import os
 import re
 import sys
 
-SPREFIX = pybamview.sys.prefix + "/pybamview/"
+SPREFIX = pybamview.__path__[0].split("/lib/")[0] + "/pybamview/"
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder="%s/templates/"%SPREFIX)
