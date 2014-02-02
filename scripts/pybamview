@@ -24,13 +24,14 @@ THE SOFTWARE.
 """
 
 import argparse
-from pybamview import *
+import pybamview
+import pyfasta
 from flask import Flask, request, send_from_directory, render_template, url_for
 import os
 import re
 import sys
 
-SPREFIX = PREFIX + "/pybamview/" # TODO this should probably not be hardcoded
+SPREFIX = pybamview.sys.prefix + "/pybamview/"
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder="%s/templates/"%SPREFIX)
@@ -62,7 +63,7 @@ NUC_TO_COLOR = {
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory('/usr/local/pybamview/static/',
+    return send_from_directory('/%s/static/'%SPREFIX,
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")
@@ -92,7 +93,7 @@ def display_bam_region(bamfiles, region):
         if not os.path.exists(BAMDIR + bam):
             sys.stderr.write("WARNING: bam file %s does not exist.\n"%bam)
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
-        bv = BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
+        bv = pybamview.BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
         BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
     else: bv = BAMFILE_TO_BAMVIEW[";".join(bamfiles)]
     try:
@@ -137,6 +138,6 @@ if __name__ == "__main__":
         REFFILE = "Could not find reference file %s"%REFFILE
     else:
         try:
-            x = pyfasta.Fasta(REFFILE)
+            x = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
         except: REFFILE = "Invalid fasta file %s"%REFFILE
     app.run(port=PORT, host=HOST)
