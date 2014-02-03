@@ -59,7 +59,11 @@
 	    {% for aln in ALIGNMENTS[sample] %}
 	    <tr>
 	      {% for i in range(aln|length) %}
-	      <td class="{{ CHROM }}_{{ POSITIONS[i] }}">
+	      {% if (aln[i]|upper) != (REFERENCE[i]|upper) and (REFERENCE[i]|upper|isnuc) and (aln[i]|upper|isnuc) %}
+	      <td class="{{ CHROM }}_{{ POSITIONS[i] }}" style="background-color:yellow;">
+		{% else %}
+		<td class="{{ CHROM }}_{{ POSITIONS[i] }}">
+		{% endif %}
 		<font class='read' color="{{ NUC_TO_COLOR[aln[i]] }}">{{ aln[i] }}</font>
 	      </td>
 	      {% endfor %}

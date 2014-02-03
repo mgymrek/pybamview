@@ -60,6 +60,9 @@ NUC_TO_COLOR = {
     ".": "gray",
 }
 
+def isnuc(x):
+    return str(x).upper() in ["A","C","G","T"]
+
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
 def favicon():
@@ -140,4 +143,5 @@ if __name__ == "__main__":
         try:
             x = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
         except: REFFILE = "Invalid fasta file %s"%REFFILE
+    app.jinja_env.filters.update({'isnuc': isnuc})
     app.run(port=PORT, host=HOST)
