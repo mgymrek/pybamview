@@ -28,13 +28,15 @@ import pybamview
 import pyfasta
 from flask import Flask, request, send_from_directory, render_template, url_for
 import os
+from os.path import join
 import re
 import sys
 
-SPREFIX = pybamview.__path__[0].split("/lib/")[0] + "/pybamview/"
+SPREFIX = join(pybamview.__path__[0].split("/lib/")[0],
+               "pybamview")
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
-                template_folder="%s/templates/"%SPREFIX)
+                template_folder=join(SPREFIX, "templates"))
 app.debug = True
 
 BAMDIR = "."
@@ -66,7 +68,7 @@ def isnuc(x):
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory('/%s/static/'%SPREFIX,
+    return send_from_directory(join(SPREFIX, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")
@@ -93,10 +95,10 @@ def display_bam(bamfiles):
 def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     for bam in bamfiles:
-        if not os.path.exists(BAMDIR + bam):
-            sys.stderr.write("WARNING: bam file %s does not exist.\n"%bam)
+        if not os.path.exists(join(BAMDIR,bam)):
+            sys.stderr.write("WARNING: bam file %s does not exist.\n"%join(BAMDIR, bam))
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
-        bv = pybamview.BamView(["%s/%s"%(BAMDIR, bam) for bam in bamfiles], REFFILE)
+        bv = pybamview.BamView([join(BAMDIR, bam) for bam in bamfiles], REFFILE)
         BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
     else: bv = BAMFILE_TO_BAMVIEW[";".join(bamfiles)]
     try:
