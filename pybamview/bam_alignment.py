@@ -22,11 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from constants import *
+import sys
+
 import pandas as pd
 import pysam
 import pyfasta
-import sys
+
+from .constants import ENDCHAR
+from .constants import GAPCHAR
+from .constants import DELCHAR
+
 
 class AlignmentGrid(object):
     """
