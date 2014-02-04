@@ -112,7 +112,7 @@ def display_bam_region(bamfiles, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=list(set(bv.read_groups.values())),\
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=bv.samples(),\
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom)
 

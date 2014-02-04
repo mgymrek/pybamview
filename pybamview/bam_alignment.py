@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from itertools import chain
 import sys
 
 import pandas as pd
@@ -46,7 +47,8 @@ class AlignmentGrid(object):
         self.settings = _settings
         self.pos = self.startpos-int(self.settings["NUMCHAR"]*0.5)
         if self.pos < 0: self.pos = 0
-        self.samples = set(self.read_groups.values())
+        self.samples = set(
+            chain.from_iterable(rg.itervalues() for rg in _read_groups))
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.LoadGrid()
 
@@ -69,13 +71,14 @@ class AlignmentGrid(object):
         # Get reads
         region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+self.settings["NUMCHAR"])))
         aligned_reads = []
-        for br in self.bamreaders:
+        for bi, br in enumerate(self.bamreaders):
             try:
-                aligned_reads.extend(list(br.fetch(region=region)))
+                aligned_reads.extend((bi, read) for read in
+                                     br.fetch(region=region))
             except: pass
         readindex = 0
         read_properties = []
-        for read in aligned_reads:
+        for bamindex, read in aligned_reads:
             # get reference position
             position = read.pos
             # get nucleotides
@@ -85,7 +88,8 @@ class AlignmentGrid(object):
             # get strand
             strand = not read.is_reverse
             # get sample
-            rg = self.read_groups.get(dict(read.tags).get("RG",""),"")
+            rg = self.read_groups[bamindex].get(
+                dict(read.tags).get("RG",""),"")
             read_properties.append({"pos": position,"sample":rg})
             # get representation
             rep = []
@@ -242,15 +246,14 @@ class BamView(object):
         self.alignment_grid = None
         self.read_groups = self.LoadRGDictionary()
 
+    def samples(self):
+        return set(
+            chain.from_iterable(rg.itervalues() for rg in self.read_groups))
+
     def LoadRGDictionary(self):
-        read_groups = {}
-        for br in self.bamreaders:
-            h = br.header.get("RG",[])
-            for r in h:
-                try:
-                    read_groups[r["ID"]] = r["SM"]
-                except: read_groups[r["ID"]] = r["ID"]
-        return read_groups
+        return [
+            {r["ID"]: r.get("SM", r["ID"]) for r in br.header.get("RG", [])}
+            for br in self.bamreaders]
 
     def GetPositions(self, start_pos):
         """
