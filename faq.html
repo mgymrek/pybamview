@@ -1,0 +1,32 @@
+---
+---
+<!DOCTYPE html>
+<html>
+{% include header.html %}
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>PyBamView</h1>
+        <h2>Browser based application for viewing bam alignments</h2>
+    {% include menu.html %}<br>
+      </div>
+    </header>
+    <div class="container">
+      <section id="main_content">
+        <h1>
+	  <a name="pybamview" class="anchor" href="#pybamview"><span class="octicon octicon-link"></span></a>faq</h1>
+
+	<h2>Bam files</h2>
+	<ul>
+	  <li><strong>How does PyBamView determine which samples are present in BAM files?</strong>
+	    <p>
+	      PyBamView uses read groups to determine which samples to display. Any read group with the same sample (SM) field will be treated as coming from the same sample, even if reads for that sample span multiple bam files. <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files">This page on the GATK website</a> answers general FAQ about formatting BAM files.
+	  </li>
+	</ul>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
