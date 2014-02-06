@@ -191,8 +191,12 @@ class AlignmentGrid(object):
         for col in alncols:
             track = grid.ix[:,col].values
             x = [i for i in range(len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
-            start = min(x)
-            end = max(x)
+            if len(x) == 0:
+                start = 0
+                end = 0
+            else:
+                start = min(x)
+                end = max(x)
             if start > min([item["end"] for item in col_to_ends.values()]):
                 mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
                 mincol.sort()
