@@ -29,10 +29,48 @@ import pandas as pd
 import pysam
 import pyfasta
 
-from .constants import ENDCHAR
-from .constants import GAPCHAR
-from .constants import DELCHAR
+from .constants import ENDCHAR, GAPCHAR, DELCHAR
+from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
+    BAM_CSOFT_CLIP, BAM_CHARD_CLIP, BAM_CPAD, BAM_CEQUAL, BAM_CDIFF
 
+def ParseCigar(cigar, nucs):
+    """
+    Return list of strings, each item corresponding to a single reference position
+    """
+    rep = []
+    currentpos = 0
+    wasinsert = False
+    for c in cigar:
+        if c[0] in [BAM_CMATCH, BAM_CEQUAL, BAM_CDIFF]: # match (M, X, =)
+            for i in range(c[1]):
+                if wasinsert:
+                    rep[-1] = rep[-1] + nucs[currentpos]
+                else: rep.append(nucs[currentpos])
+                wasinsert = False
+                currentpos += 1
+        elif c[0] == BAM_CINS: # put insertion in next base position (I)
+            if wasinsert:
+                rep[-1] = rep[-1] + nucs[currentpos:currentpos+c[1]]
+            else:
+                rep.append(nucs[currentpos:currentpos+c[1]])
+            currentpos = currentpos+c[1]
+            wasinsert = True
+        elif c[0] in [BAM_CDEL, BAM_CREF_SKIP]: # deletion (D) or skipped region from the reference (N)
+            for i in range(c[1]):
+                if wasinsert:
+                    rep[-1] = rep[-1] + DELCHAR
+                else: rep.append(DELCHAR)
+                wasinsert = False
+        elif c[0] in [BAM_CSOFT_CLIP, BAM_CHARD_CLIP]: # hard clipping or soft clipping
+            pass # do nothing
+        elif c[0] == 6: # padding (silent deletion from padded reference) (P)
+            if wasinsert:
+                rep[-1] = rep[-1] + DELCHAR*c[1]
+            else: rep.append(DELCHAR*c[1])
+            wasinsert = True
+        else:
+            sys.stderr.write("ERROR: Invalid CIGAR operation (%s) in read %s \n"%(c[0], read.qname))
+    return rep
 
 class AlignmentGrid(object):
     """
@@ -92,28 +130,7 @@ class AlignmentGrid(object):
                 dict(read.tags).get("RG",""),"")
             read_properties.append({"pos": position,"sample":rg})
             # get representation
-            rep = []
-            currentpos = 0
-            wasinsert = False
-            for c in cigar:
-                if c[0] == 0: # match
-                    for i in range(c[1]):
-                        if wasinsert:
-                            rep[-1] = rep[-1] + nucs[currentpos]
-                        else: rep.append(nucs[currentpos])
-                        wasinsert = False
-                        currentpos += 1
-                    wasinsert = False
-                elif c[0] == 1: # put insertion in next base position
-                    rep.append(nucs[currentpos:currentpos+c[1]])
-                    currentpos = currentpos+c[1]
-                    wasinsert = True
-                elif c[0] == 2: # deletion
-                    for i in range(c[1]):
-                        if wasinsert:
-                            rep[-1] = rep[-1] + DELCHAR
-                        else: rep.append(DELCHAR)
-                        wasinsert = False
+            rep = ParseCigar(cigar, nucs)
             # Fix boundaries
             if position < self.pos:
                 rep = rep[self.pos-position:]

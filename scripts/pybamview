@@ -32,8 +32,7 @@ from os.path import join
 import re
 import sys
 
-SPREFIX = join(pybamview.__path__[0].split("/lib/")[0],
-               "pybamview")
+SPREFIX = os.path.abspath(os.path.dirname(pybamview.__file__))
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))

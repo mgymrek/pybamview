@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 DESCRIPTION = "Python based BAM alignment viewer"
 LONG_DESCRIPTION = DESCRIPTION
@@ -29,5 +29,6 @@ setup(name=NAME,
                   ('pybamview/static', ['favicon.ico']),
                   ('pybamview/templates', ['templates/index.html', 'templates/bamview.html'])],
       scripts=['scripts/pybamview'],
+      test_suite='pybamview.tests',
       requires=['argparse','flask','pandas','pyfasta','pysam'],
      )
