@@ -53,23 +53,27 @@ class TestCigarParsing(unittest.TestCase):
     def testP(self):
         cigar = [(BAM_CMATCH, 4), (BAM_CPAD, 1), (BAM_CINS, 1), (BAM_CMATCH, 9)]
         nucs = "ATCAAGACCGATAC"
-        self.assertEqual(["A","T","C","A","*AG","A","C","C","G","A","T","A","C"], ParseCigar(cigar, nucs))
+        self.assertEqual(["A","T","C","A",DELCHAR+"AG","A","C","C","G","A","T","A","C"], ParseCigar(cigar, nucs))
 
         cigar = [(BAM_CMATCH, 4), (BAM_CINS, 1), (BAM_CPAD, 1), (BAM_CMATCH, 9)]
         nucs = "ATCAAGACCGATAC"
-        self.assertEqual(["A","T","C","A","A*G","A","C","C","G","A","T","A","C"], ParseCigar(cigar, nucs))
+        self.assertEqual(["A","T","C","A","A"+DELCHAR+"G","A","C","C","G","A","T","A","C"], ParseCigar(cigar, nucs))
 
         cigar = [(BAM_CMATCH, 4), (BAM_CINS, 2), (BAM_CPAD, 2), (BAM_CINS, 2), (BAM_CMATCH, 3)]
         nucs = "ATCAGGAGAGT"
-        self.assertEqual(["A","T","C","A","GG**AGA","G","T"], ParseCigar(cigar, nucs))
+        self.assertEqual(["A","T","C","A","GG"+DELCHAR*2+"AGA","G","T"], ParseCigar(cigar, nucs))
 
         cigar = [(BAM_CMATCH, 4), (BAM_CPAD, 2), (BAM_CINS, 2), (BAM_CPAD, 2), (BAM_CMATCH, 3)]
         nucs = "ATCAGGAGC"
-        self.assertEqual(["A","T","C","A","**GG**A","G","C"], ParseCigar(cigar, nucs))
+        self.assertEqual(["A","T","C","A",DELCHAR*2 + "GG" + DELCHAR*2 + "A","G","C"], ParseCigar(cigar, nucs))
 
         cigar = [(BAM_CMATCH, 5), (BAM_CPAD, 2), (BAM_CMATCH, 5)]
         nucs = "GATCAGACCG"
-        self.assertEqual(["G","A","T","C","A","**G","A","C","C","G"], ParseCigar(cigar, nucs))
+        self.assertEqual(["G","A","T","C","A",DELCHAR*2 + "G","A","C","C","G"], ParseCigar(cigar, nucs))
+
+        cigar = [(BAM_CMATCH, 2), (BAM_CPAD, 2), (BAM_CDEL, 2)]
+        nucs = "GA"
+        self.assertEqual(["G","A",DELCHAR*3,DELCHAR], ParseCigar(cigar, nucs))
 
     def testN(self):
         cigar = [(BAM_CMATCH, 2), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 2)]
@@ -79,7 +83,7 @@ class TestCigarParsing(unittest.TestCase):
     def testComplicatedCigars(self):
         cigar = [(BAM_CMATCH, 5), (BAM_CINS, 2), (BAM_CDEL, 2), (BAM_CMATCH, 2), (BAM_CDEL, 2), (BAM_CINS, 2), (BAM_CMATCH, 3)]
         nucs = "ACGTGAAGGAAGTC"
-        self.assertEqual(["A","C","G","T","G","AA*","*","G","G","*","*","AAG","T","C"], ParseCigar(cigar,nucs))
+        self.assertEqual(["A","C","G","T","G","AA"+DELCHAR,DELCHAR,"G","G",DELCHAR,DELCHAR,"AAG","T","C"], ParseCigar(cigar,nucs))
 
 if __name__ == '__main__':
     unittest.main()
