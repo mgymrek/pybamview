@@ -29,10 +29,11 @@ import pyfasta
 from flask import Flask, request, send_from_directory, render_template, url_for
 import os
 from os.path import join
+import pkg_resources
 import re
 import sys
 
-SPREFIX = os.path.abspath(os.path.dirname(pybamview.__file__))
+SPREFIX = pkg_resources.resource_filename("pybamview","")
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))
