@@ -130,6 +130,9 @@ class AlignmentGrid(object):
                 dict(read.tags).get("RG",""),"")
             read_properties.append({"pos": position,"sample":rg})
             # get representation
+            if cigar is None:
+                sys.stderr.write("WARNING: read %s has no CIGAR string. It will not be displayed.\n"%read.qname)
+                continue
             rep = ParseCigar(cigar, nucs)
             # Fix boundaries
             if position < self.pos:
