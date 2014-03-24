@@ -40,11 +40,13 @@ app = Flask(__name__, static_folder="%s/"%SPREFIX, \
 app.debug = True
 
 BAMDIR = "."
-REFFILE = ""
+REFFILE = None
+TARGETFILE = None
 PORT = 5000
 NUMCHAR = 500
 HOST = "127.0.0.1"
 BAMFILE_TO_BAMVIEW = {}
+TARGET_LIST = []
 SETTINGS = {}
 
 NUC_TO_COLOR = {
@@ -62,8 +64,43 @@ NUC_TO_COLOR = {
     ".": "gray",
 }
 
+PROGRESS = 0
+WARNING = 1
+ERROR = 2
+
+def MESSAGE(msg, msgtype=PROGRESS):
+    if msgtype == PROGRESS:
+        msg = "[PROGRESS]: " + msg
+        sys.stderr.write(msg.strip() + "\n")
+    elif msgtype == WARNING:
+        msg = "[WARNING]: " + msg
+        sys.stderr.write(msg.strip() + "\n")
+    elif msgtype == ERROR:
+        msg = "[ERROR]: " + msg
+        sys.stderr.write(msg.strip() + "\n")
+        sys.exit(1)
+    else: sys.stderr.write(msg.strip())
+    
+
 def isnuc(x):
     return str(x).upper() in ["A","C","G","T"]
+
+def ParseTargets(targetfile):
+    """ Return list of targets, each is dict with region and name """
+    x = []
+    with open(targetfile, "r") as f:
+        for line in f:
+            items = line.strip().split("\t")
+            if len(items) != 4:
+                MESSAGE("invalid target file. should have 4 columns", ERROR)
+            chrom, start, end, name = items
+            region = "%s:%s"%(chrom, start)
+            x.append({"name": name, "region": region})
+        line = f.readline()
+    f = open(targetfile, "r")
+    line = f.readline()
+    f.close()
+    return x
 
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
@@ -96,7 +133,7 @@ def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     for bam in bamfiles:
         if not os.path.exists(join(BAMDIR,bam)):
-            sys.stderr.write("WARNING: bam file %s does not exist.\n"%join(BAMDIR, bam))
+            MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
     if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
         bv = pybamview.BamView([join(BAMDIR, bam) for bam in bamfiles], REFFILE)
         BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
@@ -114,36 +151,44 @@ def display_bam_region(bamfiles, region):
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
                                REF_FILE=REFFILE, REGION=region, SAMPLES=bv.samples(),\
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
-                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom)
+                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')
-    parser.add_argument('--bamdir', help='Directory to look for bam files. Bam files must be indexed.')
-    parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s')
-    parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.')
-    parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.')
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.')
+    parser.add_argument('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type=str, required=True)
+    parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s', type=str)
+    parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str)
+    parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str)
+    parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int)
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', type=int)
     args = parser.parse_args()
-    if args.bamdir is not None:
-        BAMDIR = args.bamdir
-    if args.ref is not None:
-        REFFILE = args.ref
-    if args.port is not None:
-        PORT = int(args.port)
-    if args.ip is not None:
-        HOST = args.ip
-    if args.buffer is not None:
-        try:
-            NUMCHAR = int(args.buffer)
-        except:
-            sys.stderr.write("ERROR: invalid argument to --buffer.\n")
-            sys.exit(1)
+    # Get args
+    BAMDIR = args.bamdir
+    REFFILE = args.ref
+    TARGETFILE = args.targets
+    if args.port is not None: PORT = args.port
+    if args.ip is not None: HOST = args.ip
+    if args.buffer is not None: NUMCHAR = args.buffer
     SETTINGS["NUMCHAR"] = NUMCHAR
-    if not os.path.exists(REFFILE):
+    # Load reference
+    if REFFILE is None:
+        REFFILE = "No reference loaded"
+    elif not os.path.exists(REFFILE):
+        MESSAGE("Could not find reference file %s"%REFFILE, WARNING)
         REFFILE = "Could not find reference file %s"%REFFILE
     else:
         try:
             x = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
-        except: REFFILE = "Invalid fasta file %s"%REFFILE
+        except:
+            MESSAGE("Invalid reference fasta file %s"%REFFILE, WARNING)
+            REFFILE = "Invalid fasta file %s"%REFFILE
+    # Parse targets
+    if TARGETFILE is not None:
+        if not os.path.exists(TARGETFILE):
+            MESSAGE("Target file %s does not exist"%TARGETFILE, WARNING)
+            TARGETFILE = None
+        else:
+            TARGET_LIST = ParseTargets(TARGETFILE)
+    # Start app
     app.jinja_env.filters.update({'isnuc': isnuc})
     app.run(port=PORT, host=HOST)

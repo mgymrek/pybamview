@@ -21,6 +21,24 @@
     </div>
 
     <div class ='outer' id='toolbar'>
+      {% if TARGET_LIST|length > 0 %}
+      <form>
+	{% for f in BAM_FILES %}
+	<input type='hidden' name='bamfiles', value='{{ f }}'>
+	{% endfor %}
+	Select target:
+	<select name='region'>
+	  {% for target in TARGET_LIST %}
+	  {% if REGION == target.region %}
+	  <option value='{{ target.region }}' selected>{{ target.name }}</option>
+	  {% else %}
+	  <option value='{{ target.region }}'>{{ target.name }}</option>
+	  {% endif %}
+	  {% endfor %}
+	</select>
+	<input type='submit'>	
+      </form>
+      {% endif %}
       <form>
 	{% for f in BAM_FILES %}
 	<input type='hidden' name='bamfiles', value='{{ f }}'>
