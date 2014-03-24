@@ -19,11 +19,13 @@
 	{% highlight python %}
 pybamview
 	{% endhighlight %}
-	This will by default give you a localhost URL for port 5000. Navigate to 127.0.0.1:4000 in your web browser.
+	This will by default give you a localhost URL for port 5000. Navigate to 127.0.0.1:5000 in your web browser.
 	<p>
 	PyBamView will look for any indexed bams in that directory and display them as a checklist. If no files are showing up, make sure you have indexed your bam files. Select which files you would like to view and click "View selected bams".
 	<p>
 	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all "N"'s). Below the reference is a section for each sample contained in the bam files. PyBamView uses the sample specified in the read group of each read to determine how many unique samples are present. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
+	<p>
+	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest. The example command below shows an example of this.
 	<h1>full usage</h1>
 	To see the usage information for PyBamView, type:
 	{% highlight bash %}
@@ -39,11 +41,19 @@ optional arguments:
                    reference track is displayed as "N"'s
   --ip IP          Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
                    have the server available externally.
+  --targets TARGETS  Bed file with tab-delimited columns chrom, start, end, and name. Allows you to
+                     easily jump to these targets. See examples/example_targets.bed for an example.
   --port PORT      The port of the webserver. Defaults to 5000.
   --buffer BUFFER  How many nucleotides to load into memory. Default: 500.
                    Buffering more allows you to scroll farther. Buffering less
                    is faster.
 	{% endhighlight %}
+	<h1>example command</h1>
+	Here's an example command using example files from the download. The example targets file gives the location of a set of CODIS and Y-STR markers.
+	{% highlight bash %}
+	pybamview --bamdir examples/example.sorted.bam --targets examples/example_targets.bed
+	{% endhighlight %}
+	Go to 127.0.0.1:5000, select example.sorted.bam, and try navigating to different markers from the dropdown box or to different genomic locations.
       </section>
     </div>
     
