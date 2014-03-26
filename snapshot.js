@@ -1,5 +1,9 @@
 // Functions to draw snapshot
 
+function IsNuc(x) {
+    return (x=="A" || x=="C" || x=="G" || x=="T");
+}
+
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex) {
     // Reset
     document.getElementById("snapshot").innerHTML = "";
@@ -46,7 +50,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	.attr("width", gridWidth)
 	.attr("height", gridHeight)
 	.style("fill", function(d) {return colors[d];})
-	.style("stroke", function(d) {return colors[d];});
+	.style("stroke", "white");
     RefTrack.append("text")
 	.attr("x", function(d, i) {return i*gridWidth+gridWidth/2; })
 	.attr("y", gridHeight/2)
@@ -78,6 +82,14 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    var SampleTrack = svg.selectAll("gsamp_"+samples[i])
 		.data(readdata)
 		.enter().append("g");
+	    SampleTrack.append("rect")
+		.attr("x", function(d, pos) { return pos*gridWidth; })
+		.attr("y", currentHeight)
+		.attr("width", gridWidth)
+		.attr("height", gridHeight)
+		.style("fill", function(d, pos) {return (d.toUpperCase()!=refdata[pos].toUpperCase() &&
+							 IsNuc(refdata[pos].toUpperCase()) && 
+							 IsNuc(d.toUpperCase()))?"yellow":"white";});
 	    SampleTrack.append("text")
 		.text(function(d) {return d;})
 		.attr("x", function(d, pos) {return pos*gridWidth+gridWidth/2;})
