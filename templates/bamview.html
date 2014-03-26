@@ -21,6 +21,16 @@
     </div>
 
     <div class ='outer' id='toolbar'>
+      <form action="snapshot" target="_blank" method="post">
+	{% for s in SAMPLES %}
+	<input type='hidden' name='samples' value='{{ s }}'>
+	<input type='hidden' name='alignment_{{ s }}', value='{{ ALIGNMENTS[s]|join(";") }}'>
+	{% endfor %}
+	<input type='hidden' name='region' value='{{ REGION }}'>
+	<input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
+	<input type='hidden' name='reference' value='{{ REFERENCE }}'>
+	<input type='submit' value="Export snapshot">
+      </form>
       {% if TARGET_LIST|length > 0 %}
       <form>
 	{% for f in BAM_FILES %}
