@@ -58,8 +58,8 @@ NUC_TO_COLOR = {
     "g": "green",
     "T": "orange",
     "t": "orange",
-    "N": "white",
-    "n": "white",
+    "N": "gray",
+    "n": "gray",
     "-": "white",
     ".": "gray",
 }
@@ -163,7 +163,7 @@ def snapshot():
     startpos = request.form["startpos"]
     reference = request.form["reference"]
     chrom, start = region.split(":")
-    region = "%s-%s"%(int(start)-5, int(start)+105)
+    region = "%s-%s"%(max(int(start)-5,0), int(start)+105)
     return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, \
                                CHROM=chrom, REGION=region, MINSTART=int(start)-NUMCHAR/2, MAXEND=int(start)+NUMCHAR/2,\
                                REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
