@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel='shortcut icon' href='/favicon.ico'>
+    <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <script>
+      var reference_track = "{{ REFERENCE_TRACK }}";
+      var samples = "{{ SAMPLES|join(",") }}".split(",");
+      var startpos = {{ STARTPOS }};
+      var chrom = "{{ CHROM }}";
+      var minstart = {{ MINSTART }};
+      var maxend = {{ MAXEND }};
+      var alignBySample = {
+      {% for s in SAMPLES %}
+      "{{ s }}": "{{ ALIGN_BY_SAMPLE[s] }}",
+      {% endfor %}
+      };
+    </script>
+  </head>  
+  <body>
+    <b>Edit output</b><br>
+    <form name="snapform">
+      Include samples:
+      {% for sample in SAMPLES %}
+      <input type="checkbox" name="sample" value={{ sample }} checked>{{ sample }}
+      {% endfor %}
+      <br>
+      Region (within {{ CHROM }}:{{ MINSTART }}-{{ MAXEND }})<br>
+      {{ CHROM }}:<input type="text", name="region", value='{{ REGION }}'>
+      <br>
+      <input type="button", id="draw", value="Regenerate snapshot">
+    </form>
+    <form id="exportform" action="export" method="post">
+      <input type="hidden" id="data" name="data" value="">
+      <input type="hidden" id="filename" name="filename" value="">
+      <input type="submit" id="export" value="Download SVG">
+    </form>
+    <div id="snapshot">
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
+    <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='javascript/snapshot.js') }}"></script>
+  </body>
+</html>

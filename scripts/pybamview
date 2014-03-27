@@ -26,7 +26,7 @@ THE SOFTWARE.
 import argparse
 import pybamview
 import pyfasta
-from flask import Flask, request, send_from_directory, render_template, url_for
+from flask import Flask, request, send_from_directory, render_template, url_for, Response
 import os
 from os.path import join
 import pkg_resources
@@ -128,7 +128,6 @@ def display_bam(bamfiles):
     region.replace("%3A",":")
     return display_bam_region(bamfiles, region)
 
-@app.route('/test/<string:bamfiles>')
 def display_bam_region(bamfiles, region):
     if type(bamfiles) != list: bamfiles = [bamfiles]
     for bam in bamfiles:
@@ -152,6 +151,30 @@ def display_bam_region(bamfiles, region):
                                REF_FILE=REFFILE, REGION=region, SAMPLES=bv.samples(),\
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
+
+@app.route('/snapshot', methods=['POST', 'GET'])
+def snapshot():
+    samples = request.form.getlist("samples")
+    alignments_by_sample = {}
+    for s in samples:
+        alignments_by_sample[s] = request.form["alignment_%s"%s]
+    region = request.form["region"]
+    region.replace("%3A",":")
+    startpos = request.form["startpos"]
+    reference = request.form["reference"]
+    chrom, start = region.split(":")
+    region = "%s-%s"%(int(start)-5, int(start)+105)
+    return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, \
+                               CHROM=chrom, REGION=region, MINSTART=int(start)-NUMCHAR/2, MAXEND=int(start)+NUMCHAR/2,\
+                               REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
+
+@app.route('/export', methods=["POST"])
+def export():
+    svg_xml = request.form.get("data", "Invalid data")
+    filename = request.form.get("filename", "pybamview_snapshot.svg")
+    response = Response(svg_xml, mimetype="image/svg+xml")
+    response.headers["Content-Disposition"] = "attachment; filename=%s"%filename
+    return response
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')
