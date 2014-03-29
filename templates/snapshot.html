@@ -21,11 +21,13 @@
   <body>
     <b>Edit output</b><br>
     <form name="snapform">
+      {% if SAMPLES|length > 1 %}
       Include samples:
       {% for sample in SAMPLES %}
       <input type="checkbox" name="sample" value={{ sample }} checked>{{ sample }}
       {% endfor %}
       <br>
+      {% endif %}
       Region (within {{ CHROM }}:{{ MINSTART }}-{{ MAXEND }})<br>
       {{ CHROM }}:<input type="text", name="region", value='{{ REGION }}'>
       <br>

@@ -137,10 +137,14 @@ $(document).ready(function()
 		 alert("Invalid end position");
 		 return;
 	     }
-	     for (var i = 0; i < document.forms["snapform"]["sample"].length; i++) {
-		 if (document.forms["snapform"]["sample"][i].checked) {
-		     samples_subset = samples_subset.concat(document.forms["snapform"]["sample"][i].value);
+	     if (samples.length > 1) {
+		 for (var i = 0; i < document.forms["snapform"]["sample"].length; i++) {
+		     if (document.forms["snapform"]["sample"][i].checked) {
+			 samples_subset = samples_subset.concat(document.forms["snapform"]["sample"][i].value);
+		     }
 		 }
+	     } else {
+		 samples_subset = samples;
 	     }
 	     fromindex=frompos-startpos;
 	     toindex=topos-startpos;
