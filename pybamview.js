@@ -7,6 +7,14 @@ function toggleDiv(divname) {
     }
 }
 
+// Scroll the sample div
+var leftOffset = parseInt($("#sample").css('left')); //Grab the left position left first
+$(window).scroll(function(){
+	$('#sample').css({
+	     'left': $(this).scrollLeft() + leftOffset //Use it later
+    });
+});
+
 // Select columns by colgroup
 $(document).ready(function()
 {
