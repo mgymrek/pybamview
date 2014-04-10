@@ -34,7 +34,7 @@ import re
 import sys
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
-print SPREFIX
+
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))
