@@ -34,6 +34,7 @@ import re
 import sys
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
+print SPREFIX
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))
@@ -109,27 +110,38 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")
-def listbams(methods=['POST','GET']):
+def listsamples(methods=['POST','GET']):
     bamfiles = request.args.getlist("bamfiles")
-    if len(bamfiles) > 0:
-        return display_bam(bamfiles)
+    samples = request.args.getlist("samples")
+    if len(bamfiles) > 0 and len(samples) > 0:
+        return display_bam(samples)
     try:
         files = os.listdir(BAMDIR)
     except OSError: files = []
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
-    return render_template("index.html", bamfiles=bamfiles, title="PyBamView - %s"%BAMDIR)
+    samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(BAMDIR, b) for b in bamfiles])
+    return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
-@app.route('/<string:bamfiles>', methods=['POST', 'GET'])
-def display_bam(bamfiles):
-    if type(bamfiles) != list:
-        bamfiles = [bamfiles]
-    region = request.args.get("region","")
+@app.route('/bamview', methods=['POST', 'GET'])
+def display_bam():
+    samplebams = request.args.getlist("samplebams")
+    if len(samplebams) == 0:
+        samples_toinclude = list(set(request.args.getlist("samples")))
+        bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
+    else:
+        samples_toinclude = []
+        bamfiles_toinclude = []
+        for s in samplebams:
+            s.replace("%3A",":")
+            s.replace("%2","/")
+            samples_toinclude.append(s.split(":")[0])
+            bamfiles_toinclude.extend(s.split(":")[1:])
+    region = request.args.get("region","None:0")
     region.replace("%3A",":")
-    return display_bam_region(bamfiles, region)
+    return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region)
 
-def display_bam_region(bamfiles, region):
-    if type(bamfiles) != list: bamfiles = [bamfiles]
+def display_bam_region(bamfiles, samples, region):
     for bam in bamfiles:
         if not os.path.exists(join(BAMDIR,bam)):
             MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
@@ -144,11 +156,11 @@ def display_bam_region(bamfiles, region):
         try:
             chrom, pos = sorted(bv.reference.keys())[0], 0
         except: chrom, pos = "None", 0
-    bv.LoadAlignmentGrid(chrom, pos, _settings=SETTINGS)
+    bv.LoadAlignmentGrid(chrom, pos, _samples=samples, _settings=SETTINGS)
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=bv.samples(),\
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples,\
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
