@@ -33,6 +33,22 @@ from .constants import ENDCHAR, GAPCHAR, DELCHAR
 from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
     BAM_CSOFT_CLIP, BAM_CHARD_CLIP, BAM_CPAD, BAM_CEQUAL, BAM_CDIFF
 
+def GetSamplesFromBamFiles(bamfiles):
+    """ Return dictionary of sample -> list of bam files """
+    samplesToBam = {}
+    for bam in bamfiles:
+        try:
+            br = pysam.Samfile(bam, "rb")
+        except:
+            sys.stderr.write("ERROR: Could not open %s. Is this a valid bam file?\n"%bam)
+            continue
+        for r in br.header.get("RG", []):
+            ident = r["ID"]
+            sample = r.get("SM", ident)
+            if bam not in samplesToBam.get(sample, []):
+                samplesToBam[sample] = samplesToBam.get(sample, []) + [bam]
+    return samplesToBam
+
 def ParseCigar(cigar, nucs):
     """
     Return list of strings, each item corresponding to a single reference position
@@ -76,7 +92,7 @@ class AlignmentGrid(object):
     """
     Class for storing a grid of alignments
     """
-    def __init__(self, _bamreaders, _read_groups, _ref, _chrom, _pos, _settings={}):
+    def __init__(self, _bamreaders, _read_groups, _ref, _chrom, _pos, _samples=[], _settings={}):
         self.bamreaders = _bamreaders
         self.read_groups = _read_groups
         self.ref = _ref
@@ -87,12 +103,16 @@ class AlignmentGrid(object):
         if self.pos < 0: self.pos = 0
         self.samples = set(
             chain.from_iterable(rg.itervalues() for rg in _read_groups))
+        for item in _samples:
+            if item not in self.samples: sys.stderr.write("WARNING: %s not in BAM\n"%item)
+        if len(_samples) > 0:
+            self.samples = [item for item in _samples if item in self.samples]
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.LoadGrid()
 
     def LoadGrid(self):
         """
-        Load grid of alingments with buffer around start pos
+        Load grid of alignments with buffer around start pos
         """
         # Get reference
         if self.ref is None or self.chrom not in self.ref.keys():
@@ -285,7 +305,7 @@ class BamView(object):
         """
         return self.alignment_grid.GetPositions(start_pos)
 
-    def LoadAlignmentGrid(self, _chrom, _pos, _settings={}):
+    def LoadAlignmentGrid(self, _chrom, _pos, _samples=[], _settings={}):
         """
         Load an alignment grid for a view at a specific chr:pos
         """
@@ -294,7 +314,8 @@ class BamView(object):
             if (self.alignment_grid.chrom == _chrom) and (self.alignment_grid.startpos >= (_pos-5)) and (self.alignment_grid.startpos <= (_pos+5)):
                 reload = False
         if reload:
-            self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, _chrom, _pos, _settings=_settings)
+            self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, \
+                                                    _chrom, _pos, _samples=_samples, _settings=_settings)
 
     def GetReferenceTrack(self, start_pos):
         """

@@ -34,7 +34,10 @@
       {% if TARGET_LIST|length > 0 %}
       <form>
 	{% for f in BAM_FILES %}
-	<input type='hidden' name='bamfiles', value='{{ f }}'>
+	<input type='hidden' name='bamfiles' value='{{ f }}'>
+	{% endfor %}
+	{% for s in SAMPLES %}
+	<input type='hidden' name='samples' value='{{ s }}'>
 	{% endfor %}
 	Select target:
 	<select name='region'>
@@ -52,6 +55,9 @@
       <form>
 	{% for f in BAM_FILES %}
 	<input type='hidden' name='bamfiles', value='{{ f }}'>
+	{% endfor %}
+	{% for s in SAMPLES %}
+	<input type='hidden' name='samples' value='{{ s }}'>
 	{% endfor %}
 	Enter region: <input type='text' name='region' value='{{ REGION }}'>
 	<input type='submit'>
