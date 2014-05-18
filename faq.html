@@ -28,6 +28,13 @@
 	    No, all clipped bases (soft and hard clipped) are hidden from display.
 	  </li>
 	</ul>
+	<h2>Reference genome</h2>
+	<ul>
+	  <li><strong>The reference genome appears as all "N"'s in the browser, even though I provided PyBamView with a reference fasta file.</strong>
+	    <p>
+	      PyBamView looks up the sequence of the reference genome using the chromosome name and genomic coordinate provided. Therefore, if you look up "chr1:10000", it will only find the reference sequence if there is a chromosome in the reference file with the exact header ">chr1". If the headings of the entries in the reference fasta file look something like ">1" or "1 dna:chrosome 1", PyBamView will not recognize the reference sequence appropriately.
+	  </li>
+	</ul>
 	<h2>Targets</h2>
 	<ul>
 	  <li><strong>How can I load a set of target loci to pybamview?</strong>
