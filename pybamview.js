@@ -29,7 +29,7 @@ $("td, th").hover
 	 cellClassName = $(this).attr("class");
 	 $("." + cellClassName).addClass("hover");
 	 var x=document.getElementById("selected");
-	 x.innerHTML = "Selected: " + cellClassName.replace("_",":");
+	 x.innerHTML = "Selected: " + cellClassName.replace(/_([^_]*)$/,":"+"$1");
      },
      // mouseout
      function()

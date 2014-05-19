@@ -125,9 +125,9 @@ class AlignmentGrid(object):
                 reference = self.ref[self.chrom][self.pos:]
             else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["NUMCHAR"]]
             reference = [reference[i] for i in range(len(reference))]
-        griddict = {"position": range(self.pos, self.pos+self.settings["NUMCHAR"]), "reference": reference}
+        griddict = {"position": range(self.pos, self.pos+len(reference)), "reference": reference}
         # Get reads
-        region=str("%s:%s-%s"%(self.chrom, int(self.pos), int(self.pos+self.settings["NUMCHAR"])))
+        region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["NUMCHAR"])))
         aligned_reads = []
         for bi, br in enumerate(self.bamreaders):
             try:
