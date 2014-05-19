@@ -120,7 +120,10 @@ def listsamples(methods=['POST','GET']):
     except OSError: files = []
     bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
     bamfiles = [f for f in bamfiles if f+".bai" in files]
-    samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(BAMDIR, b) for b in bamfiles])
+    try:
+        samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(BAMDIR, b) for b in bamfiles])
+    except ValueError, e:
+        return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
     return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
 @app.route('/bamview', methods=['POST', 'GET'])

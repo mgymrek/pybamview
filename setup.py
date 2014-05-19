@@ -28,7 +28,7 @@ setup(name=NAME,
                   ('pybamview/javascript', ['pybamview.js', 'snapshot.js']),
                   ('pybamview/static', ['favicon.ico']),
                   ('pybamview/templates', ['templates/index.html', 'templates/bamview.html',\
-                                               'templates/snapshot.html'])],
+                                               'templates/snapshot.html', 'templates/error.html'])],
       scripts=['scripts/pybamview'],
       test_suite='pybamview.tests',
       requires=['argparse','flask','pandas','pyfasta','pysam'],
