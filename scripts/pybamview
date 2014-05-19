@@ -32,6 +32,7 @@ from os.path import join
 import pkg_resources
 import re
 import sys
+import tempfile
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
 
@@ -186,8 +187,17 @@ def snapshot():
 @app.route('/export', methods=["POST"])
 def export():
     svg_xml = request.form.get("data", "Invalid data")
-    filename = request.form.get("filename", "pybamview_snapshot.svg")
-    response = Response(svg_xml, mimetype="image/svg+xml")
+    input_file = tempfile.NamedTemporaryFile(delete=False)
+    input_file.write(svg_xml)
+    input_file.close()
+    filename = request.form.get("filename", "pybamview_snapshot.pdf")
+    output_file_name = os.path.join("/tmp", filename)
+    cmd = "rsvg-convert -o %s -f pdf %s"%(output_file_name, input_file.name)
+    os.system(cmd)
+    if os.path.exists(output_file_name):
+        pdf_data = open(output_file_name, "r").read()
+    else: pdf_data = ""
+    response = Response(pdf_data, mimetype="application/x-pdf")
     response.headers["Content-Disposition"] = "attachment; filename=%s"%filename
     return response
 

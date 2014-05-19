@@ -177,7 +177,7 @@ $(document).ready(function()
 	     // Set filename based on region
 	     var start = document.forms["snapform"]["region"].value.split("-")[0];
 	     var end = document.forms["snapform"]["region"].value.split("-")[1];
-	     var filename = "pybamview_" + chrom + "_" + start + "_" + end + ".svg";
+	     var filename = "pybamview_" + chrom + "_" + start + "_" + end + ".pdf";
 
 	     // Make a form with the SVG data
 	     var form = document.getElementById("exportform");
