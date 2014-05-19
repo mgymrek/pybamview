@@ -27,6 +27,12 @@
 	    <p>
 	    No, all clipped bases (soft and hard clipped) are hidden from display.
 	  </li>
+	  <li><strong>Why does my called INDEL not show up in pybamview?</strong>
+	    <p>
+	      In some cases it is possible that INDELs called by a genotyping algorithm will not show up in pybamview. This may happen if, for example, one uses GATK's HaplotypeCaller (HC) to call INDELs. HC performs local re-assembly of reads, but normally outputs only VCF. Therefore, it may end up calling an INDEL that was not picked up by the aligner, and therefore will not appear in the original BAM.
+	    <p>
+	      A possible solution is to use HaplotypeCaller's </code>--bamOutput</code> option, and load the resulting BAM rather than the original (warning: not thoroughly tested).
+	  </li>
 	</ul>
 	<h2>Reference genome</h2>
 	<ul>
