@@ -24,13 +24,16 @@ THE SOFTWARE.
 """
 
 import argparse
+import errno
 import pybamview
 import pyfasta
 from flask import Flask, request, send_from_directory, render_template, url_for, Response
 import os
 from os.path import join
 import pkg_resources
+import random
 import re
+import socket
 import sys
 import tempfile
 
@@ -47,6 +50,7 @@ TARGETFILE = None
 PORT = 5000
 NUMCHAR = 500
 HOST = "127.0.0.1"
+PORT_RETRIES = 50
 BAMFILE_TO_BAMVIEW = {}
 TARGET_LIST = []
 SETTINGS = {}
@@ -82,7 +86,18 @@ def MESSAGE(msg, msgtype=PROGRESS):
         sys.stderr.write(msg.strip() + "\n")
         sys.exit(1)
     else: sys.stderr.write(msg.strip())
-    
+
+def random_ports(port, n):
+    """Generate a list of n random ports near the given port.
+
+    The first 5 ports will be sequential, and the remaining n-5 will be
+    randomly selected in the range [port-2*n, port+2*n].
+    (copied from IPython notebookapp.py)
+    """
+    for i in range(min(5, n)):
+        yield port + i
+    for i in range(n-5):
+        yield max(1, port + random.randint(-2*n, 2*n))    
 
 def isnuc(x):
     return str(x).upper() in ["A","C","G","T"]
@@ -239,4 +254,21 @@ if __name__ == "__main__":
             TARGET_LIST = ParseTargets(TARGETFILE)
     # Start app
     app.jinja_env.filters.update({'isnuc': isnuc})
-    app.run(port=PORT, host=HOST)
+    success = False
+    for port in random_ports(PORT, PORT_RETRIES+1):
+        try:
+            app.run(port=port, host=HOST)
+            success = True
+        except socket.error as e:
+            if e.errno == errno.EADDRINUSE:
+                MESSAGE("Port %s is already in use. Tyring another port"%port, WARNING)
+                continue
+            elif e.errno in (errno.EACCES, getattr(errno, "WSEACCES", errno.EACCES)):
+                MESSAGE("Permission denied to listen on port %s. Trying another port"%port, WARNING)
+                continue
+            else: raise
+        except OverflowError:
+            MESSAGE("Invalid port specified (%s)."%port, ERROR)
+        else: break
+    if not success:
+        MESSAGE("PyBamView could not find an available port. Quitting", ERROR)
