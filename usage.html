@@ -32,7 +32,9 @@
 	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all "N"'s). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
 	<p>
 	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest.
-	<h1>full usage</h1>
+	  <h1>Exporting snapshots to PDF</h1>
+	  PyBamView can easily export alignment snapshots to PDF format. When viewing an alignment, click the "Export snapshot" button on the top left. This will open a new window where you can tweak the alignment display. When you're happy with the region and samples selected, click "Download PDF" to obtain the PDF file.
+	  <h1>full command line usage</h1>
 	To see the usage information for PyBamView, type:
 	{% highlight bash %}
 >pybamview --help
