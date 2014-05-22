@@ -19,55 +19,69 @@
     </header>
     <div class="container">
       <section id="main_content">
-<h1>get the source code</h1>
-Note: PyBamView requires Python2.7.<br><br>
-To install pybamview, first obtain the source code by either:
-<ul>
-<li>Downloading the tarball
-{% highlight python %}
-tar -xzvf mgymrek-pybamview-[version].tar.gz
-cd mgymrek-pybamview-[version]
-{% endhighlight %}
-</li>
-<li>Downloading the zip file
-{% highlight python %}
-unzip mgymrek-pybamview-[version].zip
-cd mgymrek-pybamview-[version]
-{% endhighlight %}
-</li>
-<li>Cloning the git repository
-{% highlight python %}
-git clone https://github.com/mgymrek/pybamview.git
-cd pybamview
-{% endhighlight %}
-</li>
-</ul>
+	Note: PyBamView requires Python2.7.<br><br>
+	<h1>easy installation</h1>
+	The easiest way to install PyBamView is using <a href="https://pypi.python.org/pypi/pip">pip</a>:
+	{% highlight bash %}
+	pip install pybamview
+	{% endhighlight %}
+	This will install PyBamView and any missing libraries it depends on.
+	<br><br>
+	To use the "Export to PDF" feature, you will also need to install <a href="http://manpages.ubuntu.com/manpages/precise/man1/rsvg-convert.1.html">rsvg-convert</a>:
+	{% highlight bash %}
+	sudo apt-get install librsvg2-bin
+	{% endhighlight %}
 
-<h1>install requirements</h1>
-Then, make sure you have the required python packages installed:
-<ul>
-<li><a href="http://flask.pocoo.org/">Flask</a></li>
-<li><a href="http://pandas.pydata.org/">pandas</a></li>
-<li><a href="https://pypi.python.org/pypi/pyfasta/">pyfasta</a></li>
-<li><a href="https://code.google.com/p/pysam/">pysam</a></li>
-</ul>
-You can install these using easy_install:
-{% highlight python %}
-sudo easy_install Flask pandas pyfasta pysam
-{% endhighlight %}
+	<h1>installing from source</h1>
+	<h2>obtain the source code</h2>
+	To install PyBamView, first obtain the source code by either:
+	<ul>
+	  <li>Downloading the tarball
+	    {% highlight bash %}
+	    tar -xzvf mgymrek-pybamview-[version].tar.gz
+	    cd mgymrek-pybamview-[version]
+	    {% endhighlight %}
+	  </li>
+	  <li>Downloading the zip file
+	    {% highlight bash %}
+	    unzip mgymrek-pybamview-[version].zip
+	    cd mgymrek-pybamview-[version]
+	    {% endhighlight %}
+	  </li>
+	  <li>Cloning the git repository
+	    {% highlight bash %}
+	    git clone https://github.com/mgymrek/pybamview.git
+	    cd pybamview
+	    {% endhighlight %}
+	  </li>
+	</ul>
 
-If you want to use the "Download PDF" feature, you must have rsvg-convert installed.
-<h1>install</h1>
-At the top of the PyBamView source directory, type:
-{% highlight python %}
-sudo python setup.py install
-{% endhighlight %}
+	<h2>install requirements</h2>
+	Then, make sure you have the required python packages installed:
+	<ul>
+	  <li><a href="http://flask.pocoo.org/">Flask</a></li>
+	  <li><a href="http://pandas.pydata.org/">pandas</a></li>
+	  <li><a href="https://pypi.python.org/pypi/pyfasta/">pyfasta</a></li>
+	  <li><a href="https://code.google.com/p/pysam/">pysam</a></li>
+	</ul>
+	You can install these using easy_install:
+	{% highlight bash %}
+	sudo easy_install Flask pandas pyfasta pysam
+	{% endhighlight %}
+	
+	If you want to use the "Download PDF" feature, you must have rsvg-convert installed (see above).
 
-To make sure it was installed, type:
-{% highlight python %}
-pybamview --help
-{% endhighlight %}
-and ensure that the help message comes up. Then move on to <a href="{{ SITE.URL }}/pybamview/usage.html">the usage page</a> to get started!
+	<h2>install</h2>
+	At the top of the PyBamView source directory, type:
+	{% highlight bash %}
+	sudo python setup.py install
+	{% endhighlight %}
+	
+	To make sure it was installed, type:
+	{% highlight bash %}
+	pybamview --help
+	{% endhighlight %}
+	and ensure that the help message comes up. Then move on to <a href="{{ SITE.URL }}/pybamview/usage.html">the usage page</a> to get started!
       </section>
     </div>
     

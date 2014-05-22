@@ -16,7 +16,7 @@
       <section id="main_content">
         <h1>
 	  <a name="pybamview" class="anchor" href="#pybamview"><span class="octicon octicon-link"></span></a>faq</h1>
-
+	
 	<h2>Bam files</h2>
 	<ul>
 	  <li><strong>How does PyBamView determine which samples are present in BAM files?</strong>
@@ -25,20 +25,24 @@
 	  </li>
 	  <li><strong>Are clipped bases displayed?</strong>
 	    <p>
-	    No, all clipped bases (soft and hard clipped) are hidden from display.
+	      No, all clipped bases (soft and hard clipped) are hidden from display.
 	  </li>
 	  <li><strong>Why does my called INDEL not show up in pybamview?</strong>
 	    <p>
 	      In some cases it is possible that INDELs called by a genotyping algorithm will not show up in pybamview. This may happen if, for example, one uses GATK's HaplotypeCaller (HC) to call INDELs. HC performs local re-assembly of reads, but normally outputs only VCF. Therefore, it may end up calling an INDEL that was not picked up by the aligner, and therefore will not appear in the original BAM.
 	    <p>
-	      A possible solution is to use HaplotypeCaller's </code>--bamOutput</code> option, and load the resulting BAM rather than the original (warning: not thoroughly tested). (Thanks to <a href="https://twitter.com/roy_ronen">@roy_ronen</a> for pointing this out).
+	      One solution is to use HaplotypeCaller's --bamOutput option, and load the resulting BAM rather than the original. (Thanks to <a href="https://twitter.com/roy_ronen">@roy_ronen</a> for pointing this out).
+	  </li>
+	  <li><strong>What size BAM files can PyBamView handle?</strong>
+	    <p>
+	      PyBamView can handle quite large BAM files (e.g. many gigabytes) since it only pulls out the reads it needs for the specific location you are viewing. However, for experiments with extremely high coverage at a small set of targeted regions, PyBamView can become very slow and inconvenient. PyBamView should handle most standard whole genome and whole exome experiments.
 	  </li>
 	</ul>
-	<h2>Reference genome</h2>
-	<ul>
+<h2>Reference genome</h2>
+<ul>
 	  <li><strong>The reference genome appears as all "N"'s in the browser, even though I provided PyBamView with a reference fasta file.</strong>
 	    <p>
-	      PyBamView looks up the sequence of the reference genome using the chromosome name and genomic coordinate provided. Therefore, if you look up "chr1:10000", it will only find the reference sequence if there is a chromosome in the reference file with the exact header ">chr1". If the headings of the entries in the reference fasta file look something like ">1" or "1 dna:chrosome 1", PyBamView will not recognize the reference sequence appropriately.
+	      PyBamView looks up the sequence of the reference genome using the chromosome name and genomic coordinate provided. Therefore, if you look up "chr1:10000", it will only find the reference sequence if there is a chromosome in the reference file with the exact header "&#62;chr1". If the headings of the entries in the reference fasta file look something like "&#62;1" or "1 dna:chrosome 1", PyBamView will not recognize the reference sequence appropriately.
 	  </li>
 	</ul>
 	<h2>Targets</h2>
