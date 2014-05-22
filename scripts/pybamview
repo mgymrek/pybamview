@@ -42,7 +42,6 @@ SPREFIX = pkg_resources.resource_filename("pybamview","")
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))
-app.debug = False
 
 BAMDIR = "."
 REFFILE = None
@@ -224,6 +223,7 @@ if __name__ == "__main__":
     parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str)
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int)
     parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', type=int)
+    parser.add_argument('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
     args = parser.parse_args()
     # Get args
     BAMDIR = args.bamdir
@@ -233,6 +233,7 @@ if __name__ == "__main__":
     if args.ip is not None: HOST = args.ip
     if args.buffer is not None: NUMCHAR = args.buffer
     SETTINGS["NUMCHAR"] = NUMCHAR
+    app.debug = args.debug
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"

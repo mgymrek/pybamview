@@ -1,3 +1,9 @@
 *~
 *pyc
 scratch/*
+*#*
+nohup.out
+build/*
+data/*
+dist/*
+pybamview.egg-info/

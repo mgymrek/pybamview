@@ -1,0 +1,7 @@
+include favicon.ico
+include pybamview.css
+include pybamview.js
+include requirements.txt
+include shoutouts.txt
+include snapshot.js
+recursive-include templates *.html

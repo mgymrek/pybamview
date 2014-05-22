@@ -35,4 +35,3 @@ To use PyBamView, you will need a directory containing indexed BAM files, and op
 ```pybamview --bamdir $BAMDIR --ref $REF.FA```
 
 This will serve pybamview at http://127.0.0.1:5000. Navigate to this URL at your web browser, where you can select samples and start visualizing alignments. Use the ```--ip``` and ```--port``` to change the host URL and port if desired. 
-
