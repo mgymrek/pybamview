@@ -42,7 +42,7 @@ SPREFIX = pkg_resources.resource_filename("pybamview","")
 app = Flask(__name__, static_folder="%s/"%SPREFIX, \
                 static_path="%s/"%SPREFIX,\
                 template_folder=join(SPREFIX, "templates"))
-app.debug = True
+app.debug = False
 
 BAMDIR = "."
 REFFILE = None
