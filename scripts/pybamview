@@ -207,7 +207,9 @@ def export():
     filename = request.form.get("filename", "pybamview_snapshot.pdf")
     output_file_name = os.path.join("/tmp", filename)
     cmd = "rsvg-convert -o %s -f pdf %s"%(output_file_name, input_file.name)
-    os.system(cmd)
+    retcode = os.system(cmd)
+    if retcode != 0:
+        MESSAGE("Error exporting to PDF. Is rsvg-convert installed?", WARNING)
     if os.path.exists(output_file_name):
         pdf_data = open(output_file_name, "r").read()
     else: pdf_data = ""
