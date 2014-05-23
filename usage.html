@@ -19,13 +19,13 @@
 	{% highlight bash %}
 	pybamview --bamdir examples/
 	{% endhighlight %}
-	Go to 127.0.0.1:5000, select "mysample", and try navigating to different genomic locations, e.g. chr11:2192266.
+	This will open a browser pointing to 127.0.0.1:5000. Select "mysample", and try navigating to different genomic locations, e.g. chr11:2192266.
         <h1>getting started</h1>
 	To get started with PyBamView, determine a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Optionally, you can also provide a reference genome in fasta format. Then simply type:
 	{% highlight bash %}
 	pybamview --bamdir PATH/TO/BAM/DIRECTORY --ref REF.fasta
 	{% endhighlight %}
-	This will by default give you a localhost URL for port 5000. Navigate to 127.0.0.1:5000 in your web browser.
+	This will by default give you a localhost URL for port 5000. The default web browser will then be automatically opened pointing to 127.0.0.1:5000.
 	<p>
 	PyBamView will look for any indexed bams in that directory, detect which samples are in those bams, and display them as a checklist. If no samples are showing up, make sure you have indexed your bam files and that all reads are annotated with a read group (see <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files"> here for more information about read groups and BAM faq</a>). Select which samples you would like to view and click "View selected samples".
 	<p>
@@ -38,9 +38,9 @@
 	To see the usage information for PyBamView, type:
 	{% highlight bash %}
 >pybamview --help
-
-usage: pybamview [-h] --bamdir BAMDIR [--ref REF] [--ip IP]
-                 [--targets TARGETS] [--port PORT] [--buffer BUFFER] [--debug]
+usage: pybamview [-h] --bamdir BAMDIR [--ref REF] [--ip IP] [--port PORT]
+                 [--targets TARGETS] [--buffer BUFFER] [--no-browser]
+                 [--debug]
 
 pybamview: An Python-based BAM alignment viewer.
 
@@ -49,15 +49,16 @@ optional arguments:
   --bamdir BAMDIR    Directory to look for bam files. Bam files must be
                      indexed.
   --ref REF          Path to reference fasta file. If no reference is given,
-                     the reference track is displayed as Ns
+                     the reference track is displayed as "N"'s
   --ip IP            Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
                      have the server available externally.
+  --port PORT        The port of the webserver. Defaults to 5000.
   --targets TARGETS  Bed file with chrom, start, end, and name. Allows you to
                      easily jump to these targets.
-  --port PORT        The port of the webserver. Defaults to 5000.
   --buffer BUFFER    How many nucleotides to load into memory. Default: 500.
                      Buffering more allows you to scroll farther. Buffering
                      less is faster.
+  --no-browser       Don't automatically open the web browser.
   --debug            Run PyBamView in Flask debug mode
 	{% endhighlight %}
       </section>
