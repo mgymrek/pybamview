@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "mgymrek@mit.edu"
 DOWNLOAD_URL = 'http://github.com/mgymrek/pybamview'
 LICENSE = 'MIT'
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 setup(name=NAME,
       version=VERSION,
@@ -24,11 +24,8 @@ setup(name=NAME,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
       packages=['pybamview'],
-      data_files=[('pybamview/css',['pybamview.css']),
-                  ('pybamview/javascript', ['pybamview.js', 'snapshot.js']),
-                  ('pybamview/static', ['favicon.ico']),
-                  ('pybamview/templates', ['templates/index.html', 'templates/bamview.html',\
-                                               'templates/snapshot.html', 'templates/error.html'])],
+      package_dir={'pybamview': 'pybamview'},
+      package_data={'pybamview': ['data/css/*.css', 'data/javascript/*.js', 'data/static/*.ico', 'data/templates/*.html']},
       scripts=['scripts/pybamview'],
       test_suite='pybamview.tests',
       install_requires=['argparse','flask','pandas','pyfasta','pysam'],

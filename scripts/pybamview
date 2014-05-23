@@ -39,9 +39,9 @@ import tempfile
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
 
-app = Flask(__name__, static_folder="%s/"%SPREFIX, \
-                static_path="%s/"%SPREFIX,\
-                template_folder=join(SPREFIX, "templates"))
+app = Flask(__name__, static_folder=join(SPREFIX, "data"), \
+                static_path=join(SPREFIX, "data"), \
+                template_folder=join(SPREFIX, "data", "templates"))
 
 BAMDIR = "."
 REFFILE = None
@@ -121,7 +121,7 @@ def ParseTargets(targetfile):
 # Apparently all applications should have an icon
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(join(SPREFIX, 'static'),
+    return send_from_directory(join(SPREFIX, 'data', 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")

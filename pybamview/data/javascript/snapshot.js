@@ -28,8 +28,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	"g": "green",
 	"T": "orange",
 	"t": "orange",
-	"N": "white",
-	"n": "white",
+	"N": "gray",
+	"n": "gray",
 	"-": "white",
 	".": "gray",
     };
