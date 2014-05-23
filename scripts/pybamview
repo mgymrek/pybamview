@@ -35,7 +35,9 @@ import random
 import re
 import socket
 import sys
+import threading
 import tempfile
+import webbrowser
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
 
@@ -43,12 +45,6 @@ app = Flask(__name__, static_folder=join(SPREFIX, "data"), \
                 static_path=join(SPREFIX, "data"), \
                 template_folder=join(SPREFIX, "data", "templates"))
 
-BAMDIR = "."
-REFFILE = None
-TARGETFILE = None
-PORT = 5000
-NUMCHAR = 500
-HOST = "127.0.0.1"
 PORT_RETRIES = 50
 BAMFILE_TO_BAMVIEW = {}
 TARGET_LIST = []
@@ -221,21 +217,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')
     parser.add_argument('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type=str, required=True)
     parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s', type=str)
-    parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str)
-    parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str)
-    parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int)
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', type=int)
+    parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str, required=False, default="127.0.0.1")
+    parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int, required=False, default=5000)
+    parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str, required=False)
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', \
+                            type=int, required=False, default=500)
+    parser.add_argument('--no-browser', help="Don't automatically open the web browser.", action="store_true")
     parser.add_argument('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
     args = parser.parse_args()
     # Get args
     BAMDIR = args.bamdir
     REFFILE = args.ref
+    HOST = args.ip
+    PORT = args.port
     TARGETFILE = args.targets
-    if args.port is not None: PORT = args.port
-    if args.ip is not None: HOST = args.ip
-    if args.buffer is not None: NUMCHAR = args.buffer
-    SETTINGS["NUMCHAR"] = NUMCHAR
+    NUMCHAR = args.buffer
     app.debug = args.debug
+    OPEN_BROWSER = (not args.no_browser)
+    SETTINGS["NUMCHAR"] = NUMCHAR
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"
@@ -260,8 +259,13 @@ if __name__ == "__main__":
     success = False
     for port in random_ports(PORT, PORT_RETRIES+1):
         try:
+            if OPEN_BROWSER:
+                URL = "http://%s:%s"%(HOST, port)
+                threading.Timer(1.5, lambda: webbrowser.open(URL)).start()
             app.run(port=port, host=HOST)
             success = True
+        except webbrowser.Error as e:
+            MESSAGE("No web browser found: %s."%e, WARNING)
         except socket.error as e:
             if e.errno == errno.EADDRINUSE:
                 MESSAGE("Port %s is already in use. Tyring another port"%port, WARNING)
