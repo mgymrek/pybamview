@@ -29,7 +29,7 @@
 	<p>
 	PyBamView will look for any indexed bams in that directory, detect which samples are in those bams, and display them as a checklist. If no samples are showing up, make sure you have indexed your bam files and that all reads are annotated with a read group (see <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files"> here for more information about read groups and BAM faq</a>). Select which samples you would like to view and click "View selected samples".
 	<p>
-	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all "N"'s). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
+	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all Ns). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
 	<p>
 	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest.
 	  <h1>exporting snapshots to PDF</h1>
@@ -49,7 +49,7 @@ optional arguments:
   --bamdir BAMDIR    Directory to look for bam files. Bam files must be
                      indexed.
   --ref REF          Path to reference fasta file. If no reference is given,
-                     the reference track is displayed as "N"'s
+                     the reference track is displayed as Ns
   --ip IP            Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
                      have the server available externally.
   --port PORT        The port of the webserver. Defaults to 5000.
