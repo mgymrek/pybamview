@@ -1,7 +1,7 @@
 from setuptools import setup
 
 DESCRIPTION = "Python based BAM alignment viewer"
-LONG_DESCRIPTION = "Python based BAM alignment viewer. See a running example at http://pybamview.melissagymrek.com/?bamfiles=example.sorted.bam&region=chrY%3A14937824"
+LONG_DESCRIPTION = DESCRIPTION
 NAME = "pybamview"
 AUTHOR = "Melissa Gymrek"
 AUTHOR_EMAIL = "mgymrek@mit.edu"
