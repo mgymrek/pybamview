@@ -191,7 +191,6 @@ class AlignmentGrid(object):
                 for sample in self.samples:
                     self.grid_by_sample[sample] = \
                         self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
-                    pass
             else: pass
 
     def MergeRows(self, row1, row2):
@@ -209,7 +208,7 @@ class AlignmentGrid(object):
         If more than one read can fit on the same line, put it there
         """
         cols_to_delete = []
-        col_to_ends = {"dummy":{"end":1000000, "rank":-1}}
+        col_to_ends = {"dummy":{"end":100000000, "rank":-1}}
         alncols = [item for item in grid.columns if item != "position" and item != "reference"]
         for col in alncols:
             track = grid.ix[:,col].values
@@ -221,14 +220,22 @@ class AlignmentGrid(object):
                 start = min(x)
                 end = max(x)
             if start > min([item["end"] for item in col_to_ends.values()]):
+                # Find the first column we can add it to
                 mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
                 mincol.sort()
                 mincol = mincol[0][1]
+                # Rest that column with merged alignments
                 grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
+                # Set that column for deletion and clear it in case we use it later
+                grid[col] = [ENDCHAR]*grid.shape[0]
                 cols_to_delete.append(col)
+                # Rest end
                 t = grid.ix[:,mincol].values
                 y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
                 col_to_ends[mincol]["end"] = max(y)
+                # Make sure we're not deleting mincol
+                if mincol in cols_to_delete:
+                    cols_to_delete.remove(mincol)
             col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
         return grid.drop(cols_to_delete, 1)
             
