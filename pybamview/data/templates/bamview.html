@@ -4,6 +4,7 @@
     <title>{{ title }}</title>
     <link rel='shortcut icon' href='/favicon.ico'>
     <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css">
     <script>
       var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";
       var chrom = "{{ CHROM }}";
@@ -74,6 +75,7 @@
 	{% endfor %}
 	Enter region: <input type='text' name='region' value='{{ REGION }}'>
 	<input type='submit'>
+	<input type="range" name="points" id="points" value="50" min="0" max="100" data-show-value="true">
 	<a onclick="AlignZoom(-10);" href="javascript:void(0);">-10x</a>
 	<a onclick="AlignZoom(-3);" href="javascript:void(0);">-3x</a>
 	<a onclick="AlignZoom(-1.5);" href="javascript:void(0);">-1.5x</a>
@@ -105,5 +107,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
     <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
     <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
   </body>
 </html>
