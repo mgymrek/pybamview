@@ -4,6 +4,19 @@
     <title>{{ title }}</title>
     <link rel='shortcut icon' href='/favicon.ico'>
     <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <script>
+      var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";
+      var chrom = "{{ CHROM }}";
+      var samples = "{{ SAMPLES|join(',') }}".split(",");
+      var startpos = {{ POSITIONS[0] }};
+      var reference_track = "{{ REFERENCE }}";
+      var alignBySample = {
+      {% for s in SAMPLES %}
+      "{{ s }}": "{{ ALIGNMENTS[s]|join(';') }}",
+      {% endfor %}
+      };
+      var positions = {{ POSITIONS }};
+    </script>
   </head>  
   <body>
     <div class='outer' id='header_wrap'>
@@ -66,45 +79,11 @@
     </div>
     
     <div class='alntables' id='aln'>
-      <div class='reference' id='reference'>
-	<table>
-	  <tr>
-	    {% for i in range(REFERENCE|length) %}
-	    {% if (REFERENCE[i]) == "N" or (REFERENCE[i]) == "n" %}
-	    <td class="{{ CHROM }}_{{ POSITIONS[i] }}" id="ref{{ i }}" style="background-color:gray;">
-	      <font class="ref"><b>{{ REFERENCE[i] }}</b></font>
-	    </td>
-	    {% else %}
-	    <td class="{{ CHROM }}_{{ POSITIONS[i] }}" id="ref{{ i }}" style="background-color:{{ NUC_TO_COLOR[REFERENCE[i]] }};">
-	      <font class="ref"><b>{{ REFERENCE[i] }}</b></font>
-	    </td>
-	    {% endif %}
-	    {% endfor %}
-	  </tr>
-	</table>
-      </div>
-      
-      <div class='alignments'>
+      <div id="reference" class="reference"></div>
+      <div id="alignments" class="alignments">
 	{% for sample in SAMPLES %}
-	<a name='{{ sample }}'></a>
-	<div class='sample' onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div><div>?</div>
-	<div id="{{ sample }}">
-	  <table>
-	    {% for aln in ALIGNMENTS[sample] %}
-	    <tr>
-	      {% for i in range(aln|length) %}
-	      {% if (aln[i]|upper) != (REFERENCE[i]|upper) and (REFERENCE[i]|upper|isnuc) and (aln[i]|upper|isnuc) %}
-	      <td class="{{ CHROM }}_{{ POSITIONS[i] }}" style="background-color:yellow;">
-		{% else %}
-		<td class="{{ CHROM }}_{{ POSITIONS[i] }}">
-		{% endif %}
-		<font class='read' color="{{ NUC_TO_COLOR[aln[i]] }}">{{ aln[i] }}</font>
-	      </td>
-	      {% endfor %}
-	    </tr>
-	    {% endfor %}
-	  </table>
-	</div><br>
+	<div class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
+	<div id="{{ sample }}"></div>
 	{% endfor %}
       </div>
     </div>
@@ -118,5 +97,6 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
     <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
+    <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
   </body>
 </html>
