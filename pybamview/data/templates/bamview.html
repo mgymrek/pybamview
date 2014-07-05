@@ -74,6 +74,13 @@
 	{% endfor %}
 	Enter region: <input type='text' name='region' value='{{ REGION }}'>
 	<input type='submit'>
+	<a onclick="AlignZoom(-10);" href="javascript:void(0);">-10x</a>
+	<a onclick="AlignZoom(-3);" href="javascript:void(0);">-3x</a>
+	<a onclick="AlignZoom(-1.5);" href="javascript:void(0);">-1.5x</a>
+	<a onclick="AlignZoom(1);" href="javascript:void(0);">1x</a>
+	<a onclick="AlignZoom(1.5);" href="javascript:void(0);">1.5x</a>
+	<a onclick="AlignZoom(3);" href="javascript:void(0);">3x</a>
+	<a onclick="AlignZoom(10);" href="javascript:void(0);">10x</a>
 	<div id='selected'>Selected: </div>
       </form>
     </div>
@@ -82,8 +89,8 @@
       <div id="reference" class="reference"></div>
       <div id="alignments" class="alignments">
 	{% for sample in SAMPLES %}
-	<div class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
-	<div id="{{ sample }}"></div>
+	<div id="sample" class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
+	<div id="{{ sample }}" class="sampleAlignment"></div>
 	{% endfor %}
       </div>
     </div>
