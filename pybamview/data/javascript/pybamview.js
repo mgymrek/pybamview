@@ -1,7 +1,7 @@
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
-ZOOMDEFAULT = 70;
+ZOOMDEFAULT = 82;
 
 function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
@@ -56,8 +56,12 @@ function AlignZoom(zoomlevel) {
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
     // Redraw
     DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel);
-    // Scroll
-    $("#aln").scrollLeft(Math.round(BASE_W*zoomlevel*(buffer/zoomlevel/2)));
+    // Scroll (try to keep previously visible section in the center)
+    var w = parseInt($("#sample").css("width"));
+    var vis1 = w/(BASE_W*zoomlevel);
+    var vis0 = w/(BASE_W);
+    var numBpToScroll = (buffer/zoomlevel/2) - (vis1-vis0)/2;
+    $("#aln").scrollLeft(Math.round(BASE_W*zoomlevel*numBpToScroll));
 }
 
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel) {
@@ -150,12 +154,13 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.enter().append("g");
 	    SampleTrack.append("rect")
 		.attr("x", function(d, pos) { return pos*gridWidth; })
-		.attr("y", currentHeight)
+		.attr("y", function(d) {return usefont?currentHeight:(d.toUpperCase() == "."?currentHeight+gridHeight/3:currentHeight);})
 		.attr("width", gridWidth)
-		.attr("height", gridHeight)
+		.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
 		.attr("class", function(d, i) {return "p"+positions[i+fromindex];})
 		.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
 		.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
+		.style("stroke-width", 0)
 		.style("fill", function(d, pos) {return usefont?((d.toUpperCase()!=refdata[pos].toUpperCase() &&
 							 IsNuc(refdata[pos].toUpperCase()) && 
 								  IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
@@ -199,10 +204,10 @@ $(window).scroll(function(){
 function convertZoom(zoom) {
     if (zoom == ZOOMDEFAULT) return 1;
     if (zoom < ZOOMDEFAULT) {
-	return Math.round(((1-zoom/ZOOMDEFAULT)*(maxzoom-1)*-1-1)*100)/100;
+	return Math.round(((1-zoom/ZOOMDEFAULT)*(maxzoom-1)*-1-1)*10)/10;
     }
     if (zoom > ZOOMDEFAULT) {
-	return Math.round(((zoom-ZOOMDEFAULT)/(100-ZOOMDEFAULT)*2+1)*100)/100;
+	return Math.round(((zoom-ZOOMDEFAULT)/(100-ZOOMDEFAULT)*2+1)*10)/10;
     }
 }
 function updateZoomBox() {
@@ -223,7 +228,22 @@ $(function() {
 		    value: ZOOMDEFAULT,
 		    slide: updateZoomBox,
 		    change: refreshZoom
-		    });
+		    }).each(function() {
+			    // Get the options for this slider
+			    var opt = $(this).data().uiSlider.options;
+  
+			    // Get the number of possible values
+			    var vals = opt.max - opt.min;
+  
+			    // Space out values
+			    for (var i = 0; i <= vals; i++) {
+				var zc = convertZoom(i);
+				if (zc == Math.round(zc)) {
+				    var el = $('<label>'+zc+'x<br>&#9660;</label>').css('left',(i/vals*100)+'%');
+				    $( "#zoomer" ).append(el);
+				}
+			    }
+			});
     });
 
 
