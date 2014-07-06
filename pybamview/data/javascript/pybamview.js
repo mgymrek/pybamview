@@ -156,9 +156,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("class", function(d, i) {return "p"+positions[i+fromindex];})
 		.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
 		.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
-		.style("fill", function(d, pos) {return (d.toUpperCase()!=refdata[pos].toUpperCase() &&
+		.style("fill", function(d, pos) {return usefont?((d.toUpperCase()!=refdata[pos].toUpperCase() &&
 							 IsNuc(refdata[pos].toUpperCase()) && 
-							 IsNuc(d.toUpperCase()))?"yellow":(usefont?"white":colors[d]);});
+								  IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
 	    if (usefont) {
 		SampleTrack.append("text")
 		    .text(function(d) {return d;})
