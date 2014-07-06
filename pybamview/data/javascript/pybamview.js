@@ -7,6 +7,9 @@ function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
 }
 
+function Noop() {
+}
+
 function InHover(i, usefont) {
     if (usefont) {
 	// Update color
@@ -55,7 +58,7 @@ function AlignZoom(zoomlevel) {
     var fromindex = Math.round(center_index - (buffer/zoomlevel/2));
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
     // Redraw
-    DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel);
+    DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, false);
     // Scroll (try to keep previously visible section in the center)
     var w = parseInt($("#sample").css("width"));
     var vis1 = w/(BASE_W*zoomlevel);
@@ -64,12 +67,16 @@ function AlignZoom(zoomlevel) {
     $("#aln").scrollLeft(Math.round(BASE_W*zoomlevel*numBpToScroll));
 }
 
-function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel) {
+function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot) {
     // Reset
-    document.getElementById("reference").innerHTML = "";
-    var divs = document.getElementsByClassName("sampleAlignment");
-    for (var i = 0; i<divs.length; i++) {
-	divs[i].innerHTML = "";
+    if (snapshot) {
+	document.getElementById("snapshot").innerHTML = "";
+    } else {
+	document.getElementById("reference").innerHTML = "";
+	var divs = document.getElementsByClassName("sampleAlignment");
+	for (var i = 0; i<divs.length; i++) {
+	    divs[i].innerHTML = "";
+	}
     }
     // Set positioning variables
     usefont = true;
@@ -79,14 +86,15 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     if (gridHeight < 10) {
 	gridHeight = 10;
     }
-    if (zoomlevel < 1/3) {
+    if (zoomlevel < 1/2) {
 	usefont = false;
     }
     var numreads = 0;
-    for (var i =0; i < samples.length; i++) {
+    for (var i=0; i < samples.length; i++) {
 	numreads += alignBySample[samples[i]].split(";").length;
     }
     var w = gridWidth*(toindex-fromindex+1);
+    var h = (samples.length*2+numreads)*gridHeight+BASE_H;
 
     // Set up colors
     var colors = {
@@ -103,12 +111,17 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	"-": "white",
 	".": "gray",
     };
-
     // Put SVG element for ref track in #alntables
-    var refsvg = d3.select("#reference").append("svg:svg")
-	.attr("width", w)
-	.attr("height", gridHeight);
-
+    if (snapshot) {
+	var svg = d3.select("#snapshot").append("svg:svg")
+	    .attr("width", w)
+	    .attr("height", h);
+	var refsvg = svg;
+    } else {
+	var refsvg = d3.select("#reference").append("svg:svg")
+	    .attr("width", w)
+	    .attr("height", gridHeight);
+    }
     // Draw reference
     var refdata = reference_track.slice(fromindex, toindex+1).split("");
     var RefTrack = refsvg.selectAll("gref")
@@ -116,12 +129,12 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	.enter().append("g");
     RefTrack.append("rect")
 	.attr("x", function(d, i) { return i*gridWidth; })
-	.attr("y", 0)
+	.attr("y", function(d) {return usefont?0:(d.toUpperCase() == "."?gridHeight/3:currentHeight);})
 	.attr("width", gridWidth)
-	.attr("height", gridHeight)
+	.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
 	.attr("id", function(d, i) {return "ref"+i+fromindex;})
-	.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
-	.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
+	.on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+	.on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
 	.style("fill", function(d) {return colors[d];})
 	.style("stroke", function(d) {return usefont?"white":colors[d];});
     if (usefont) {
@@ -130,20 +143,36 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .attr("y", gridHeight/2)
 	    .attr("dy", ".25em")
 	    .attr("fill", "white")
-	    .on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
-	    .on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
+	    .on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+	    .on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
 	    .style("font-family", "Courier")
 	    .style("font-size", fontSize)
 	    .style("text-anchor", "middle")
 	    .text(function(d) {return d;});
     }
     // Draw each sample
+    if (snapshot) { var currentHeight = gridHeight*1.6;}
     for (var i=0; i < samples.length; i++) {
-	var currentHeight = 20;
-	// Make div for the sample
-	var samplesvg = d3.select("#"+samples[i]).append("svg:svg")
-	    .attr("width",w)
-	    .attr("height",(1+alignBySample[samples[i]].split(";").length)*gridHeight);
+	if (snapshot) {
+	    samplesvg = svg;
+	    // Append sample label
+	    svg.append("text")
+		.text(samples[i])
+		.attr("x", 1)
+		.attr("y", currentHeight+gridHeight/2)
+		.attr("dy","0.25em")
+		.attr("fill","black")
+		.style("font-family", "Courier")
+		.style("font-size", "16px;")
+		.style("stroke-width", "3px");
+	    currentHeight += BASE_H;
+	} else {
+	    var currentHeight = 20;
+	    // Make div for the sample
+	    var samplesvg = d3.select("#"+samples[i]).append("svg:svg")
+		.attr("width",w)
+		.attr("height",(1+alignBySample[samples[i]].split(";").length)*gridHeight);
+	}
 	// Draw reads
 	sample_data = alignBySample[samples[i]];
 	sample_data_reads = sample_data.split(";");
@@ -157,9 +186,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("y", function(d) {return usefont?currentHeight:(d.toUpperCase() == "."?currentHeight+gridHeight/3:currentHeight);})
 		.attr("width", gridWidth)
 		.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
-		.attr("class", function(d, i) {return "p"+positions[i+fromindex];})
-		.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
-		.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
+		.attr("class", function(d, i) {return snapshot?"":"p"+positions[i+fromindex];})
+		.on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+		.on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
 		.style("stroke-width", 0)
 		.style("fill", function(d, pos) {return usefont?((d.toUpperCase()!=refdata[pos].toUpperCase() &&
 							 IsNuc(refdata[pos].toUpperCase()) && 
@@ -169,8 +198,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		    .text(function(d) {return d;})
 		    .attr("x", function(d, pos) {return pos*gridWidth+gridWidth/2;})
 		    .attr("y", currentHeight + gridHeight/2)
-		    .on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
-		    .on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
+		    .on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+		    .on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
 		    .style("font-family", "Courier")
 		    .style("font-size", fontSize)
 		    .style("text-anchor", "middle")
@@ -200,63 +229,103 @@ $(window).scroll(function(){
     });
 });
 
-// Add slider for zooming
-function convertZoom(zoom) {
-    if (zoom == ZOOMDEFAULT) return 1;
-    if (zoom < ZOOMDEFAULT) {
-	return Math.round(((1-zoom/ZOOMDEFAULT)*(maxzoom-1)*-1-1)*10)/10;
-    }
-    if (zoom > ZOOMDEFAULT) {
-	return Math.round(((zoom-ZOOMDEFAULT)/(100-ZOOMDEFAULT)*2+1)*10)/10;
-    }
-}
-function updateZoomBox() {
-    var zoom = $("#zoomer").slider("value");
-    zoom = convertZoom(zoom);
+function refreshZoom(zoom) {
     $("#zoomvalue").html("Zoom: " + zoom + "x");
-    return zoom;
-}
-function refreshZoom() {
-    var zoom = updateZoomBox();
+    document.forms["snapform"]["zoomlevel"].value = zoom;
+    $(".zoomout").css("background-color", "white");
+    $(".zoomin").css("background-color", "white");
+    $(".defaultzoom").css("background-color","gray");
+    $("#zoom"+zoom).css("background-color", "black");
     AlignZoom(zoom);
 }
-$(function() {
-	$( "#zoomer" ).slider({
-		orientation: "horizontal",
-		    min: 0,
-		    max: 100,
-		    value: ZOOMDEFAULT,
-		    slide: updateZoomBox,
-		    change: refreshZoom
-		    }).each(function() {
-			    // Get the options for this slider
-			    var opt = $(this).data().uiSlider.options;
-  
-			    // Get the number of possible values
-			    var vals = opt.max - opt.min;
-  
-			    // Space out values
-			    for (var i = 0; i <= vals; i++) {
-				var zc = convertZoom(i);
-				if (zc == Math.round(zc)) {
-				    var el = $('<label>'+zc+'x<br>&#9660;</label>').css('left',(i/vals*100)+'%');
-				    $( "#zoomer" ).append(el);
-				}
-			    }
-			});
-    });
-
 
 // Perform when the page loads
 $(document).ready(function()
 {
-
-// Draw alignments
-var center_index = positions.length/2;
-var fromindex = Math.round(center_index - (buffer/2));
-var toindex = Math.round(center_index + (buffer/2));
-DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, 1);
-
-// Scroll to center
-$("#aln").scrollLeft(BASE_W*(buffer/2));
+    if (snapshot) {
+	// Draw default when load page
+	var region = document.forms["snapform"]["region"].value;
+	var frompos = parseInt(region.split("-")[0]);
+	var topos = parseInt(region.split("-")[1]);
+	var fromindex=frompos-startpos;
+	var toindex=topos-startpos;
+	var zoomlevel = parseFloat(document.forms["snapform"]["zoomlevel"].value);
+	if (zoomlevel < 0) {
+	    zoomlevel = -1/zoomlevel;
+	}
+	DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, true);
+	var samples_subset = [];
+	
+	// Redraw if you want to change something
+	$("#draw").click
+	    (
+	     function() {
+		 samples_subset = [];
+		 var region = document.forms["snapform"]["region"].value;
+		 if (region.split("-").length != 2) {
+		     alert("Invalid region");
+		     return;
+		 }
+		 var frompos = parseInt(region.split("-")[0]);
+		 var topos = parseInt(region.split("-")[1]);
+		 if (isNaN(frompos)) {
+		     alert("Invalid start position");
+		     return;
+		 }
+		 if (isNaN(topos)) {
+		     alert("Invalid end position");
+		     return;
+		 }
+		 if (samples.length > 1) {
+		     for (var i = 0; i < document.forms["snapform"]["sample"].length; i++) {
+			 if (document.forms["snapform"]["sample"][i].checked) {
+			     samples_subset = samples_subset.concat(document.forms["snapform"]["sample"][i].value);
+			 }
+		     }
+		 } else {
+		     samples_subset = samples;
+		 }
+		 fromindex=frompos-startpos;
+		 toindex=topos-startpos;
+		 if (frompos < minstart) {
+		     alert("Start position must be at least " + minstart);
+		     return;
+		 }
+		 if (topos > maxend) {
+		     alert("End position must be less than " + maxend);
+		     return;
+		 }
+		 if (frompos > topos) {
+		     alert("End position must be greater than the start position");
+		     return;
+		 }
+		 DrawSnapshot(reference_track, samples_subset, alignBySample, fromindex, toindex, zoomlevel, true);
+	     }
+	     );
+	
+	// Export
+	$("#export").click
+	    (
+	     function() {
+		 // Get the d3 SVG element
+		 var svg = document.getElementById("snapshot").getElementsByTagName("svg")[0];
+		 
+		 // Extract SVG text string
+		 var svg_xml = (new XMLSerializer).serializeToString(svg);
+		 
+		 // Set filename based on region
+		 var start = document.forms["snapform"]["region"].value.split("-")[0];
+		 var end = document.forms["snapform"]["region"].value.split("-")[1];
+		 var filename = "pybamview_" + chrom + "_" + start + "_" + end + ".pdf";
+		 
+		 // Make a form with the SVG data
+		 var form = document.getElementById("exportform");
+		 form['data'].value = svg_xml;
+		 form['filename'].value = filename;
+		 form.submit();
+	     }
+	     );
+    } else {
+	AlignZoom(1);
+    }
 });

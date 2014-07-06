@@ -13,6 +13,7 @@
       var reference_track = "{{ REFERENCE }}";
       var buffer = {{ BUFFER }};
       var maxzoom = {{ MAXZOOM }};
+      var snapshot = false;
       var alignBySample = {
       {% for s in SAMPLES %}
       "{{ s }}": "{{ ALIGNMENTS[s]|join(';') }}",
@@ -37,7 +38,7 @@
     </div>
 
     <div class ='outer' id='toolbar'>
-      <form action="snapshot" target="_blank" method="post">
+      <form action="snapshot" target="_blank" name="snapform" method="post">
 	{% for s in SAMPLES %}
 	<input type='hidden' name='samples' value='{{ s }}'>
 	<input type='hidden' name='alignment_{{ s }}', value='{{ ALIGNMENTS[s]|join(";") }}'>
@@ -45,6 +46,7 @@
 	<input type='hidden' name='region' value='{{ REGION }}'>
 	<input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
 	<input type='hidden' name='reference' value='{{ REFERENCE }}'>
+	<input type='hidden' name='zoomlevel' value='1'>
 	<input type='submit' value="Export snapshot">
       </form>
       {% if TARGET_LIST|length > 0 %}
@@ -78,8 +80,18 @@
 	<table id="control">
 	  <tr>
 	    <td>Enter region: <input type='text' name='region' value='{{ REGION }}'><input type='submit'></td>
-	    <td><div id="zoomvalue">Zoom: 1x</div></td><td></td>
-	    <td><div id="zoomer"></div></td>
+	    <td><div id="zoomvalue">Zoom: 1x</div></td>
+	    <td><div id="zoomer">
+		<font class="zoomtext" size="6"><b>-</b></font>
+		{% for zl in range(10) %}
+		<button class="zoomout" id="zoom{{ (10-zl)*-1}}" onclick="refreshZoom({{ (10-zl)*-1 }} );" type="button"></button>
+		{% endfor %}
+		<button class="defaultzoom" id="zoom1" onclick="refreshZoom(1);" type="button"></button>
+		{% for zl in range(2,4) %}
+		<button class="zoomin" id="zoom{{ zl }}" onclick="refreshZoom({{ zl }});" type="button"></button>
+		{% endfor %}
+		<font class="zoomtext" size="6"><b>+</b></font>
+	    </div></td>
 	    <td><div id='selected'>Selected: </div></td>
 	  </tr>
 	</table>

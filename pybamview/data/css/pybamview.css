@@ -25,20 +25,32 @@
   padding: 10px 10px;
 }
 
-#zoomer {
-  float: left;
-  clear: left;
-  width: 500px;
-  margin-bottom: 1em auto;
+.zoomout {
+  background-color: white;
+  border: 0px;
+  width: 7px;
+  padding: 0px;
+  height: 20px;
 }
 
-#zoomer label {
-    position: absolute;
-    width: 10px;
-    font-size: 12px;
-    margin-left: -5px;
-    text-align: center;
-    margin-top: -30px;
+.zoomin {
+  background-color: white;
+  border: 0px;
+  width: 7px;
+  padding: 0px;
+  height: 20px;
+}
+
+.defaultzoom {
+  background-color: black;
+  border: 0px;
+  width: 7px;
+  padding: 0px;
+  height: 20px;
+}
+
+.zoomtext {
+  vertical-align: baseline;
 }
 
 #control {
