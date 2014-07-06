@@ -25,6 +25,17 @@
   padding: 10px 10px;
 }
 
+#zoomer {
+  float: left;
+  clear: left;
+  width: 500px;
+  margin: 5px;
+}
+
+#control {
+ border-spacing: 0px;   
+}
+
 #header_wrap {
   background: #212121;
   background: -moz-linear-gradient(top, #373737, #212121);

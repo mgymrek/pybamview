@@ -1,6 +1,7 @@
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
+ZOOMDEFAULT = 70;
 
 function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
@@ -11,9 +12,14 @@ function InHover(i, usefont) {
 	// Update color
 	d3.selectAll(".p"+i).style("fill","pink");
     } else {
-	d3.selectAll(".p"+i)
-	    .style("stroke","black")
-	    .style("stroke-width",1);
+	var nodes = d3.selectAll(".p"+i)[0];
+	for (var j = 0; j < nodes.length; j++) {
+	    if (nodes[j].style.fill == "rgb(255, 255, 255)") {
+		nodes[j].style.fill = "rgb(255, 192, 203)";
+		nodes[j].style["stroke-width"] = 1;
+		nodes[j].style.stroke = "rgb(255, 192, 203)";
+	    }
+	}
     }
     // Update selected box
     var x = document.getElementById("selected");
@@ -25,7 +31,14 @@ function OutHover(i, usefont) {
 	// Update color
 	d3.selectAll(".p"+i).style("fill","white");
     } else {
-	d3.selectAll(".p"+i).style("stroke-width",0);
+	var nodes = d3.selectAll(".p"+i)[0];
+	for (var j = 0; j < nodes.length; j++) {
+	    if (nodes[j].style.fill == "rgb(255, 192, 203)") {
+		nodes[j].style.fill = "rgb(255, 255, 255)";
+		nodes[j].style["stroke-width"] = 1;
+		nodes[j].style.stroke = "rgb(255, 255, 255)";
+	    }
+	}
     }
     // Update selected box
     var x = document.getElementById("selected");
@@ -33,17 +46,18 @@ function OutHover(i, usefont) {
 }
 
 function AlignZoom(zoomlevel) {
-    var frompos = parseInt(region.split("-")[0]);
-    var topos = parseInt(region.split("-")[1]);
-    fromindex=frompos-startpos;
-    toindex=topos-startpos;
+    // Set zoom level
     zoomlevel = parseFloat(zoomlevel);
     if (zoomlevel < 0) {
 	zoomlevel = -1/zoomlevel;
     }
+    var center_index = positions.length/2;
+    var fromindex = Math.round(center_index - (buffer/zoomlevel/2));
+    var toindex = Math.round(center_index + (buffer/zoomlevel/2));
+    // Redraw
     DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel);
-    // TODO - scroll, don't make hardcoded
-    $("#aln").scrollLeft(BASE_W*zoomlevel*250);
+    // Scroll
+    $("#aln").scrollLeft(Math.round(BASE_W*zoomlevel*(buffer/zoomlevel/2)));
 }
 
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel) {
@@ -101,9 +115,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	.attr("y", 0)
 	.attr("width", gridWidth)
 	.attr("height", gridHeight)
-	.attr("id", function(d, i) {return "ref"+i;})
-	.on("mouseover", function(d,i) {InHover(positions[i], usefont);})
-	.on("mouseout", function(d,i) {OutHover(positions[i], usefont);})
+	.attr("id", function(d, i) {return "ref"+i+fromindex;})
+	.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
+	.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
 	.style("fill", function(d) {return colors[d];})
 	.style("stroke", function(d) {return usefont?"white":colors[d];});
     if (usefont) {
@@ -112,8 +126,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .attr("y", gridHeight/2)
 	    .attr("dy", ".25em")
 	    .attr("fill", "white")
-	    .on("mouseover", function(d,i) {InHover(positions[i], usefont);})
-	    .on("mouseout", function(d,i) {OutHover(positions[i], usefont);})
+	    .on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
+	    .on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
 	    .style("font-family", "Courier")
 	    .style("font-size", fontSize)
 	    .style("text-anchor", "middle")
@@ -139,9 +153,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("y", currentHeight)
 		.attr("width", gridWidth)
 		.attr("height", gridHeight)
-		.attr("class", function(d, i) {return "p"+positions[i];})
-		.on("mouseover", function(d,i) {InHover(positions[i], usefont);})
-		.on("mouseout", function(d,i) {OutHover(positions[i], usefont);})
+		.attr("class", function(d, i) {return "p"+positions[i+fromindex];})
+		.on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
+		.on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
 		.style("fill", function(d, pos) {return (d.toUpperCase()!=refdata[pos].toUpperCase() &&
 							 IsNuc(refdata[pos].toUpperCase()) && 
 							 IsNuc(d.toUpperCase()))?"yellow":(usefont?"white":colors[d]);});
@@ -150,8 +164,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		    .text(function(d) {return d;})
 		    .attr("x", function(d, pos) {return pos*gridWidth+gridWidth/2;})
 		    .attr("y", currentHeight + gridHeight/2)
-		    .on("mouseover", function(d,i) {InHover(positions[i], usefont);})
-		    .on("mouseout", function(d,i) {OutHover(positions[i], usefont);})
+		    .on("mouseover", function(d,i) {InHover(positions[i+fromindex], usefont);})
+		    .on("mouseout", function(d,i) {OutHover(positions[i+fromindex], usefont);})
 		    .style("font-family", "Courier")
 		    .style("font-size", fontSize)
 		    .style("text-anchor", "middle")
@@ -181,17 +195,48 @@ $(window).scroll(function(){
     });
 });
 
+// Add slider for zooming
+function convertZoom(zoom) {
+    if (zoom == ZOOMDEFAULT) return 1;
+    if (zoom < ZOOMDEFAULT) {
+	return Math.round(((1-zoom/ZOOMDEFAULT)*(maxzoom-1)*-1-1)*100)/100;
+    }
+    if (zoom > ZOOMDEFAULT) {
+	return Math.round(((zoom-ZOOMDEFAULT)/(100-ZOOMDEFAULT)*2+1)*100)/100;
+    }
+}
+function updateZoomBox() {
+    var zoom = $("#zoomer").slider("value");
+    zoom = convertZoom(zoom);
+    $("#zoomvalue").html("Zoom: " + zoom + "x");
+    return zoom;
+}
+function refreshZoom() {
+    var zoom = updateZoomBox();
+    AlignZoom(zoom);
+}
+$(function() {
+	$( "#zoomer" ).slider({
+		orientation: "horizontal",
+		    min: 0,
+		    max: 100,
+		    value: ZOOMDEFAULT,
+		    slide: updateZoomBox,
+		    change: refreshZoom
+		    });
+    });
+
+
 // Perform when the page loads
 $(document).ready(function()
 {
 
 // Draw alignments
-var frompos = parseInt(region.split("-")[0]);
-var topos = parseInt(region.split("-")[1]);
-fromindex=frompos-startpos;
-toindex=topos-startpos;
+var center_index = positions.length/2;
+var fromindex = Math.round(center_index - (buffer/2));
+var toindex = Math.round(center_index + (buffer/2));
 DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, 1);
 
-// TODO these are hard coded, change that
-$("#aln").scrollLeft(BASE_W*250);
+// Scroll to center
+$("#aln").scrollLeft(BASE_W*(buffer/2));
 });

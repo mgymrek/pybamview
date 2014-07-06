@@ -174,7 +174,7 @@ def display_bam_region(bamfiles, samples, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, \
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
@@ -235,6 +235,8 @@ if __name__ == "__main__":
     app.debug = args.debug
     OPEN_BROWSER = (not args.no_browser)
     SETTINGS["NUMCHAR"] = NUMCHAR
+    SETTINGS["MAXZOOM"] = 10 # max x to zoom out
+    SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"

@@ -99,7 +99,7 @@ class AlignmentGrid(object):
         self.chrom = _chrom
         self.startpos = _pos
         self.settings = _settings
-        self.pos = self.startpos-int(self.settings["NUMCHAR"]*0.5)
+        self.pos = self.startpos-int(self.settings["LOADCHAR"]*0.5)
         if self.pos < 0: self.pos = 0
         self.samples = set(
             chain.from_iterable(rg.itervalues() for rg in _read_groups))
@@ -116,18 +116,18 @@ class AlignmentGrid(object):
         """
         # Get reference
         if self.ref is None or self.chrom not in self.ref.keys():
-            reference = ["N"]*self.settings["NUMCHAR"]
+            reference = ["N"]*self.settings["LOADCHAR"]
         else:
             chromlen = len(self.ref[self.chrom])
             if chromlen <= self.pos:
                 return
-            elif chromlen <= self.pos+self.settings["NUMCHAR"]:
+            elif chromlen <= self.pos+self.settings["LOADCHAR"]:
                 reference = self.ref[self.chrom][self.pos:]
-            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["NUMCHAR"]]
+            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["LOADCHAR"]]
             reference = [reference[i] for i in range(len(reference))]
         griddict = {"position": range(self.pos, self.pos+len(reference)), "reference": reference}
         # Get reads
-        region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["NUMCHAR"])))
+        region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["LOADCHAR"])))
         aligned_reads = []
         for bi, br in enumerate(self.bamreaders):
             try:
@@ -243,7 +243,7 @@ class AlignmentGrid(object):
         """
         Return string for the reference track
         """
-        if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["NUMCHAR"]
+        if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["LOADCHAR"]
         refseries = self.grid_by_sample.values()[0].reference.values
         reference = ""
         for i in range(len(refseries)):
@@ -252,7 +252,7 @@ class AlignmentGrid(object):
 
     def GetPositions(self, _pos):
         positions = []
-        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["NUMCHAR"])
+        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["LOADCHAR"])
         refseries = self.grid_by_sample.values()[0].reference.values
         for i in range(len(refseries)):
             positions.extend([self.pos+i]*len(refseries[i]))

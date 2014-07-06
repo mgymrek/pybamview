@@ -4,13 +4,15 @@
     <title>{{ title }}</title>
     <link rel='shortcut icon' href='/favicon.ico'>
     <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
     <script>
       var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";
       var chrom = "{{ CHROM }}";
       var samples = "{{ SAMPLES|join(',') }}".split(",");
       var startpos = {{ POSITIONS[0] }};
       var reference_track = "{{ REFERENCE }}";
+      var buffer = {{ BUFFER }};
+      var maxzoom = {{ MAXZOOM }};
       var alignBySample = {
       {% for s in SAMPLES %}
       "{{ s }}": "{{ ALIGNMENTS[s]|join(';') }}",
@@ -73,16 +75,13 @@
 	{% for s in SAMPLES %}
 	<input type='hidden' name='samples' value='{{ s }}'>
 	{% endfor %}
-	Enter region: <input type='text' name='region' value='{{ REGION }}'>
-	<input type='submit'>
-	<input type="range" name="points" id="points" value="50" min="0" max="100" data-show-value="true">
-	<a onclick="AlignZoom(-10);" href="javascript:void(0);">-10x</a>
-	<a onclick="AlignZoom(-3);" href="javascript:void(0);">-3x</a>
-	<a onclick="AlignZoom(-1.5);" href="javascript:void(0);">-1.5x</a>
-	<a onclick="AlignZoom(1);" href="javascript:void(0);">1x</a>
-	<a onclick="AlignZoom(1.5);" href="javascript:void(0);">1.5x</a>
-	<a onclick="AlignZoom(3);" href="javascript:void(0);">3x</a>
-	<a onclick="AlignZoom(10);" href="javascript:void(0);">10x</a>
+	<table id="control">
+	  <tr>
+	    <td>Enter region: <input type='text' name='region' value='{{ REGION }}'><input type='submit'></td>
+	    <td><div id="zoomvalue">Zoom: 1x</div></td>
+	    <td><div id="zoomer"></div></td>
+	  </tr>
+	</table>
 	<div id='selected'>Selected: </div>
       </form>
     </div>
@@ -107,7 +106,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
     <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
     <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
-    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
   </body>
 </html>
