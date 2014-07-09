@@ -129,7 +129,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	.enter().append("g");
     RefTrack.append("rect")
 	.attr("x", function(d, i) { return i*gridWidth; })
-	.attr("y", function(d) {return usefont?0:(d.toUpperCase() == "."?gridHeight/3:currentHeight);})
+	.attr("y", function(d) {return usefont?0:(d.toUpperCase() == "."?gridHeight/3:0);})
 	.attr("width", gridWidth)
 	.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
 	.attr("id", function(d, i) {return "ref"+i+fromindex;})
@@ -149,6 +149,38 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .style("font-size", fontSize)
 	    .style("text-anchor", "middle")
 	    .text(function(d) {return d;});
+    }
+    if (! snapshot) {
+	var x = d3.scale.linear()
+	    .domain([0,w])
+	    .range([0,w]);
+	var refbrush = d3.svg.brush()
+	    .x(x)
+	    .on("brush", brush)
+	    .on("brushend", brushed);
+	var gBrush = refsvg.append("g")
+	    .attr("class","brush")
+	    .call(refbrush);
+	gBrush.selectAll("rect")
+	    .attr("y", 0)
+	    .attr("height", gridHeight*2);
+	function brush() {
+	    var extent = refbrush.extent();
+	    d3.selectAll(".samplerect")
+		.attr("x", extent[0])
+		.attr("width", extent[1]-extent[0]);
+	}
+	function brushed() {
+	    var extent0 = refbrush.extent(),
+		extent1;
+	    extent1 = [Math.floor(extent0[0]/gridWidth)*gridWidth, Math.ceil(extent0[1]/gridWidth)*gridWidth];
+	    if (extent1[1]-extent1[0]<gridWidth*100) {extent1[1] = extent1[0];} // don't redraw if only a couple bp
+	    d3.select(this).call(refbrush.extent(extent1));
+	    d3.selectAll(".samplerect")
+		.attr("x", extent1[0])
+		.attr("width", extent1[1]-extent1[0]);
+	    // TODO reload with zoom into that area
+	}
     }
     // Draw each sample
     if (snapshot) { var currentHeight = gridHeight*1.6;}
@@ -207,6 +239,11 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    }
 	    currentHeight += gridHeight;
 	}
+	var sampleBrushRect = samplesvg.append("rect")
+	    .attr("class","samplerect")
+	    .attr("fill-opacity", 0.1)
+	    .attr("height", (1+alignBySample[samples[i]].split(";").length)*gridHeight)
+	    .attr("width", 0);
 	// Update position
 	currentHeight += gridHeight*1.5;
     }

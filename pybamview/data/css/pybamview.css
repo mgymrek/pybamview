@@ -117,4 +117,8 @@
     font-family: Courier;
 }
 
-.hover { background-color: black; }
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
