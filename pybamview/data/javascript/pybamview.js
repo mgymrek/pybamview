@@ -26,7 +26,7 @@ function InHover(i, usefont) {
     }
     // Update selected box
     var x = document.getElementById("selected");
-    x.innerHTML = "Selected: " + chrom + ":" + i;
+    x.innerHTML = "Selected: <b>" + chrom + ":" + i + "</b>";
 }
 
 function OutHover(i, usefont) {
@@ -232,6 +232,7 @@ $(window).scroll(function(){
 function refreshZoom(zoom) {
     $("#zoomvalue").html("Zoom: " + zoom + "x");
     document.forms["snapform"]["zoomlevel"].value = zoom;
+    document.forms["controlform"]["zoomlevel"].value = zoom;
     $(".zoomout").css("background-color", "white");
     $(".zoomin").css("background-color", "white");
     $(".defaultzoom").css("background-color","gray");
@@ -326,6 +327,14 @@ $(document).ready(function()
 	     }
 	     );
     } else {
-	AlignZoom(1);
+	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
+	AlignZoom(zoomlevel);
+	$(".zoomout, .zoomin, .defaultzoom").hover(
+						   function() {
+						       $(this).addClass("hover");
+						   }, function() {
+						       $(this).removeClass("hover");
+						   }
+						   );
     }
 });

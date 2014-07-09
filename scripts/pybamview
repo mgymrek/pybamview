@@ -140,6 +140,7 @@ def listsamples(methods=['POST','GET']):
 @app.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
     samplebams = request.args.getlist("samplebams")
+    zoomlevel = request.args.get("zoomlevel")
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
@@ -153,9 +154,9 @@ def display_bam():
             bamfiles_toinclude.extend(s.split(":")[1:])
     region = request.args.get("region","None:0")
     region.replace("%3A",":")
-    return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region)
+    return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
-def display_bam_region(bamfiles, samples, region):
+def display_bam_region(bamfiles, samples, region, zoomlevel):
     for bam in bamfiles:
         if not os.path.exists(join(BAMDIR,bam)):
             MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
@@ -174,7 +175,7 @@ def display_bam_region(bamfiles, samples, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], \
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 

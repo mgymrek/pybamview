@@ -18,6 +18,7 @@
   padding: 0;
   left: 0px;
   right: 0px;
+  width: 100%;
 }
 
 .inner {
@@ -30,7 +31,8 @@
   border: 0px;
   width: 7px;
   padding: 0px;
-  height: 20px;
+  height: 15px;
+  vertical-align: middle;
 }
 
 .zoomin {
@@ -38,7 +40,8 @@
   border: 0px;
   width: 7px;
   padding: 0px;
-  height: 20px;
+  height: 15px;
+  vertical-align: middle;
 }
 
 .defaultzoom {
@@ -46,15 +49,17 @@
   border: 0px;
   width: 7px;
   padding: 0px;
-  height: 20px;
+  height: 15px;
+  vertical-align: middle;
 }
 
-.zoomtext {
-  vertical-align: baseline;
+#zoomer {
+  vertical-align: middle;
 }
 
 #control {
- border-spacing: 10px;   
+  border-spacing: 0px;
+  vertical-align: middle;
 }
 
 #header_wrap {
@@ -112,4 +117,4 @@
     font-family: Courier;
 }
 
-.hover { background-color: pink; }
+.hover { background-color: black; }
