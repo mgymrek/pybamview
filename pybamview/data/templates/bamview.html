@@ -107,12 +107,14 @@
       <div id="reference" class="reference"></div>
       <div id="alignments" class="alignments">
 	{% for sample in SAMPLES %}
-	<div id="sample" class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
+	<div class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
 	<div id="{{ sample }}" class="sampleAlignment"></div>
 	{% endfor %}
       </div>
     </div>
-    
+    {% for sample in SAMPLES %}
+    <div class="spacer"><br><br></div>
+    {% endfor %}
     <div id='footer_wrap' class='outer'>
       <footer class='inner'>
 	<div id='footer_info'>This alignment is being viewed with <a href='https://github.com/mgymrek/pybamview' target='_blank'>PyBamView</a>
