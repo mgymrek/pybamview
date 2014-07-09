@@ -328,7 +328,7 @@ $(document).ready(function()
 	     );
     } else {
 	var w = parseInt($("#toolbar").css("width"));
-	$(".sample").css({"width": w});
+	$(".sample").css({"width": w-2});
 	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
 	AlignZoom(zoomlevel);
 	$(".zoomout, .zoomin, .defaultzoom").hover(
