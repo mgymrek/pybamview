@@ -17,7 +17,7 @@ function InHover(i, usefont) {
     } else {
 	var nodes = d3.selectAll(".p"+i)[0];
 	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 255, 255)") {
+	    if (nodes[j].style.fill == "rgb(255, 255, 255)" || nodes[j].style.fill == "white") {
 		nodes[j].style.fill = "rgb(255, 192, 203)";
 		nodes[j].style["stroke-width"] = 1;
 		nodes[j].style.stroke = "rgb(255, 192, 203)";
@@ -36,7 +36,7 @@ function OutHover(i, usefont) {
     } else {
 	var nodes = d3.selectAll(".p"+i)[0];
 	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 192, 203)") {
+	    if (nodes[j].style.fill == "rgb(255, 192, 203)" || nodes[j].style.fill == "pink") {
 		nodes[j].style.fill = "rgb(255, 255, 255)";
 		nodes[j].style["stroke-width"] = 1;
 		nodes[j].style.stroke = "rgb(255, 255, 255)";
