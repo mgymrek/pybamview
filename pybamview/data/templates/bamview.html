@@ -89,7 +89,7 @@
 	  <td><div id="zoomvalue">Zoom: 1x</div></td>
 	  <td><div id="zoomer">
 	      <b>-</b>
-	      {% for zl in range(10) %}
+	      {% for zl in range(9) %}
 	      <button class="zoomout" id="zoom{{ (10-zl)*-1}}" onclick="refreshZoom({{ (10-zl)*-1 }} );" type="button"></button>
 	      {% endfor %}
 	      <button class="defaultzoom" id="zoom1" onclick="refreshZoom(1);" type="button"></button>

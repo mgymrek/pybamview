@@ -1,7 +1,6 @@
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
-ZOOMDEFAULT = 82;
 
 function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
@@ -60,7 +59,7 @@ function AlignZoom(zoomlevel) {
     // Redraw
     DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, false);
     // Scroll (try to keep previously visible section in the center)
-    var w = parseInt($("#sample").css("width"));
+    var w = parseInt($(".sample").css("width"));
     var vis1 = w/(BASE_W*zoomlevel);
     var vis0 = w/(BASE_W);
     var numBpToScroll = (buffer/zoomlevel/2) - (vis1-vis0)/2;
@@ -179,7 +178,19 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    d3.selectAll(".samplerect")
 		.attr("x", extent1[0])
 		.attr("width", extent1[1]-extent1[0]);
-	    // TODO reload with zoom into that area
+	    if (extent1[1] > extent1[0]) {
+		// Set form items - region
+		var startpos = positions[fromindex + extent1[0]/gridWidth];
+		var endpos = positions[fromindex + extent1[1]/gridWidth];
+		document.forms["controlform"]["region"].value = chrom + ":" + startpos;
+		// Set form items - zoom
+		var z = parseInt((endpos-startpos)/100);
+		if (z < 1) {z = 1;}
+		if (z != 1) {z = -1*z;}
+		document.forms["controlform"]["zoomlevel"].value = z;
+		// Update view
+		document.forms["controlform"].submit();
+	    }
 	}
     }
     // Draw each sample
@@ -241,7 +252,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	}
 	var sampleBrushRect = samplesvg.append("rect")
 	    .attr("class","samplerect")
-	    .attr("fill-opacity", 0.1)
+	    .attr("fill-opacity", 0.5)
+	    .attr("fill","pink")
+	    .attr("stroke", "#fff")
 	    .attr("height", (1+alignBySample[samples[i]].split(";").length)*gridHeight)
 	    .attr("width", 0);
 	// Update position
@@ -267,6 +280,9 @@ $(window).scroll(function(){
 });
 
 function refreshZoom(zoom) {
+    if ($("#zoom"+zoom).length == 0) {
+	zoom = 1; // TODO handle if zoom is not a preset value
+    }
     $("#zoomvalue").html("Zoom: " + zoom + "x");
     document.forms["snapform"]["zoomlevel"].value = zoom;
     document.forms["controlform"]["zoomlevel"].value = zoom;
@@ -367,7 +383,7 @@ $(document).ready(function()
 	var w = parseInt($("#toolbar").css("width"));
 	$(".sample").css({"width": w-2});
 	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
-	AlignZoom(zoomlevel);
+	refreshZoom(zoomlevel);
 	$(".zoomout, .zoomin, .defaultzoom").hover(
 						   function() {
 						       $(this).addClass("hover");

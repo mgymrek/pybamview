@@ -122,3 +122,7 @@
     fill-opacity: .125;
     shape-rendering: crispEdges;
 }
+
+.hover {
+    background-color: black;
+}
