@@ -1,0 +1,159 @@
+---
+---
+<!DOCTYPE html>
+<html>
+{% include header.html %}
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pybamview</h1>
+        <h2>Browser based application for viewing bam alignments</h2>
+	{% include menu.html %}<br>
+      </div>
+    </header>
+    <div class="container">
+      <section id="main_content">
+	<h1>Serving PyBamView remotely</h1>
+	PyBamView is run as
+	a <a href="http://flask.pocoo.org/">Flask</a> application,
+	which starts up a mini web application. This means that 
+	as well as using PyBamView to browse alignments locally on
+	your own computer, you can also serve PyBamView at a URL that
+	is visible to remote collaborators for easy sharing of
+	alignment views.  
+	<h2>Serving PyBamView from your own server</h2>
+	<ol>
+	  <li>Install PyBamView by following
+	  the <a href="install.html">installation
+	  instructions</a>.</li>
+	  <li>Determine the hostname of your server
+	    {% highlight bash %}
+	    hostname -f
+	    {% endhighlight %}
+	  </li>
+	  <li>Run PyBamView, following
+	  the <a href="usage.html">usage</a> instructions. Use the
+	  option "--ip 0.0.0.0", which will allow a remote user to
+	  view the results. Also set which port to serve the web
+	  application by setting "--port $PORT" where $PORT is some
+	  large number, between 1024-65535. The default port for
+	  PyBamView is 5000. An example command is shown below:
+	    {% highlight bash %}
+	    pybamview --bamdir .. --ref hg19.fa --ip 0.0.0.0 --port 5000
+	    {% endhighlight %}
+	    </li>
+	  <li>
+	    Navigate to http://$HOSTNAME:$PORT in a web broswer, where
+	    $HOSTNAME is the hostname mentioned above, and $PORT is
+	    the argument you used for the port. You can share this
+	    URL, or navigate to an interesting alignment view and copy
+	    the resulting URL from the browser, with another person that has access to the same server,
+	    they can use this same URL. Note that if you need VPN to
+	    access the server, the other user will probably also need
+	    VPN access to view the URL.
+	  </li>
+	</ol>
+	<h2>Serving PyBamView from an Amazon EC2 instance</h2>
+	You may want to host a PyBamView instance somewhere besides
+	your own server, for instance if you want to keep it running
+	indefinitely to publicly host your alignment data. A good
+	option for doing this is through Amazon Web Services.
+	<p>
+	There are existing tutorials online (e.g. <a href="Getting a simple Flask app running on Amazon EC2">http://blog.garethdwyer.co.za/2013/07/getting-simple-flask-app-running-on.html</a>)
+	for how to serve a Python Flask application using Amazon
+	EC2. Below are specific instructions to go from a fresh Amazon
+	EC2 instance to a URL where you can share PyBamView
+	alignments. The instructions assume you have an AWS account
+	and know how to launch EC2 instances. For more info, check out
+	<a href="instructions on the AWS site">http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/LaunchingAndUsingInstances.html</a>.
+	<ol>
+	  <li>Start up an EC2 instance running Ubuntu through your Amazon Web
+	  Services console.
+	    <p>
+	      Note, when choosing what type of instance
+	      to run, you'll want to make sure you have enough disk space
+	      to store your alignments and reference genome. If you have
+	      very high coverage data you might also need to take into
+	      account how much memory you will need. See <a href="http://aws.amazon.com/ec2/instance-types/">this
+		comparison of EC2 instance types</a> to help you decide which
+	      type to use. A micro instance was sufficient for
+	      the <a href="http://pybamview.melissagymrek.com/bamview?bamfiles=%2Fhome%2Fubuntu%2Fpybamview%2Fexamples%2Fexample.sorted.bam&samples=mysample&region=chrY%3A14466994">example</a>
+	      served from this site.
+	    <p>
+	      You should also make sure your security group is
+	      configured to allow http connections. You can add rules
+	      to a security group in the "Security Groups" section of
+	      the AWS console, under the "Network & Security"
+	      options. Choose the security group you plan to use (or
+	      create a new one). Then go to the "Inbound" tab and
+	      click "Edit". Click "Add Rule" and select "HTTP" as the
+	      type. If you do not do this step, you won't be able to
+	      go to the URLs described below.
+</li>
+	  <li>Log into your EC2 instance through SSH. This usually
+	  goes something like this:
+	    {% highligh bash %}
+	    ssh -i $my_key.pem ubuntu@$ec2-XX-XXX-XXX-XXX.compute-1.amazonaws.com
+	    {% endhighlight %}
+	    where $my_key.pem is your key pair.
+	  </li>
+	  <li>
+	    Load all of your data, including any alignments you will
+	    want to view plus an option reference genome fasta file, onto the instance. You can store
+	    data in the "/mnt/" directory. You can upload data to the
+	    instance using scp, wget, or directly from Amazon S3 using
+	    s3cmd or similar tools. I assume you have a way to do this
+	    and don't go into more details here.
+	  </li>
+	  <li>
+	    Run:
+	    {% highlight bash %}
+	    sudo apt-get update
+	    {% endhighlight %}
+	    to update package lists.
+	  </li>
+	  <li>
+	    Install what you will need for running Python and using
+	    apache:
+	    {% highlight bash %}
+	    sudo apt-get install python-dev python-pip g++
+	    libapache2-mod-wsgi httpd apache2 libapache2-mod-python libapache2-mod-wsgi 
+	    {% endhighlight %}
+	  </li>
+	  <li>
+	    Use pip to install pybamview
+	    {% highlight bash %}
+	    pip install pybamvie
+	    {% endhighlight %}
+	  </li>
+	  <li>
+	    Edit /etc/apache2/httpd.conf to look something like this:
+	    {% highlight html %}
+&lt;VirtualHost *:80&gt;
+        ServerName mydomain.com
+
+        ProxyPass / http://localhost:5000/
+
+        &lt;Location /&gt;
+                Order allow,deny
+                allow from all
+                deny from none
+        &lt;Location&gt;
+
+&lt;/VirtualHost&gt;
+	    {% end highlight %}
+	  </li>
+	  <li>
+	    Run:
+	    {% highlight bash %}
+	    sudo a2enmod proxy_balancer
+	    sudo service apache2 restart
+	    {% endhighlight %}
+	  </li>
+	</ol>
+      </section>
+    </div>
+    
+  </body>
+</html>
