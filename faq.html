@@ -21,7 +21,9 @@
 	<ul>
 	  <li><strong>How does PyBamView determine which samples are present in BAM files?</strong>
 	    <p>
-	      PyBamView uses read groups to determine which samples to display. Any read group with the same sample (SM) field will be treated as coming from the same sample, even if reads for that sample span multiple bam files. <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files">This page on the GATK website</a> answers general FAQ about formatting BAM files.
+	      PyBamView uses read groups to determine which samples to display. Any read group with the same sample (SM) field will be treated as coming from the same sample, even if reads for that sample span multiple bam files. Note that not all aligners automatically annotate read groups. You can use Picard's <a href="http://picard.sourceforge.net/command-line-overview.shtml#AddOrReplaceReadGroups">AddOrReplaceReadGroups</a> tool to add read group information.
+	      <p>
+		<a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files">This page on the GATK website</a> answers general FAQ about formatting BAM files.
 	  </li>
 	  <li><strong>Are clipped bases displayed?</strong>
 	    <p>
