@@ -1,6 +1,7 @@
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
+REFCOLOR = "black"
 
 function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
@@ -79,6 +80,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     }
     // Set positioning variables
     usefont = true;
+    drawnucs = true;
     gridWidth = BASE_W*zoomlevel;
     gridHeight = BASE_H*zoomlevel;
     fontSize = BASE_FONT*zoomlevel;
@@ -87,6 +89,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     }
     if (zoomlevel < 1/2) {
 	usefont = false;
+    }
+    if (zoomlevel <= 1/100) {
+	drawnucs = false;
     }
     var numreads = 0;
     for (var i=0; i < samples.length; i++) {
@@ -123,19 +128,28 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     }
     // Draw reference
     var refdata = reference_track.slice(fromindex, toindex+1).split("");
-    var RefTrack = refsvg.selectAll("gref")
-	.data(refdata)
-	.enter().append("g");
-    RefTrack.append("rect")
-	.attr("x", function(d, i) { return i*gridWidth; })
-	.attr("y", function(d) {return usefont?0:(d.toUpperCase() == "."?gridHeight/3:0);})
-	.attr("width", gridWidth)
-	.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
-	.attr("id", function(d, i) {return "ref"+i+fromindex;})
-	.on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
-	.on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
-	.style("fill", function(d) {return colors[d];})
-	.style("stroke", function(d) {return usefont?"white":colors[d];});
+    if (drawnucs) {
+	var RefTrack = refsvg.selectAll("gref")
+	    .data(refdata)
+	    .enter().append("g");
+	RefTrack.append("rect")
+	    .attr("x", function(d, i) { return i*gridWidth; })
+	    .attr("y", function(d) {return usefont?0:(d.toUpperCase() == "."?gridHeight/3:0);})
+	    .attr("width", gridWidth)
+	    .attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
+	    .attr("id", function(d, i) {return "ref"+i+fromindex;})
+	    .on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+	    .on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
+	    .style("fill", function(d) {return colors[d];})
+	    .style("stroke", function(d) {return usefont?"white":colors[d];});
+    } else {
+	refsvg.append("rect")
+	    .attr("x", 0)
+	    .attr("y", 0)
+	    .attr("height", gridHeight)
+	    .attr("width", gridWidth*(toindex-fromindex+1))
+	    .attr("fill", REFCOLOR);
+    }
     if (usefont) {
 	RefTrack.append("text")
 	    .attr("x", function(d, i) {return i*gridWidth+gridWidth/2; })
@@ -221,21 +235,49 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	sample_data_reads = sample_data.split(";");
 	for (var j = 0; j < sample_data_reads.length; j++) {
 	    readdata = sample_data_reads[j].slice(fromindex, toindex+1).split("");
-	    var SampleTrack = samplesvg.selectAll("gsamp_"+samples[i])
-		.data(readdata)
-		.enter().append("g");
-	    SampleTrack.append("rect")
-		.attr("x", function(d, pos) { return pos*gridWidth; })
-		.attr("y", function(d) {return usefont?currentHeight:(d.toUpperCase() == "."?currentHeight+gridHeight/3:currentHeight);})
-		.attr("width", gridWidth)
-		.attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
-		.attr("class", function(d, i) {return snapshot?"":"p"+positions[i+fromindex];})
-		.on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
-		.on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
-		.style("stroke-width", 0)
-		.style("fill", function(d, pos) {return usefont?((d.toUpperCase()!=refdata[pos].toUpperCase() &&
-							 IsNuc(refdata[pos].toUpperCase()) && 
-								  IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
+	    if (drawnucs) {
+		var SampleTrack = samplesvg.selectAll("gsamp_"+samples[i])
+		    .data(readdata)
+		    .enter().append("g");
+		SampleTrack.append("rect")
+		    .attr("x", function(d, pos) { return pos*gridWidth; })
+		    .attr("y", function(d) {return usefont?currentHeight:(d.toUpperCase() == "."?currentHeight+gridHeight/3:currentHeight);})
+		    .attr("width", gridWidth)
+		    .attr("height", function(d) {return usefont?gridHeight:(d.toUpperCase() == "."?gridHeight/3:gridHeight);})
+		    .attr("class", function(d, i) {return snapshot?"":"p"+positions[i+fromindex];})
+		    .on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
+		    .on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
+		    .style("stroke-width", 0)
+		    .style("fill", function(d, pos) {return usefont?((d.toUpperCase()!=refdata[pos].toUpperCase() &&
+								      IsNuc(refdata[pos].toUpperCase()) && 
+								      IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
+	    } else {
+		var read_start = 0;
+		while (sample_data_reads[j][read_start] == "-") {
+		    read_start = read_start + 1;
+		    if (read_start == sample_data_reads[j].length - 1) {
+			read_start = 0;
+			break;
+		    }
+		}
+		var read_end = sample_data_reads[j].length;
+		while (sample_data_reads[j][read_end] == "-") {
+		    read_end = read_end -1;
+		    if (read_end == 0) {
+			break;
+		    }
+		}
+		alert(read_start + " " + read_end);
+		if (read_end > read_start) {
+		    samplesvg.append("rect")
+			.attr("x", read_start*gridWidth)
+			.attr("y", currentHeight)
+			.attr("width", (read_end - read_start + 1)*gridWidth)
+			.attr("height", gridHeight)
+			.attr("fill", "lightgray")
+			.attr("stroke", "gray");
+		}
+	    }
 	    if (usefont) {
 		SampleTrack.append("text")
 		    .text(function(d) {return d;})
@@ -280,8 +322,11 @@ $(window).scroll(function(){
 });
 
 function refreshZoom(zoom) {
+    if (zoom < -20) {
+	zoom = -100;
+    }
     if ($("#zoom"+zoom).length == 0) {
-	zoom = 1; // TODO handle if zoom is not a preset value
+	zoom = 1;
     }
     $("#zoomvalue").html("Zoom: " + zoom + "x");
     document.forms["snapform"]["zoomlevel"].value = zoom;
@@ -384,12 +429,5 @@ $(document).ready(function()
 	$(".sample").css({"width": w-2});
 	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
 	refreshZoom(zoomlevel);
-	$(".zoomout, .zoomin, .defaultzoom").hover(
-						   function() {
-						       $(this).addClass("hover");
-						   }, function() {
-						       $(this).removeClass("hover");
-						   }
-						   );
     }
 });

@@ -239,7 +239,7 @@ if __name__ == "__main__":
     app.debug = args.debug
     OPEN_BROWSER = (not args.no_browser)
     SETTINGS["NUMCHAR"] = NUMCHAR
-    SETTINGS["MAXZOOM"] = 10 # max x to zoom out
+    SETTINGS["MAXZOOM"] = 100 # max x to zoom out
     SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
     # Load reference
     if REFFILE is None:

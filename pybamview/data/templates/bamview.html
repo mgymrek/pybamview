@@ -12,7 +12,6 @@
       var startpos = {{ POSITIONS[0] }};
       var reference_track = "{{ REFERENCE }}";
       var buffer = {{ BUFFER }};
-      var maxzoom = {{ MAXZOOM }};
       var snapshot = false;
       var alignBySample = {
       {% for s in SAMPLES %}
@@ -89,8 +88,9 @@
 	  <td><div id="zoomvalue">Zoom: 1x</div></td>
 	  <td><div id="zoomer">
 	      <b>-</b>
+	      <button class="zoomout" id="zoom{{ -100 }}" onclick="refreshZoom({{ -100 }} );" type="button"></button>
 	      {% for zl in range(9) %}
-	      <button class="zoomout" id="zoom{{ (10-zl)*-1}}" onclick="refreshZoom({{ (10-zl)*-1 }} );" type="button"></button>
+	      <button class="zoomout" id="zoom{{ (10-zl)*-1 }}" onclick="refreshZoom({{ (10-zl)*-1 }} );" type="button"></button>
 	      {% endfor %}
 	      <button class="defaultzoom" id="zoom1" onclick="refreshZoom(1);" type="button"></button>
 	      {% for zl in range(2,4) %}
