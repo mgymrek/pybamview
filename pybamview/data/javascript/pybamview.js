@@ -149,6 +149,22 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .attr("height", gridHeight)
 	    .attr("width", gridWidth*(toindex-fromindex+1))
 	    .attr("fill", REFCOLOR);
+	for (var r = 0; r < refdata.length; r++) {
+	    if (refdata[r] == ".") {
+		refsvg.append("rect")
+		    .attr("x", r*gridWidth)
+		    .attr("y", 0)
+		    .attr("height", gridHeight)
+		    .attr("width", gridWidth)
+		    .attr("fill", "white");
+		refsvg.append("rect")
+		    .attr("x", r*gridWidth)
+		    .attr("y", gridHeight/3)
+		    .attr("height", gridHeight/3)
+		    .attr("width", gridWidth)
+		    .attr("fill", colors["."]);
+	    }
+	}
     }
     if (usefont) {
 	RefTrack.append("text")
@@ -260,14 +276,13 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			break;
 		    }
 		}
-		var read_end = sample_data_reads[j].length;
+		var read_end = sample_data_reads[j].length - 1;
 		while (sample_data_reads[j][read_end] == "-") {
 		    read_end = read_end -1;
 		    if (read_end == 0) {
 			break;
 		    }
 		}
-		alert(read_start + " " + read_end);
 		if (read_end > read_start) {
 		    samplesvg.append("rect")
 			.attr("x", read_start*gridWidth)
@@ -276,6 +291,22 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			.attr("height", gridHeight)
 			.attr("fill", "lightgray")
 			.attr("stroke", "gray");
+		}
+		for (var r=0; r < sample_data_reads[j].length; r++) {
+		    if (sample_data_reads[j][r] == ".") {
+			samplesvg.append("rect")
+			    .attr("x", r*gridWidth)
+			    .attr("y", currentHeight)
+			    .attr("height", gridHeight)
+			    .attr("width", gridWidth)
+			    .attr("fill", "white");
+			samplesvg.append("rect")
+			    .attr("x", r*gridWidth)
+			    .attr("y", gridHeight/3)
+			    .attr("height", gridHeight/3)
+			    .attr("width", gridWidth)
+			    .attr("fill", colors["."]);
+		    }
 		}
 	    }
 	    if (usefont) {
