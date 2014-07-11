@@ -16,7 +16,7 @@
       <section id="main_content">
 	<h1>Serving PyBamView remotely</h1>
 	PyBamView uses
-	a <a href="http://flask.pocoo.org/">Flask</a>,
+	<a href="http://flask.pocoo.org/">Flask</a>,
 	which starts up a mini web application. This means that 
 	as well as using PyBamView to browse alignments locally on
 	your own computer, you can also serve PyBamView at a URL that
@@ -127,7 +127,7 @@
 	    {% endhighlight %}
 	  </li>
 	  <li>
-	    Edit /etc/apache2/sites-enabled/000-default.conf to include the following:
+	    Edit /etc/apache2/sites-enabled/000-default.conf to include the following between the "VirtualHost" tags:
 	    {% highlight html %}
 <VirtualHost *:80>
         ProxyPass / http://localhost:5000/
@@ -144,7 +144,8 @@
 	  <li>
 	    Run:
 	    {% highlight bash %}
-	    sudo a2enmod proxy_balancer
+	    sudo a2enmod proxy_http
+	    sudo a2enmod proxy
 	    sudo service apache2 restart
 	    {% endhighlight %}
 	  </li>
