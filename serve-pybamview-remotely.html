@@ -156,7 +156,8 @@
 	    {% endhighlight %}
 	  </li>
 	  <li>
-	    Now you should be able to access PyBamView through any browser by navigating to the public IP of your EC2 instance. If you don't know what this is, you can find it on your Amazon Web Services console. Simply copy this to your browser, and if all is good you should see PyBamView running. If you'd rather serve from a URL from your own custom domain, see <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-and-test-dns-subdomains-with-digitalocean-s-dns-panel">this tutorial</a> for how to set that up.
+	    Now you should be able to access PyBamView through any browser by navigating to the public IP of your EC2 instance. If you don't know what this is, you can find it on your Amazon Web Services console. Simply copy this to your browser, and if all is good you should see PyBamView running. If it's not working, check the apache2 log at /var/log/apache2/error.log to see some hopefully useful error messages.
+	    <p>If you'd rather serve from a URL from your own custom domain, see <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-and-test-dns-subdomains-with-digitalocean-s-dns-panel">this tutorial</a> for how to set that up.
 	  </li>
 	</ol>
       </section>
