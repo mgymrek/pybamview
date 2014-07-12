@@ -90,7 +90,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     if (zoomlevel < 1/2) {
 	usefont = false;
     }
-    if (zoomlevel <= 1/100) {
+    if (zoomlevel <= 1/4) {
 	drawnucs = false;
     }
     var numreads = 0;
@@ -156,13 +156,15 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		    .attr("y", 0)
 		    .attr("height", gridHeight)
 		    .attr("width", gridWidth)
-		    .attr("fill", "white");
+		    .attr("fill", "white")
+		    .attr("stroke", "white");
 		refsvg.append("rect")
 		    .attr("x", r*gridWidth)
 		    .attr("y", gridHeight/3)
 		    .attr("height", gridHeight/3)
 		    .attr("width", gridWidth)
-		    .attr("fill", colors["."]);
+		    .attr("fill", colors["."])
+		    .attr("stroke", colors["."]);
 	    }
 	}
     }
@@ -195,6 +197,10 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .attr("height", gridHeight*2);
 	function brush() {
 	    var extent = refbrush.extent();
+	    var startpos = positions[fromindex+Math.floor(extent[0]/gridWidth)];
+	    var endpos = positions[fromindex+Math.ceil(extent[1]/gridWidth)];
+	    var sel = document.getElementById("selected");
+	    sel.innerHTML = "Selected: <b>" + chrom + ":" + startpos + "-" + endpos + "</b>";
 	    d3.selectAll(".samplerect")
 		.attr("x", extent[0])
 		.attr("width", extent[1]-extent[0]);
@@ -212,7 +218,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		// Set form items - region
 		var startpos = positions[fromindex + extent1[0]/gridWidth];
 		var endpos = positions[fromindex + extent1[1]/gridWidth];
-		document.forms["controlform"]["region"].value = chrom + ":" + startpos;
+		document.forms["controlform"]["region"].value = chrom + ":" + parseInt((endpos+startpos)/2);
 		// Set form items - zoom
 		var z = parseInt((endpos-startpos)/100);
 		if (z < 1) {z = 1;}
@@ -244,7 +250,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    // Make div for the sample
 	    var samplesvg = d3.select("#"+samples[i]).append("svg:svg")
 		.attr("width",w)
-		.attr("height",(1+alignBySample[samples[i]].split(";").length)*gridHeight);
+		.attr("height",(2+alignBySample[samples[i]].split(";").length)*gridHeight);
 	}
 	// Draw reads
 	sample_data = alignBySample[samples[i]];
@@ -269,15 +275,15 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 								      IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
 	    } else {
 		var read_start = 0;
-		while (sample_data_reads[j][read_start] == "-") {
+		while (readdata[read_start] == "-") {
 		    read_start = read_start + 1;
-		    if (read_start == sample_data_reads[j].length - 1) {
+		    if (read_start == readdata.length - 1) {
 			read_start = 0;
 			break;
 		    }
 		}
-		var read_end = sample_data_reads[j].length - 1;
-		while (sample_data_reads[j][read_end] == "-") {
+		var read_end = readdata.length - 1;
+		while (readdata[read_end] == "-") {
 		    read_end = read_end -1;
 		    if (read_end == 0) {
 			break;
@@ -292,20 +298,22 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			.attr("fill", "lightgray")
 			.attr("stroke", "gray");
 		}
-		for (var r=0; r < sample_data_reads[j].length; r++) {
-		    if (sample_data_reads[j][r] == ".") {
+		for (var r=0; r < readdata.length; r++) {
+		    if (readdata[r] == ".") {
 			samplesvg.append("rect")
 			    .attr("x", r*gridWidth)
 			    .attr("y", currentHeight)
 			    .attr("height", gridHeight)
 			    .attr("width", gridWidth)
-			    .attr("fill", "white");
+			    .attr("fill", "white")
+			    .attr("stroke", "white");
 			samplesvg.append("rect")
 			    .attr("x", r*gridWidth)
-			    .attr("y", gridHeight/3)
+			    .attr("y", gridHeight/3+currentHeight)
 			    .attr("height", gridHeight/3)
 			    .attr("width", gridWidth)
-			    .attr("fill", colors["."]);
+			    .attr("fill", colors["."])
+			    .attr("stroke", colors["."]);
 		    }
 		}
 	    }
@@ -352,9 +360,28 @@ $(window).scroll(function(){
     });
 });
 
+function scroll(direction) {
+    var zoomlevel = parseInt(document.forms["controlform"]["zoomlevel"].value);
+    if (zoomlevel < 1) {
+	zoomlevel = -1/zoomlevel;
+    }
+    var startpos;
+    if (direction == 0) { // scroll left
+	startpos = positions[0] - buffer/zoomlevel/2;
+    } else { // scroll right
+	startpos = positions[positions.length-1] + buffer/zoomlevel/2;
+    }
+    document.forms["controlform"]["region"].value = chrom + ":" + startpos;
+    document.forms["controlform"].submit();
+}
+
 function refreshZoom(zoom) {
-    if (zoom < -20) {
+    if (zoom < -60) {
 	zoom = -100;
+    } else if (zoom < -30) {
+	zoom = -50;
+    } else if (zoom < -10) {
+	zoom = -10;
     }
     if ($("#zoom"+zoom).length == 0) {
 	zoom = 1;

@@ -26,6 +26,14 @@
   padding: 10px 10px;
 }
 
+.arrow {
+  background-color: white;
+  border: 0px;
+  padding: 0px;
+  height: 15px;
+  vertical-align: middle;
+}
+
 .zoomout {
   background-color: white;
   border: 0px;

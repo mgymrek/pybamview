@@ -88,7 +88,9 @@
 	  <td><div id="zoomvalue">Zoom: 1x</div></td>
 	  <td><div id="zoomer">
 	      <b>-</b>
+	      <button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button>
 	      <button class="zoomout" id="zoom{{ -100 }}" onclick="refreshZoom({{ -100 }} );" type="button"></button>
+	      <button class="zoomout" id="zoom{{ -50 }}" onclick="refreshZoom({{ -50 }} );" type="button"></button>
 	      {% for zl in range(9) %}
 	      <button class="zoomout" id="zoom{{ (10-zl)*-1 }}" onclick="refreshZoom({{ (10-zl)*-1 }} );" type="button"></button>
 	      {% endfor %}
@@ -96,6 +98,7 @@
 	      {% for zl in range(2,4) %}
 	      <button class="zoomin" id="zoom{{ zl }}" onclick="refreshZoom({{ zl }});" type="button"></button>
 	      {% endfor %}
+	      <button class="arrow" id="rightzoom" type="button" onclick="scroll(1);"><b> &gt; </b></button>
 	      <b>+</b>
 	  </div></td>
 	</tr>
