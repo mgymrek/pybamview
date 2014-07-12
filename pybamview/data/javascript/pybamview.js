@@ -48,15 +48,23 @@ function OutHover(i, usefont) {
     x.innerHTML = "Selected ";
 }
 
-function AlignZoom(zoomlevel) {
+function AlignZoom(zoomlevel, center_index) {
     // Set zoom level
     zoomlevel = parseFloat(zoomlevel);
     if (zoomlevel < 0) {
 	zoomlevel = -1/zoomlevel;
     }
-    var center_index = positions.length/2;
     var fromindex = Math.round(center_index - (buffer/zoomlevel/2));
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
+    if (fromindex < 0) {
+	fromindex = 0;
+	toindex = fromindex + buffer/zoomlevel;
+    }
+    if (toindex >= positions.length) {
+	toindex = positions.length  - 1;
+	fromindex = toindex - buffer/zoomlevel;
+    }
+    $("#centerind")[0].value = parseInt((fromindex+toindex)/2);
     // Redraw
     DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, false);
     // Scroll (try to keep previously visible section in the center)
@@ -215,18 +223,21 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("x", extent1[0])
 		.attr("width", extent1[1]-extent1[0]);
 	    if (extent1[1] > extent1[0]) {
-		// Set form items - region
-		var startpos = positions[fromindex + extent1[0]/gridWidth];
-		var endpos = positions[fromindex + extent1[1]/gridWidth];
-		document.forms["controlform"]["region"].value = chrom + ":" + parseInt((endpos+startpos)/2);
-		// Set form items - zoom
+		// Reset zoom and scroll to that region
+		var find = fromindex+extent1[0]/gridWidth;
+		var tind = fromindex+extent1[1]/gridWidth;
+		var center_index = Math.round((find+tind)/2);
+		var startpos = positions[find];
+		var endpos = positions[tind];
+		// Set zoom level
 		var z = parseInt((endpos-startpos)/100);
 		if (z < 1) {z = 1;}
+		$("#centerind")[0].value = center_index;
 		if (z != 1) {z = -1*z;}
-		document.forms["controlform"]["zoomlevel"].value = z;
-		// Update view
-		document.forms["controlform"].submit();
+		refreshZoom(z, center_index);
 	    }
+	    var sel = document.getElementById("selected");
+	    sel.innerHTML = "Selected:";
 	}
     }
     // Draw each sample
@@ -336,7 +347,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .attr("fill-opacity", 0.5)
 	    .attr("fill","pink")
 	    .attr("stroke", "#fff")
-	    .attr("height", (1+alignBySample[samples[i]].split(";").length)*gridHeight)
+	    .attr("height", (2+alignBySample[samples[i]].split(";").length)*gridHeight)
 	    .attr("width", 0);
 	// Update position
 	currentHeight += gridHeight*1.5;
@@ -375,7 +386,9 @@ function scroll(direction) {
     document.forms["controlform"].submit();
 }
 
-function refreshZoom(zoom) {
+function refreshZoom(zoom, center_index) {
+    if ($("#centerind")[0].value != "") {center_index = parseInt($("#centerind")[0].value);}
+    if (typeof center_index == "undefined") {center_index = parseInt(positions.length/2);}
     if (zoom < -60) {
 	zoom = -100;
     } else if (zoom < -30) {
@@ -393,7 +406,7 @@ function refreshZoom(zoom) {
     $(".zoomin").css("background-color", "white");
     $(".defaultzoom").css("background-color","gray");
     $("#zoom"+zoom).css("background-color", "black");
-    AlignZoom(zoom);
+    AlignZoom(zoom, center_index);
 }
 
 // Perform when the page loads
@@ -486,6 +499,6 @@ $(document).ready(function()
 	var w = parseInt($("#toolbar").css("width"));
 	$(".sample").css({"width": w-2});
 	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
-	refreshZoom(zoomlevel);
+	refreshZoom(zoomlevel, parseInt(positions.length/2));
     }
 });
