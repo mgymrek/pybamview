@@ -102,6 +102,20 @@
 	      <input type="hidden" id="centerind" value="">
 	      <b>+</b>
 	  </div></td>
+	  <td>
+	    <div class="helptext">
+	      <b>?</b> <div class="description">
+		<h4>Navigating to a genomic location</h4>
+		Enter a region in the form chr:position and click "Submit". Mousing over a locus will update the "Selected" text box with the currently selected position.
+		<h4>Zooming</h4>
+		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default.
+		<p>
+		  To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
+		<p>
+		  To select a specific region from a zoomed out view to zoom in on, draw a box around the region of the reference you would like to select. Note that it will only zoom if you select a region that is at least 100bp long. The "Selected" text box should update with the currently selected region.
+	      </div>
+	    </div>
+	  </td>
 	</tr>
       </table>
       <div id='selected'>Selected: </div>

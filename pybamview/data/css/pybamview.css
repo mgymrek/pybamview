@@ -130,3 +130,21 @@
     fill-opacity: .125;
     shape-rendering: crispEdges;
 }
+
+.helptext {
+    background:white;
+    border: 1px #333 solid;
+    padding: 0px;
+    height: 20px;
+    width: 10px;
+}
+.description {
+    display:none;
+    background-color: #A0A0A0;
+    position:absolute;
+    padding: 5px;
+    border:1px solid #000;
+    width:400px;
+    height:400px;
+    z-index: 100;
+}
