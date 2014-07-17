@@ -16,7 +16,15 @@
       <section id="main_content">
         <h1>
 	  <a name="pybamview" class="anchor" href="#pybamview"><span class="octicon octicon-link"></span></a>faq</h1>
-	
+	<h2>General</h2>
+	<ul>
+	  <li><strong>How many samples/reads can PyBamView visualize at once?</strong>
+	    <p>
+	      Theoretically, there is no limit to the number of samples or reads PyBamView can visualize. However, visualizing more than 5 or so samples can become cumbersome, both because the time to load each view increases and because it is hard to fit alignments for that many samples on one page.
+	    <p>
+	      Similarly, PyBamView might have trouble if you try to view too many reads at once. If you have extremely high coverage sequencing of targeted loci (e.g. more than 50-100x), you may want to consider downsampling your reads or removing PCR duplicates before visualizing to improve performance and visualization.
+	  </li>
+	</ul>
 	<h2>Bam files</h2>
 	<ul>
 	  <li><strong>How does PyBamView determine which samples are present in BAM files?</strong>
