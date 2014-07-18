@@ -306,7 +306,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			.attr("y", currentHeight)
 			.attr("width", (read_end - read_start + 1)*gridWidth)
 			.attr("height", gridHeight)
-			.attr("fill", "lightgray")
+			.attr("fill", "#F7F8E0")
 			.attr("stroke", "gray");
 		}
 		for (var r=0; r < readdata.length; r++) {
@@ -325,6 +325,16 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			    .attr("width", gridWidth)
 			    .attr("fill", colors["."])
 			    .attr("stroke", colors["."]);
+		    } else if (readdata[r].toUpperCase() != refdata[r].toUpperCase() &&
+			       IsNuc(refdata[r].toUpperCase()) &&
+			       IsNuc(readdata[r].toUpperCase())) {
+			samplesvg.append("rect")
+			    .attr("x", r*gridWidth)
+			    .attr("y", currentHeight)
+			    .attr("height", gridHeight)
+			    .attr("width", gridWidth)
+			    .attr("fill", colors[readdata[r]])
+			    .attr("stroke", colors[readdata[r]]);
 		    }
 		}
 	    }
@@ -333,6 +343,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		    .text(function(d) {return d;})
 		    .attr("x", function(d, pos) {return pos*gridWidth+gridWidth/2;})
 		    .attr("y", currentHeight + gridHeight/2)
+		    .attr("dy", ".25em")
 		    .on("mouseover", function(d,i) {snapshot?Noop():InHover(positions[i+fromindex], usefont);})
 		    .on("mouseout", function(d,i) {snapshot?Noop():OutHover(positions[i+fromindex], usefont);})
 		    .style("font-family", "Courier")
