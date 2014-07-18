@@ -103,7 +103,13 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     }
     var numreads = 0;
     for (var i=0; i < samples.length; i++) {
-	numreads += alignBySample[samples[i]].split(";").length;
+	var reads = alignBySample[samples[i]].split(";");
+	for (var j=0; j<reads.length; j++) {
+	    var read = reads[j].slice(fromindex, toindex+1);
+	    if (reads[j].match(/-/g).length < reads[j].length) {
+		numreads = numreads + 1;
+	    }
+	}
     }
     var w = gridWidth*(toindex-fromindex+1);
     var h = (samples.length*2+numreads)*gridHeight+BASE_H;
@@ -259,15 +265,25 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	} else {
 	    var currentHeight = 20;
 	    // Make div for the sample
+	    var numreads = 0;
+	    var reads = alignBySample[samples[i]].split(";");
+	    for (var k = 0; k<reads.length; k++) {
+		var read = reads[k].slice(fromindex, toindex+1);
+		if (read.match(/-/g).length < read.length) {
+		    numreads = numreads + 1;
+		}
+	    }
 	    var samplesvg = d3.select("#"+samples[i]).append("svg:svg")
 		.attr("width",w)
-		.attr("height",(2+alignBySample[samples[i]].split(";").length)*gridHeight);
+		.attr("height",(2+numreads)*gridHeight);
 	}
 	// Draw reads
 	sample_data = alignBySample[samples[i]];
 	sample_data_reads = sample_data.split(";");
 	for (var j = 0; j < sample_data_reads.length; j++) {
-	    readdata = sample_data_reads[j].slice(fromindex, toindex+1).split("");
+	    readdata = sample_data_reads[j].slice(fromindex, toindex+1);
+	    if (readdata.match(/-/g).length == readdata.length) {continue;}
+	    readdata = readdata.split("");
 	    if (drawnucs) {
 		var SampleTrack = samplesvg.selectAll("gsamp_"+samples[i])
 		    .data(readdata)
@@ -286,28 +302,33 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 								      IsNuc(d.toUpperCase()))?"yellow":"white"):colors[d];});
 	    } else {
 		var read_start = 0;
-		while (readdata[read_start] == "-") {
-		    read_start = read_start + 1;
-		    if (read_start == readdata.length - 1) {
-			read_start = 0;
-			break;
+		var read_end = 0;
+		while (true) {
+		    while (readdata[read_start] == "-") {
+			read_start = read_start + 1;
+			if (read_start == readdata.length - 1) {
+			    break;
+			}
 		    }
-		}
-		var read_end = readdata.length - 1;
-		while (readdata[read_end] == "-") {
-		    read_end = read_end -1;
-		    if (read_end == 0) {
-			break;
+		    if (read_start == readdata.length-1) {break;}
+		    read_end = read_start+1;
+		    while (readdata[read_end] != "-") {
+			read_end = read_end + 1;
+			if (read_end == readdata.length -1) {
+			    break;
+			}
 		    }
-		}
-		if (read_end > read_start) {
-		    samplesvg.append("rect")
-			.attr("x", read_start*gridWidth)
-			.attr("y", currentHeight)
-			.attr("width", (read_end - read_start + 1)*gridWidth)
-			.attr("height", gridHeight)
-			.attr("fill", "#F7F8E0")
+		    if (read_end > read_start) {
+			samplesvg.append("rect")
+			    .attr("x", read_start*gridWidth)
+			    .attr("y", currentHeight)
+			    .attr("width", (read_end - read_start + 1)*gridWidth)
+			    .attr("height", gridHeight)
+			    .attr("fill", "#F7F8E0")
 			.attr("stroke", "gray");
+		    }
+		    read_start = read_end+1;
+		    if (read_start == readdata.length-1) {break;}		   
 		}
 		for (var r=0; r < readdata.length; r++) {
 		    if (readdata[r] == ".") {

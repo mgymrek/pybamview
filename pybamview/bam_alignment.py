@@ -176,7 +176,10 @@ class AlignmentGrid(object):
             if maxchars > 1:
                 for col in alncols:
                     val = grid.ix[i, col]
-                    if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)) + val
+                    if len(val) < maxchars:
+                        if ENDCHAR in val: c = ENDCHAR
+                        else: c = GAPCHAR
+                        grid.ix[i,col] = c*(maxchars-len(val)) + val #TODO if not inside a read, use ENDCHAR rather than GAPCHAR
         readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
                                      "sample": [read_properties[i]["sample"] for i in range(readindex)]})
         # Split by sample

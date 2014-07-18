@@ -195,7 +195,7 @@ def snapshot():
     chrom, start = region.split(":")
     region = "%s-%s"%(max(int(int(start)-25/zoomlevel),0), int(int(start)+50+25/zoomlevel))
     return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, ZOOMLEVEL=zoom, \
-                               CHROM=chrom, REGION=region, MINSTART=int(start)-NUMCHAR/2, MAXEND=int(start)+NUMCHAR/2,\
+                               CHROM=chrom, REGION=region, MINSTART=int(start)-SETTINGS["LOADCHAR"]/2, MAXEND=int(start)+SETTINGS["LOADCHAR"]/2,\
                                REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
 
 @app.route('/export', methods=["POST"])
