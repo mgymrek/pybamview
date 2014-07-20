@@ -106,7 +106,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	var reads = alignBySample[samples[i]].split(";");
 	for (var j=0; j<reads.length; j++) {
 	    var read = reads[j].slice(fromindex, toindex+1);
-	    if (reads[j].match(/-/g).length < reads[j].length) {
+	    if (reads[j].match(/-/g) == null) {numreads = numreads + 1;}
+	    else if (reads[j].match(/-/g).length < reads[j].length) {
 		numreads = numreads + 1;
 	    }
 	}
@@ -269,7 +270,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    var reads = alignBySample[samples[i]].split(";");
 	    for (var k = 0; k<reads.length; k++) {
 		var read = reads[k].slice(fromindex, toindex+1);
-		if (read.match(/-/g).length < read.length) {
+		if (read.match(/-/g) == null) { numreads = numreads + 1;}
+		else if (read.match(/-/g).length < read.length) {
 		    numreads = numreads + 1;
 		}
 	    }
@@ -282,7 +284,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	sample_data_reads = sample_data.split(";");
 	for (var j = 0; j < sample_data_reads.length; j++) {
 	    readdata = sample_data_reads[j].slice(fromindex, toindex+1);
-	    if (readdata.match(/-/g).length == readdata.length) {continue;}
+	    if (readdata.match(/-/g) != null) {if (readdata.match(/-/g).length == readdata.length) {continue;}}
 	    readdata = readdata.split("");
 	    if (drawnucs) {
 		var SampleTrack = samplesvg.selectAll("gsamp_"+samples[i])
@@ -304,17 +306,18 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		var read_start = 0;
 		var read_end = 0;
 		while (true) {
+		    if (read_start >= readdata.length-1) {break;}
 		    while (readdata[read_start] == "-") {
 			read_start = read_start + 1;
-			if (read_start == readdata.length - 1) {
+			if (read_start >= readdata.length - 1) {
 			    break;
 			}
 		    }
-		    if (read_start == readdata.length-1) {break;}
+		    if (read_start >= readdata.length-1) {break;}
 		    read_end = read_start+1;
 		    while (readdata[read_end] != "-") {
 			read_end = read_end + 1;
-			if (read_end == readdata.length -1) {
+			if (read_end >= readdata.length -1) {
 			    break;
 			}
 		    }
@@ -325,13 +328,12 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 			    .attr("width", (read_end - read_start + 1)*gridWidth)
 			    .attr("height", gridHeight)
 			    .attr("fill", "#F7F8E0")
-			.attr("stroke", "gray");
+			    .attr("stroke", "gray");
 		    }
 		    read_start = read_end+1;
-		    if (read_start == readdata.length-1) {break;}		   
 		}
 		for (var r=0; r < readdata.length; r++) {
-		    if (readdata[r] == ".") {
+		    if (readdata[r] == "." || readdata[r] == "*") {
 			samplesvg.append("rect")
 			    .attr("x", r*gridWidth)
 			    .attr("y", currentHeight)

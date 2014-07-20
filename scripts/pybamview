@@ -68,19 +68,20 @@ NUC_TO_COLOR = {
 PROGRESS = 0
 WARNING = 1
 ERROR = 2
+DEBUG = 3
 
 def MESSAGE(msg, msgtype=PROGRESS):
     if msgtype == PROGRESS:
         msg = "[PROGRESS]: " + msg
-        sys.stderr.write(msg.strip() + "\n")
     elif msgtype == WARNING:
         msg = "[WARNING]: " + msg
-        sys.stderr.write(msg.strip() + "\n")
     elif msgtype == ERROR:
         msg = "[ERROR]: " + msg
         sys.stderr.write(msg.strip() + "\n")
         sys.exit(1)
-    else: sys.stderr.write(msg.strip())
+    elif msgtype == DEBUG:
+        msg = "[DEBUG]: " + msg
+    sys.stderr.write(msg.strip()+"\n")
 
 def random_ports(port, n):
     """Generate a list of n random ports near the given port.
@@ -148,12 +149,10 @@ def display_bam():
         samples_toinclude = []
         bamfiles_toinclude = []
         for s in samplebams:
-            s.replace("%3A",":")
-            s.replace("%2","/")
             samples_toinclude.append(s.split(":")[0])
-            bamfiles_toinclude.extend(s.split(":")[1:])
+            for item in s.split(":")[1:]:
+                bamfiles_toinclude.extend(item.split(","))
     region = request.args.get("region","None:0")
-    region.replace("%3A",":")
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
@@ -226,6 +225,7 @@ if __name__ == "__main__":
     parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str, required=False)
     parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', \
                             type=int, required=False, default=200)
+    parser.add_argument("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type=int, default=100, required=False)
     parser.add_argument('--no-browser', help="Don't automatically open the web browser.", action="store_true")
     parser.add_argument('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
     args = parser.parse_args()
@@ -236,10 +236,13 @@ if __name__ == "__main__":
     PORT = args.port
     TARGETFILE = args.targets
     NUMCHAR = args.buffer
+    MAXZOOM = args.maxzoom
+    if MAXZOOM not in range(1,11) + [50, 100]:
+        MESSAGE("Must set --maxzoom to one of 1-10, 50, or 100", ERROR)
     app.debug = args.debug
     OPEN_BROWSER = (not args.no_browser)
     SETTINGS["NUMCHAR"] = NUMCHAR
-    SETTINGS["MAXZOOM"] = 100 # max x to zoom out
+    SETTINGS["MAXZOOM"] = MAXZOOM
     SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
     # Load reference
     if REFFILE is None:
