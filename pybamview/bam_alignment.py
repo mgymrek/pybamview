@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 from itertools import chain
 import sys
-
 import pandas as pd
 import pysam
 import pyfasta
@@ -122,7 +121,6 @@ class AlignmentGrid(object):
         Load grid of alignments with buffer around start pos
         """
         # Get reference
-        print "DEBUG: get reference"
         if self.ref is None or self.chrom not in self.ref.keys():
             reference = ["N"]*self.settings["LOADCHAR"]
         else:
@@ -135,7 +133,6 @@ class AlignmentGrid(object):
             reference = [reference[i] for i in range(len(reference))]
         griddict = {"position": range(self.pos, self.pos+len(reference)), "reference": reference}
         # Get reads
-        print "DEBUG: get reads"
         region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["LOADCHAR"])))
         aligned_reads = []
         for bi, br in enumerate(self.bamreaders):
@@ -145,7 +142,6 @@ class AlignmentGrid(object):
             except: pass
         readindex = 0
         read_properties = []
-        print "DEBUG: process reads - make faster"
         insertion_locations = {}
         for bamindex, read in aligned_reads:
             # get reference position
@@ -185,11 +181,8 @@ class AlignmentGrid(object):
             griddict["aln%s"%readindex] = rep
             readindex += 1
         # Fix insertions
-        print "DEBUG: fix insertions - make faster"
-        print "DEBUG: only need to look at %s"%insertion_locations
         alnkeys = [item for item in griddict.keys() if item != "position"]
         for i in insertion_locations:
-            print "DEBUG: %s, %s"%(i, insertion_locations[i])
             maxchars = insertion_locations[i]
             for ak in alnkeys:
                 if i != 0: prev = griddict[ak][i-1]
@@ -200,27 +193,21 @@ class AlignmentGrid(object):
                     else: c = GAPCHAR
                     griddict[ak][i] = c*(maxchars-len(val))+val
 
-        print "DEBUG: make df"
-        grid = pd.DataFrame(griddict)
-        print "DEBUG: get read props"
-        readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
-                                     "sample": [read_properties[i]["sample"] for i in range(readindex)]})
         # Split by sample
-        print "DEBUG: get by sample"
         for sample in self.samples:
-            if readprops.shape[0] > 0:
-                self.grid_by_sample[sample] = grid[["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)]
-            else: self.grid_by_sample[sample] = grid[["position","reference"]]
-        # Sort columns appropriately
-        print "DEBUG: read stacking"
-        if self.settings.get("SORT","bypos") == "bypos":
-            readprops = readprops.sort("pos")
-            if readprops.shape[0] > 0:
-                for sample in self.samples:
-                    self.grid_by_sample[sample] = \
-                        self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
-            else: pass
-        print "Done"
+#            if self.settings.get("SORT","bypos") == "bypos": # plan on adding other sort methods later
+            # Get keys in sorted order
+            alnkeys = [(read_properties[i]["pos"], "aln%s"%i) for i in range(readindex) if read_properties[i]["sample"] == sample]
+            alnkeys.sort()
+            alnkeys = [item[1] for item in alnkeys]
+            # Get columns we need for the grid
+            sample_dict = dict([(x, griddict[x]) for x in alnkeys+["position","reference"]])
+            # Read stacking
+            sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys)
+            # Make into a dataframe to return
+            alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
+            self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
+
 
     def MergeRows(self, row1, row2):
         x = []
@@ -231,42 +218,45 @@ class AlignmentGrid(object):
                 x.append(row2[i])
             else: x.append(row1[i])
         return x
-                
-    def CollapseGridByPosition(self, grid):
+
+    def CollapseGridByPosition(self, griddict, alncols):
         """
         If more than one read can fit on the same line, put it there
         """
-        cols_to_delete = []
-        col_to_ends = {"dummy":{"end":100000000, "rank":-1}}
-        alncols = [item for item in grid.columns if item != "position" and item != "reference"]
+        cols_to_delete = set()
+        col_to_ends = {"dummy":float("inf")}
+        minend = col_to_ends["dummy"]
         for col in alncols:
-            track = grid.ix[:,col].values
+            track = griddict[col]
             x = [i for i in range(len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
             if len(x) == 0:
                 start = 0
                 end = 0
             else:
-                start = min(x)
-                end = max(x)
-            if start > min([item["end"] for item in col_to_ends.values()]):
+                start = x[0]
+                end = x[-1]
+            if start > minend:
                 # Find the first column we can add it to
-                mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
-                mincol.sort()
-                mincol = mincol[0][1]
+                for c in alncols:
+                    if c in col_to_ends and col_to_ends[c] < start:
+                        mincol = c
+                        break
                 # Reset that column with merged alignments
-                grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
+                griddict[mincol] = self.MergeRows(griddict[mincol], griddict[col])
                 # Set that column for deletion and clear it in case we use it later
-                grid[col] = [ENDCHAR]*grid.shape[0]
-                cols_to_delete.append(col)
-                # Rest end
-                t = grid.ix[:,mincol].values
+                griddict[col] = [ENDCHAR]*len(griddict["reference"])
+                cols_to_delete.add(col)
+                # Reset end
+                t = griddict[mincol]
                 y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
-                col_to_ends[mincol]["end"] = max(y)
+                col_to_ends[mincol] = y[-1]
+                minend = min(col_to_ends.values())
                 # Make sure we're not deleting mincol
-                if mincol in cols_to_delete:
-                    cols_to_delete.remove(mincol)
-            col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
-        return grid.drop(cols_to_delete, 1)
+                cols_to_delete.discard(mincol)
+            col_to_ends[col] = end
+            if end < minend: minend = end
+        for col in cols_to_delete: del griddict[col]
+        return griddict
 
     def GetReferenceTrack(self, _pos):
         """
