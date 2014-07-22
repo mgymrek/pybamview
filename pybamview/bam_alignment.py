@@ -145,6 +145,8 @@ class AlignmentGrid(object):
         read_properties = []
         insertion_locations = {}
         maxreadlength = 0
+        print "DEBUG: start processing reads"
+        x = time.time()
         for bamindex, read in aligned_reads:
             # get reference position
             position = read.pos
@@ -184,6 +186,8 @@ class AlignmentGrid(object):
             # Put in dictionary
             griddict["aln%s"%readindex] = rep
             readindex += 1
+        y = time.time()
+        print "DEBUG: processing reads took %s"%(y-x)
         # Fix insertions
         alnkeys = [item for item in griddict.keys() if item != "position"]
         for i in insertion_locations:
@@ -196,7 +200,8 @@ class AlignmentGrid(object):
                     if ENDCHAR in val or prev[-1] == ENDCHAR: c = ENDCHAR
                     else: c = GAPCHAR
                     griddict[ak][i] = c*(maxchars-len(val))+val
-
+        z = time.time()
+        print "DEBUG: Fixing insertions took %s"%(z-y)
         # Split by sample
         for sample in self.samples:
 #            if self.settings.get("SORT","bypos") == "bypos": # plan on adding other sort methods later
@@ -207,11 +212,7 @@ class AlignmentGrid(object):
             # Get columns we need for the grid
             sample_dict = dict([(x, griddict[x]) for x in alnkeys+["position","reference"]])
             # Read stacking
-            print "DEBUG: starting collapse"
-            x = time.time()
             sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys, maxreadlength=maxreadlength)
-            y = time.time()
-            print "DEBUG: end collapse %s"%(y-x)
             # Make into a dataframe to return
             alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
             self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
@@ -221,7 +222,7 @@ class AlignmentGrid(object):
         """ merge row2 into row1. row2 spans start-end """
         return row1[0:start] + row2[start:]
 
-    def CollapseGridByPosition(self, griddict, alncols, maxreadlength=1000):
+    def CollapseGridByPosition(self, griddict, alncols, maxreadlength=10000):
         """
         If more than one read can fit on the same line, put it there
         """
@@ -231,12 +232,14 @@ class AlignmentGrid(object):
         prevstart = 0
         for col in alncols:
             track = griddict[col]
-            x = [i for i in range(prevstart, min(prevstart+maxreadlength, len(track))) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR] # TODO only go as far as max read length
-            if len(x) == 0:
+            start = prevstart
+            while start<len(track) and track[start][0] == ENDCHAR or track[start][0] == GAPCHAR:
+                start = start + 1
+            if start >= len(track):
                 start = 0
                 end = 0
             else:
-                start = x[0]
+                x = [i for i in range(start, min(start+maxreadlength, len(track))) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
                 end = x[-1]
             if start > minend:
                 # Find the first column we can add it to
