@@ -27,7 +27,6 @@ import sys
 import pandas as pd
 import pysam
 import pyfasta
-import time
 
 from .constants import ENDCHAR, GAPCHAR, DELCHAR
 from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
@@ -145,8 +144,6 @@ class AlignmentGrid(object):
         read_properties = []
         insertion_locations = {}
         maxreadlength = 0
-        print "DEBUG: start processing reads"
-        x = time.time()
         for bamindex, read in aligned_reads:
             # get reference position
             position = read.pos
@@ -156,6 +153,7 @@ class AlignmentGrid(object):
             cigar = read.cigar
             # get strand
             strand = not read.is_reverse
+            if not strand: nucs = nucs.lower()
             # get sample
             rg = self.read_groups[bamindex].get(
                 dict(read.tags).get("RG",""),"")
@@ -177,17 +175,11 @@ class AlignmentGrid(object):
                 ins_locs = [(item[0]+(position-self.pos), item[1]) for item in ins_locs]
             if len(rep) > len(reference):
                 rep = rep[0:len(reference)]
-            ins_locs = set([item for item in ins_locs if item[0] >= 0 and item[1] < len(reference)])
+            ins_locs = set([item for item in ins_locs if item[0] >= 0 and item[0] < len(reference)])
             insertion_locations = AddInsertionLocations(insertion_locations, ins_locs)
-            rep.extend(ENDCHAR*(len(reference)-len(rep)))
-            # Check if reverse
-            if not strand:
-                rep = map(str.lower, rep)
-            # Put in dictionary
+            rep = rep + [ENDCHAR]*(len(reference)-len(rep))
             griddict["aln%s"%readindex] = rep
             readindex += 1
-        y = time.time()
-        print "DEBUG: processing reads took %s"%(y-x)
         # Fix insertions
         alnkeys = [item for item in griddict.keys() if item != "position"]
         for i in insertion_locations:
@@ -200,8 +192,6 @@ class AlignmentGrid(object):
                     if ENDCHAR in val or prev[-1] == ENDCHAR: c = ENDCHAR
                     else: c = GAPCHAR
                     griddict[ak][i] = c*(maxchars-len(val))+val
-        z = time.time()
-        print "DEBUG: Fixing insertions took %s"%(z-y)
         # Split by sample
         for sample in self.samples:
 #            if self.settings.get("SORT","bypos") == "bypos": # plan on adding other sort methods later
