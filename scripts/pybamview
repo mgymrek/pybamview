@@ -223,7 +223,7 @@ if __name__ == "__main__":
     parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str, required=False, default="127.0.0.1")
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int, required=False, default=5000)
     parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str, required=False)
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', \
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.', \
                             type=int, required=False, default=200)
     parser.add_argument("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type=int, default=100, required=False)
     parser.add_argument('--no-browser', help="Don't automatically open the web browser.", action="store_true")

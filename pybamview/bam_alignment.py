@@ -27,6 +27,7 @@ import sys
 import pandas as pd
 import pysam
 import pyfasta
+import time
 
 from .constants import ENDCHAR, GAPCHAR, DELCHAR
 from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
@@ -203,21 +204,19 @@ class AlignmentGrid(object):
             # Get columns we need for the grid
             sample_dict = dict([(x, griddict[x]) for x in alnkeys+["position","reference"]])
             # Read stacking
+            print "DEBUG: starting collapse"
+            x = time.time()
             sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys)
+            y = time.time()
+            print "DEBUG: end collapse %s"%(y-x)
             # Make into a dataframe to return
             alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
             self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
 
 
-    def MergeRows(self, row1, row2):
-        x = []
-        for i in range(len(row1)):
-            if row1[i] == row2[i]:
-                x.append(row1[i])
-            elif row1[i][0] == ENDCHAR or row1[i][-1] == ENDCHAR:
-                x.append(row2[i])
-            else: x.append(row1[i])
-        return x
+    def MergeRows(self, row1, row2, start, end):
+        """ merge row2 into row1. row2 spans start-end """
+        return row1[0:start] + row2[start:]
 
     def CollapseGridByPosition(self, griddict, alncols):
         """
@@ -226,9 +225,10 @@ class AlignmentGrid(object):
         cols_to_delete = set()
         col_to_ends = {"dummy":float("inf")}
         minend = col_to_ends["dummy"]
+        prevstart = 0
         for col in alncols:
             track = griddict[col]
-            x = [i for i in range(len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
+            x = [i for i in range(prevstart, len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
             if len(x) == 0:
                 start = 0
                 end = 0
@@ -238,23 +238,24 @@ class AlignmentGrid(object):
             if start > minend:
                 # Find the first column we can add it to
                 for c in alncols:
-                    if c in col_to_ends and col_to_ends[c] < start:
+                    if col_to_ends.get(c, float("inf")) < start:
                         mincol = c
                         break
                 # Reset that column with merged alignments
-                griddict[mincol] = self.MergeRows(griddict[mincol], griddict[col])
+                griddict[mincol] = self.MergeRows(griddict[mincol], griddict[col], start, end)
                 # Set that column for deletion and clear it in case we use it later
-                griddict[col] = [ENDCHAR]*len(griddict["reference"])
+                griddict[col][start:end+1] = [ENDCHAR*len(griddict[col][i]) for i in range(start, end+1)]
                 cols_to_delete.add(col)
                 # Reset end
                 t = griddict[mincol]
-                y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
+                y = [i for i in range(start, len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
                 col_to_ends[mincol] = y[-1]
                 minend = min(col_to_ends.values())
                 # Make sure we're not deleting mincol
                 cols_to_delete.discard(mincol)
             col_to_ends[col] = end
             if end < minend: minend = end
+            prevstart = start
         for col in cols_to_delete: del griddict[col]
         return griddict
 

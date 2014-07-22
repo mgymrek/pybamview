@@ -25,7 +25,7 @@
     <div class='outer' id='header_wrap'>
       <header class='inner'>
 	<h1 id='display_info'>PyBamView</h1>
-	<div id='param_info'>Bam file: {{ BAM_FILES|join(',' ) }}</div>
+	<div id='param_info'>Bam file(s): {{ BAM_FILES|join(',' ) }}</div>
 	<div id='param_info'>Reference: {{ REF_FILE }}</div>
 	<div id='param_info'>Region: {{ REGION }}</div>
 	<div id='param_info'>Samples:
@@ -85,7 +85,7 @@
 	      <input type='submit' value="Export snapshot">
 	    </form>
 	  </td>
-	  <td><div id="zoomvalue">Zoom: 1x</div></td>
+	  <td><div id="zoomvalue">Zoom: <input type="text" maxlength="4" size="4" value="1x" readonly></div></td>
 	  <td><div id="zoomer">
 	      <b>-</b>
 	      <button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button>

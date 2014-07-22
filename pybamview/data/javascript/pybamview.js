@@ -58,11 +58,9 @@ function AlignZoom(zoomlevel, center_index) {
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
     if (fromindex < 0) {
 	fromindex = 0;
-	toindex = fromindex + buffer/zoomlevel;
     }
     if (toindex >= positions.length) {
 	toindex = positions.length  - 1;
-	fromindex = toindex - buffer/zoomlevel;
     }
     $("#centerind")[0].value = parseInt((fromindex+toindex)/2);
     // Redraw
@@ -433,7 +431,7 @@ function refreshZoom(zoom, center_index) {
     if ($("#zoom"+zoom).length == 0) {
 	zoom = 1;
     }
-    $("#zoomvalue").html("Zoom: " + zoom + "x");
+    $("#zoomvalue").html("Zoom: <input type='text' maxlength='4' size='4' value='" + zoom + "x" + "' readonly>");
     document.forms["snapform"]["zoomlevel"].value = zoom;
     document.forms["controlform"]["zoomlevel"].value = zoom;
     $(".zoomout").css("background-color", "white");
