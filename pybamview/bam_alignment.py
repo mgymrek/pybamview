@@ -144,6 +144,7 @@ class AlignmentGrid(object):
         readindex = 0
         read_properties = []
         insertion_locations = {}
+        maxreadlength = 0
         for bamindex, read in aligned_reads:
             # get reference position
             position = read.pos
@@ -162,6 +163,8 @@ class AlignmentGrid(object):
                 sys.stderr.write("WARNING: read %s has no CIGAR string. It will not be displayed.\n"%read.qname)
                 continue
             rep = ParseCigar(cigar, nucs)
+            readlen = len(rep)
+            if readlen > maxreadlength: maxreadlength = readlen
             # Fix boundaries
             ins_locs = [(i, len(rep[i])) for i in range(len(rep)) if len(rep[i])>1]
             if position < self.pos:
@@ -206,7 +209,7 @@ class AlignmentGrid(object):
             # Read stacking
             print "DEBUG: starting collapse"
             x = time.time()
-            sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys)
+            sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys, maxreadlength=maxreadlength)
             y = time.time()
             print "DEBUG: end collapse %s"%(y-x)
             # Make into a dataframe to return
@@ -218,7 +221,7 @@ class AlignmentGrid(object):
         """ merge row2 into row1. row2 spans start-end """
         return row1[0:start] + row2[start:]
 
-    def CollapseGridByPosition(self, griddict, alncols):
+    def CollapseGridByPosition(self, griddict, alncols, maxreadlength=1000):
         """
         If more than one read can fit on the same line, put it there
         """
@@ -228,7 +231,7 @@ class AlignmentGrid(object):
         prevstart = 0
         for col in alncols:
             track = griddict[col]
-            x = [i for i in range(prevstart, len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
+            x = [i for i in range(prevstart, min(prevstart+maxreadlength, len(track))) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR] # TODO only go as far as max read length
             if len(x) == 0:
                 start = 0
                 end = 0
@@ -248,12 +251,12 @@ class AlignmentGrid(object):
                 cols_to_delete.add(col)
                 # Reset end
                 t = griddict[mincol]
-                y = [i for i in range(start, len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
-                col_to_ends[mincol] = y[-1]
+                col_to_ends[mincol] = end
                 minend = min(col_to_ends.values())
+                col_to_ends[col] = 0
                 # Make sure we're not deleting mincol
                 cols_to_delete.discard(mincol)
-            col_to_ends[col] = end
+            else: col_to_ends[col] = end
             if end < minend: minend = end
             prevstart = start
         for col in cols_to_delete: del griddict[col]
