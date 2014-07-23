@@ -25,14 +25,12 @@
     <div class='outer' id='header_wrap'>
       <header class='inner'>
 	<h1 id='display_info'>PyBamView</h1>
-	<div class='param_info'>Bam file(s): {{ BAM_FILES|join(',' ) }}</div>
-	<div class='param_info'>Reference: {{ REF_FILE }}</div>
-	<div class='param_info'>Region: {{ REGION }}</div>
-	<div class='param_info'>Samples:
-	  {% for sample in SAMPLES %}
-	  <font color="white">{{ sample }}</font>
+	<div class='param_info'><b>Bam file(s):</b><br>
+	  {% for b in BAM_FILES %}
+	  &nbsp;&nbsp;{{ b }}<br>
 	  {% endfor %}
 	</div>
+	<div class='param_info'><b>Reference:</b> {{ REF_FILE }}</div>
       </header>
     </div>
 
@@ -48,7 +46,19 @@
 	      <input type='hidden' name='samples' value='{{ s }}'>
 	      {% endfor %}
 	      <input type='hidden' name='zoomlevel' value='{{ ZOOMLEVEL }}'>
-	      Enter region: <input type='text' name='region' value='{{ REGION }}'><input type='submit'>
+	      <table>
+		<tr>
+		  <td>Enter region: </td>
+		  <td>
+ 		    <div class="helptext" id="helptextregion">
+		      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"> <div class="description" id="descriptionregion">
+			Enter a region in the form chr:position and click "Submit".
+		    </div></div> 
+		  </td>
+		  <td><input type='text' name='region' value='{{ REGION }}'></td>
+		  <td><input type='submit'></td>
+		</tr>
+	      </table>
 	    </form>
 	  </td>
 	  {% if TARGET_LIST|length > 0 %}
@@ -73,20 +83,14 @@
 	    </form>
 	  </td>
 	  {% endif %}
-	  <td>
-	    <form action="snapshot" target="_blank" name="snapform" method="post"> 
-	      {% for s in SAMPLES %}
-	      <input type='hidden' name='samples' value='{{ s }}'>
-	      <input type='hidden' name='alignment_{{ s }}', value='{{ ALIGNMENTS[s]|join(";") }}'>
-	      {% endfor %}
-	      <input type='hidden' name='region' value='{{ REGION }}'>
-	      <input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
-	      <input type='hidden' name='reference' value='{{ REFERENCE }}'>
-	      <input type='hidden' name='zoomlevel' value='1'>
-	      <input type='submit' value="Export snapshot">
-	    </form>
-	  </td>
 	  <td><div id="zoomvalue">Zoom: <input type="text" maxlength="4" size="4" value="1x" readonly></div></td>
+	  <td>
+	    <div class="helptext" id="helptextzoom">
+	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionzoom">
+		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default. To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
+	      </div>
+	    </div>
+	  </td>
 	  <td><div id="zoomer">
 	      <b>-</b>
 	      <button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button>
@@ -110,29 +114,43 @@
 	      <b>+</b>
 	  </div></td>
 	  <td>
-	    <div class="helptext">
-	      <b>?</b> <div class="description">
-		<h4>Navigating to a genomic location</h4>
-		Enter a region in the form chr:position and click "Submit". Mousing over a locus will update the "Selected" text box with the currently selected position.
-		<h4>Zooming</h4>
-		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default.
-		<p>
-		  To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
+	    <form action="snapshot" target="_blank" name="snapform" method="post"> 
+	      {% for s in SAMPLES %}
+	      <input type='hidden' name='samples' value='{{ s }}'>
+	      <input type='hidden' name='alignment_{{ s }}', value='{{ ALIGNMENTS[s]|join(";") }}'>
+	      {% endfor %}
+	      <input type='hidden' name='region' value='{{ REGION }}'>
+	      <input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
+	      <input type='hidden' name='reference' value='{{ REFERENCE }}'>
+	      <input type='hidden' name='zoomlevel' value='1'>
+	      <input type='submit' value="Export snapshot">
+	    </form>
+	  </td>
+	</tr>
+      </table>
+      <table>
+	<tr>
+	  <td>
+	    <div class="helptext" id="helptextselect">
+	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionselect">
+		Mousing over a locus will update the "Selected" text box with the currently selected position.
 		<p>
 		  To select a specific region from a zoomed out view to zoom in on, draw a box around the region of the reference you would like to select. Note that it will only zoom if you select a region that is at least 100bp long. The "Selected" text box should update with the currently selected region.
 	      </div>
 	    </div>
 	  </td>
+	  <td>
+	    <div id='selected'>Selected: </div>
+	  </td>
 	</tr>
       </table>
-      <div id='selected'>Selected: </div>
     </div>
     
     <div class='alntables' id='aln'>
       <div id="reference" class="reference"></div>
       <div id="alignments" class="alignments">
 	{% for sample in SAMPLES %}
-	<div class="sample" onclick='toggleDiv("{{ sample }}");'>{{ sample }} (show/hide)</div>
+	<div class="sample">{{ sample }} <button onclick='toggleDiv("{{ sample }}");' type="button">show/hide</button></div>
 	<div id="{{ sample }}" class="sampleAlignment"></div>
 	<div class="spacer"><br><br></div>
 	{% endfor %}

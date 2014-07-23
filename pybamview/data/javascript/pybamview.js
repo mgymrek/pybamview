@@ -530,11 +530,24 @@ $(document).ready(function()
 	$(".sample").css({"width": w-2});
 	var zoomlevel = parseFloat(document.forms["controlform"]["zoomlevel"].value);
 	refreshZoom(zoomlevel, parseInt(positions.length/2));
-	$(".helptext").mouseover(function() {
-		$(this).children(".description").show();
+	$("#helptextzoom").mouseover(function() {
+		$(this).children("#descriptionzoom").show();
 	    }).mouseout(function() {
-		    $(this).children(".description").hide();
+		    $(this).children("#descriptionzoom").hide();
 		});
+
+	$("#helptextregion").mouseover(function() {
+		$(this).children("#descriptionregion").show();
+	    }).mouseout(function() {
+		    $(this).children("#descriptionregion").hide();
+		});
+
+	$("#helptextselect").mouseover(function() {
+		$(this).children("#descriptionselect").show();
+	    }).mouseout(function() {
+		    $(this).children("#descriptionselect").hide();
+		});
+
 	
     }
 });
