@@ -152,7 +152,7 @@ def display_bam():
             samples_toinclude.append(s.split(":")[0])
             for item in s.split(":")[1:]:
                 bamfiles_toinclude.extend(item.split(","))
-    region = request.args.get("region","None:0")
+    region = request.args.get("region","chr1:0")
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
