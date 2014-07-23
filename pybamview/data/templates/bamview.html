@@ -56,7 +56,7 @@
 		    </div></div> 
 		  </td>
 		  <td><input type='text' name='region' value='{{ REGION }}'></td>
-		  <td><input type='submit'></td>
+		  <td><input type='submit' class="button"></td>
 		</tr>
 	      </table>
 	    </form>
@@ -79,7 +79,7 @@
 	      <option value='{{ target.region }}'>{{ target.name }}</option>
 	      {% endif %}
 	      {% endfor %}
-	    </select><input type="submit">
+	    </select><input type="submit" class="button">
 	    </form>
 	  </td>
 	  {% endif %}
@@ -123,7 +123,7 @@
 	      <input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
 	      <input type='hidden' name='reference' value='{{ REFERENCE }}'>
 	      <input type='hidden' name='zoomlevel' value='1'>
-	      <input type='submit' value="Export snapshot">
+	      <input type='submit' value="Export snapshot" class="button">
 	    </form>
 	  </td>
 	</tr>

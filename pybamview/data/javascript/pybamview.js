@@ -193,19 +193,6 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    .text(function(d) {return d;});
     }
     if (! snapshot) {
-	var x = d3.scale.linear()
-	    .domain([0,w])
-	    .range([0,w]);
-	var refbrush = d3.svg.brush()
-	    .x(x)
-	    .on("brush", brush)
-	    .on("brushend", brushed);
-	var gBrush = refsvg.append("g")
-	    .attr("class","brush")
-	    .call(refbrush);
-	gBrush.selectAll("rect")
-	    .attr("y", 0)
-	    .attr("height", gridHeight*2);
 	function brush() {
 	    var extent = refbrush.extent();
 	    var startpos = positions[fromindex+Math.floor(extent[0]/gridWidth)];
@@ -242,6 +229,19 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    var sel = document.getElementById("selected");
 	    sel.innerHTML = "Selected:";
 	}
+	var x = d3.scale.linear()
+	    .domain([0,w])
+	    .range([0,w]);
+	var refbrush = d3.svg.brush()
+	    .x(x)
+	    .on("brush", brush)
+	    .on("brushend", brushed);
+	var gBrush = refsvg.append("g")
+	    .attr("class","brush")
+	    .call(refbrush);
+	gBrush.selectAll("rect")
+	    .attr("y", 0)
+	    .attr("height", gridHeight*2);
     }
     // Draw each sample
     if (snapshot) { var currentHeight = gridHeight*1.6;}
