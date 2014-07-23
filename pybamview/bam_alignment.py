@@ -223,7 +223,7 @@ class AlignmentGrid(object):
         for col in alncols:
             track = griddict[col]
             start = prevstart
-            while start<len(track) and track[start][0] == ENDCHAR or track[start][0] == GAPCHAR:
+            while start<len(track) and (track[start][0] == ENDCHAR or track[start][0] == GAPCHAR):
                 start = start + 1
             if start >= len(track):
                 start = 0

@@ -93,10 +93,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     if (gridHeight < 10) {
 	gridHeight = 10;
     }
-    if (zoomlevel < 1/2) {
+    if (zoomlevel <= 1/3) {
 	usefont = false;
-    }
-    if (zoomlevel <= 1/4) {
 	drawnucs = false;
     }
     var numreads = 0;
