@@ -25,10 +25,10 @@
     <div class='outer' id='header_wrap'>
       <header class='inner'>
 	<h1 id='display_info'>PyBamView</h1>
-	<div id='param_info'>Bam file(s): {{ BAM_FILES|join(',' ) }}</div>
-	<div id='param_info'>Reference: {{ REF_FILE }}</div>
-	<div id='param_info'>Region: {{ REGION }}</div>
-	<div id='param_info'>Samples:
+	<div class='param_info'>Bam file(s): {{ BAM_FILES|join(',' ) }}</div>
+	<div class='param_info'>Reference: {{ REF_FILE }}</div>
+	<div class='param_info'>Region: {{ REGION }}</div>
+	<div class='param_info'>Samples:
 	  {% for sample in SAMPLES %}
 	  <font color="white">{{ sample }}</font>
 	  {% endfor %}
@@ -69,6 +69,7 @@
 	      <option value='{{ target.region }}'>{{ target.name }}</option>
 	      {% endif %}
 	      {% endfor %}
+	    </select><input type="submit">
 	    </form>
 	  </td>
 	  {% endif %}

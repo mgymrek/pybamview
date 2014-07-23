@@ -95,7 +95,7 @@
   text-shadow: #111 0px 0px 10px;
 }
 
-#param_info {
+.param_info {
   margin: 0;
   color: #fff;
   font-size: 15px;
