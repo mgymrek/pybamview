@@ -68,19 +68,20 @@ NUC_TO_COLOR = {
 PROGRESS = 0
 WARNING = 1
 ERROR = 2
+DEBUG = 3
 
 def MESSAGE(msg, msgtype=PROGRESS):
     if msgtype == PROGRESS:
         msg = "[PROGRESS]: " + msg
-        sys.stderr.write(msg.strip() + "\n")
     elif msgtype == WARNING:
         msg = "[WARNING]: " + msg
-        sys.stderr.write(msg.strip() + "\n")
     elif msgtype == ERROR:
         msg = "[ERROR]: " + msg
         sys.stderr.write(msg.strip() + "\n")
         sys.exit(1)
-    else: sys.stderr.write(msg.strip())
+    elif msgtype == DEBUG:
+        msg = "[DEBUG]: " + msg
+    sys.stderr.write(msg.strip()+"\n")
 
 def random_ports(port, n):
     """Generate a list of n random ports near the given port.
@@ -140,6 +141,7 @@ def listsamples(methods=['POST','GET']):
 @app.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
     samplebams = request.args.getlist("samplebams")
+    zoomlevel = request.args.get("zoomlevel")
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
@@ -147,15 +149,13 @@ def display_bam():
         samples_toinclude = []
         bamfiles_toinclude = []
         for s in samplebams:
-            s.replace("%3A",":")
-            s.replace("%2","/")
             samples_toinclude.append(s.split(":")[0])
-            bamfiles_toinclude.extend(s.split(":")[1:])
-    region = request.args.get("region","None:0")
-    region.replace("%3A",":")
-    return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region)
+            for item in s.split(":")[1:]:
+                bamfiles_toinclude.extend(item.split(","))
+    region = request.args.get("region","chr1:0")
+    return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
-def display_bam_region(bamfiles, samples, region):
+def display_bam_region(bamfiles, samples, region, zoomlevel):
     for bam in bamfiles:
         if not os.path.exists(join(BAMDIR,bam)):
             MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
@@ -174,7 +174,7 @@ def display_bam_region(bamfiles, samples, region):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples,\
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
@@ -188,10 +188,13 @@ def snapshot():
     region.replace("%3A",":")
     startpos = request.form["startpos"]
     reference = request.form["reference"]
+    zoom = request.form["zoomlevel"]
+    zoomlevel = float(zoom)
+    if zoomlevel < 0: zoomlevel = -1/zoomlevel
     chrom, start = region.split(":")
-    region = "%s-%s"%(max(int(start)-5,0), int(start)+105)
-    return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, \
-                               CHROM=chrom, REGION=region, MINSTART=int(start)-NUMCHAR/2, MAXEND=int(start)+NUMCHAR/2,\
+    region = "%s-%s"%(max(int(int(start)-25/zoomlevel),0), int(int(start)+50+25/zoomlevel))
+    return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, ZOOMLEVEL=zoom, \
+                               CHROM=chrom, REGION=region, MINSTART=int(start)-SETTINGS["LOADCHAR"]/2, MAXEND=int(start)+SETTINGS["LOADCHAR"]/2,\
                                REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
 
 @app.route('/export', methods=["POST"])
@@ -220,8 +223,9 @@ if __name__ == "__main__":
     parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str, required=False, default="127.0.0.1")
     parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int, required=False, default=5000)
     parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str, required=False)
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 500. Buffering more allows you to scroll farther. Buffering less is faster.', \
-                            type=int, required=False, default=500)
+    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.', \
+                            type=int, required=False, default=200)
+    parser.add_argument("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type=int, default=100, required=False)
     parser.add_argument('--no-browser', help="Don't automatically open the web browser.", action="store_true")
     parser.add_argument('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
     args = parser.parse_args()
@@ -232,9 +236,14 @@ if __name__ == "__main__":
     PORT = args.port
     TARGETFILE = args.targets
     NUMCHAR = args.buffer
+    MAXZOOM = args.maxzoom
+    if MAXZOOM not in range(1,11) + [50, 100]:
+        MESSAGE("Must set --maxzoom to one of 1-10, 50, or 100", ERROR)
     app.debug = args.debug
     OPEN_BROWSER = (not args.no_browser)
     SETTINGS["NUMCHAR"] = NUMCHAR
+    SETTINGS["MAXZOOM"] = MAXZOOM
+    SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"

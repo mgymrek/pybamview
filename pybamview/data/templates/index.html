@@ -15,6 +15,7 @@
       {% for s0, s1 in samplesToBam|dictsort %}
       <input type='checkbox' name='samplebams', value='{{ s0 }}:{{ s1|join(',') }}'>{{ s0 }}<br>
       {% endfor %}
+      <input type='hidden' name='zoomlevel' value='1'>
       {% else %}
       <h2>No samples found. Check that there are indexed bam files present, and that read groups are properly assigned.</h2>
       {% endif %}

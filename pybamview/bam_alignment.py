@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 from itertools import chain
 import sys
-
 import pandas as pd
 import pysam
 import pyfasta
@@ -88,6 +87,13 @@ def ParseCigar(cigar, nucs):
             sys.stderr.write("ERROR: Invalid CIGAR operation (%s) in read %s \n"%(c[0], read.qname))
     return rep
 
+def AddInsertionLocations(all_locs, new_locs):
+    for item in new_locs:
+        pos = item[0]
+        size = item[1]
+        all_locs[pos] = max(all_locs.get(pos, 0), size)
+    return all_locs
+
 class AlignmentGrid(object):
     """
     Class for storing a grid of alignments
@@ -99,7 +105,7 @@ class AlignmentGrid(object):
         self.chrom = _chrom
         self.startpos = _pos
         self.settings = _settings
-        self.pos = self.startpos-int(self.settings["NUMCHAR"]*0.5)
+        self.pos = self.startpos-int(self.settings["LOADCHAR"]*0.5)
         if self.pos < 0: self.pos = 0
         self.samples = set(
             chain.from_iterable(rg.itervalues() for rg in _read_groups))
@@ -116,18 +122,18 @@ class AlignmentGrid(object):
         """
         # Get reference
         if self.ref is None or self.chrom not in self.ref.keys():
-            reference = ["N"]*self.settings["NUMCHAR"]
+            reference = ["N"]*self.settings["LOADCHAR"]
         else:
             chromlen = len(self.ref[self.chrom])
             if chromlen <= self.pos:
                 return
-            elif chromlen <= self.pos+self.settings["NUMCHAR"]:
+            elif chromlen <= self.pos+self.settings["LOADCHAR"]:
                 reference = self.ref[self.chrom][self.pos:]
-            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["NUMCHAR"]]
+            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["LOADCHAR"]]
             reference = [reference[i] for i in range(len(reference))]
         griddict = {"position": range(self.pos, self.pos+len(reference)), "reference": reference}
         # Get reads
-        region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["NUMCHAR"])))
+        region=str("%s:%s-%s"%(self.chrom, max(1, int(self.pos)), int(self.pos+self.settings["LOADCHAR"])))
         aligned_reads = []
         for bi, br in enumerate(self.bamreaders):
             try:
@@ -136,6 +142,8 @@ class AlignmentGrid(object):
             except: pass
         readindex = 0
         read_properties = []
+        insertion_locations = {}
+        maxreadlength = 0
         for bamindex, read in aligned_reads:
             # get reference position
             position = read.pos
@@ -145,6 +153,7 @@ class AlignmentGrid(object):
             cigar = read.cigar
             # get strand
             strand = not read.is_reverse
+            if not strand: nucs = nucs.lower()
             # get sample
             rg = self.read_groups[bamindex].get(
                 dict(read.tags).get("RG",""),"")
@@ -154,96 +163,103 @@ class AlignmentGrid(object):
                 sys.stderr.write("WARNING: read %s has no CIGAR string. It will not be displayed.\n"%read.qname)
                 continue
             rep = ParseCigar(cigar, nucs)
+            readlen = len(rep)
+            if readlen > maxreadlength: maxreadlength = readlen
             # Fix boundaries
+            ins_locs = [(i, len(rep[i])) for i in range(len(rep)) if len(rep[i])>1]
             if position < self.pos:
                 rep = rep[self.pos-position:]
+                ins_locs = [(item[0] - (self.pos-position), item[1]) for item in ins_locs]
             else:
-                for i in range(position-self.pos): rep = [ENDCHAR] + rep
+                rep = [ENDCHAR]*(position-self.pos)+rep
+                ins_locs = [(item[0]+(position-self.pos), item[1]) for item in ins_locs]
             if len(rep) > len(reference):
                 rep = rep[0:len(reference)]
-            rep.extend(ENDCHAR*(len(reference)-len(rep)))
-            # Check if reverse
-            if not strand:
-                rep = map(str.lower, rep)
-            # Put in dictionary
+            ins_locs = set([item for item in ins_locs if item[0] >= 0 and item[0] < len(reference)])
+            insertion_locations = AddInsertionLocations(insertion_locations, ins_locs)
+            rep = rep + [ENDCHAR]*(len(reference)-len(rep))
             griddict["aln%s"%readindex] = rep
             readindex += 1
-        grid = pd.DataFrame(griddict)
         # Fix insertions
-        alncols = [item for item in grid.columns if item != "position"]
-        for i in range(grid.shape[0]):
-            maxchars = max(grid.ix[i,alncols].apply(len))
-            if maxchars > 1:
-                for col in alncols:
-                    val = grid.ix[i, col]
-                    if len(val) < maxchars: grid.ix[i,col] = GAPCHAR*(maxchars-len(val)) + val
-        readprops = pd.DataFrame({"read": ["aln%s"%i for i in range(readindex)], "pos": [read_properties[i]["pos"] for i in range(readindex)],\
-                                     "sample": [read_properties[i]["sample"] for i in range(readindex)]})
+        alnkeys = [item for item in griddict.keys() if item != "position"]
+        for i in insertion_locations:
+            maxchars = insertion_locations[i]
+            for ak in alnkeys:
+                if i != 0: prev = griddict[ak][i-1]
+                else: prev = ENDCHAR
+                val = griddict[ak][i]
+                if len(val) < maxchars:
+                    if ENDCHAR in val or prev[-1] == ENDCHAR: c = ENDCHAR
+                    else: c = GAPCHAR
+                    griddict[ak][i] = c*(maxchars-len(val))+val
         # Split by sample
         for sample in self.samples:
-            if readprops.shape[0] > 0:
-                self.grid_by_sample[sample] = grid[["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)]
-            else: self.grid_by_sample[sample] = grid[["position","reference"]]
-        # Sort columns appropriately
-        if self.settings.get("SORT","bypos") == "bypos":
-            readprops = readprops.sort("pos")
-            if readprops.shape[0] > 0:
-                for sample in self.samples:
-                    self.grid_by_sample[sample] = \
-                        self.CollapseGridByPosition(self.grid_by_sample[sample][["position","reference"] + list(readprops[readprops["sample"]==sample]["read"].values)])
-            else: pass
+#            if self.settings.get("SORT","bypos") == "bypos": # plan on adding other sort methods later
+            # Get keys in sorted order
+            alnkeys = [(read_properties[i]["pos"], "aln%s"%i) for i in range(readindex) if read_properties[i]["sample"] == sample]
+            alnkeys.sort()
+            alnkeys = [item[1] for item in alnkeys]
+            # Get columns we need for the grid
+            sample_dict = dict([(x, griddict[x]) for x in alnkeys+["position","reference"]])
+            # Read stacking
+            sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys, maxreadlength=maxreadlength)
+            # Make into a dataframe to return
+            alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
+            self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
 
-    def MergeRows(self, row1, row2):
-        x = []
-        for i in range(len(row1)):
-            if row1[i][0] == ENDCHAR and row2[i][0] == ENDCHAR:
-                x.append(row1[i])
-            elif row1[i][0] == ENDCHAR or row1[i][-1] == ENDCHAR:
-                x.append(row2[i])
-            else: x.append(row1[i])
-        return x
-                
-    def CollapseGridByPosition(self, grid):
+
+    def MergeRows(self, row1, row2, start, end):
+        """ merge row2 into row1. row2 spans start-end """
+        return row1[0:start] + row2[start:]
+
+    def CollapseGridByPosition(self, griddict, alncols, maxreadlength=10000):
         """
         If more than one read can fit on the same line, put it there
         """
-        cols_to_delete = []
-        col_to_ends = {"dummy":{"end":100000000, "rank":-1}}
-        alncols = [item for item in grid.columns if item != "position" and item != "reference"]
+        cols_to_delete = set()
+        col_to_ends = {"dummy":float("inf")}
+        minend = col_to_ends["dummy"]
+        prevstart = 0
         for col in alncols:
-            track = grid.ix[:,col].values
-            x = [i for i in range(len(track)) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
-            if len(x) == 0:
+            track = griddict[col]
+            start = prevstart
+            while start<len(track) and (track[start][0] == ENDCHAR or track[start][0] == GAPCHAR):
+                start = start + 1
+            if start >= len(track):
                 start = 0
                 end = 0
             else:
-                start = min(x)
-                end = max(x)
-            if start > min([item["end"] for item in col_to_ends.values()]):
+                x = [i for i in range(start, min(start+maxreadlength, len(track))) if track[i][0] != ENDCHAR and track[i][0] != GAPCHAR]
+                end = x[-1]
+            if start > minend:
                 # Find the first column we can add it to
-                mincol = [(col_to_ends[k]["rank"], k) for k in col_to_ends.keys() if col_to_ends[k]["end"] < start]
-                mincol.sort()
-                mincol = mincol[0][1]
-                # Rest that column with merged alignments
-                grid[mincol] = self.MergeRows(list(grid[mincol].values), list(grid[col].values))
+                for c in alncols:
+                    if col_to_ends.get(c, float("inf")) < start:
+                        mincol = c
+                        break
+                # Reset that column with merged alignments
+                griddict[mincol] = self.MergeRows(griddict[mincol], griddict[col], start, end)
                 # Set that column for deletion and clear it in case we use it later
-                grid[col] = [ENDCHAR]*grid.shape[0]
-                cols_to_delete.append(col)
-                # Rest end
-                t = grid.ix[:,mincol].values
-                y = [i for i in range(len(t)) if t[i][0] != ENDCHAR and t[i][0] != GAPCHAR]
-                col_to_ends[mincol]["end"] = max(y)
+                griddict[col][start:end+1] = [ENDCHAR*len(griddict[col][i]) for i in range(start, end+1)]
+                cols_to_delete.add(col)
+                # Reset end
+                t = griddict[mincol]
+                col_to_ends[mincol] = end
+                minend = min(col_to_ends.values())
+                col_to_ends[col] = 0
                 # Make sure we're not deleting mincol
-                if mincol in cols_to_delete:
-                    cols_to_delete.remove(mincol)
-            col_to_ends[col] = {"end": end, "rank": alncols.index(col)}
-        return grid.drop(cols_to_delete, 1)
-            
+                cols_to_delete.discard(mincol)
+            else: col_to_ends[col] = end
+            if end < minend: minend = end
+            prevstart = start
+        for col in cols_to_delete: del griddict[col]
+        return griddict
+
     def GetReferenceTrack(self, _pos):
         """
         Return string for the reference track
         """
-        if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["NUMCHAR"]
+        if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["LOADCHAR"]
         refseries = self.grid_by_sample.values()[0].reference.values
         reference = ""
         for i in range(len(refseries)):
@@ -252,7 +268,7 @@ class AlignmentGrid(object):
 
     def GetPositions(self, _pos):
         positions = []
-        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["NUMCHAR"])
+        if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["LOADCHAR"])
         refseries = self.grid_by_sample.values()[0].reference.values
         for i in range(len(refseries)):
             positions.extend([self.pos+i]*len(refseries[i]))
