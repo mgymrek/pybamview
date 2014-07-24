@@ -54,6 +54,14 @@
 	    <p>
 	      PyBamView looks up the sequence of the reference genome using the chromosome name and genomic coordinate provided. Therefore, if you look up "chr1:10000", it will only find the reference sequence if there is a chromosome in the reference file with the exact header "&#62;chr1". If the headings of the entries in the reference fasta file look something like "&#62;1" or "1 dna:chrosome 1", PyBamView will not recognize the reference sequence appropriately.
 	  </li>
+	  <li><strong>I supplied PyBamView with a reference genome fasta file, but it says that the fasta is invalid</strong>
+	    <p>
+	      PyBamView uses the <a href="https://pypi.python.org/pypi/pyfasta/">PyFasta</a> library to read fasta files efficiently. PyFasta generates two files (.flat and .gdx files) in the same directory as the fasta file. If this is the first time you're using the fasta file with PyBamView, it will attempt to create those files in the same directory as the original fasta. If you don't have permission to write to that directory, it won't be able to create the index, resulting in the "invalid fasta file" message.
+	  </li>
+	  <li><strong>PyBamView is taking a while to load anything.</strong>
+	    <p>
+	      If this is the first time you are using PyBamView with a certain fasta reference file, it will need to index it first. This may take a short while (usually under a minute). The next time you use the fasta file, it will use the index files created earlier and should load much faster.
+	  </li>
 	</ul>
 	<h2>Web browser display</h2>
 	<ul>
