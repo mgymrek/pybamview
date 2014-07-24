@@ -269,7 +269,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.style("stroke-width", "3px");
 	    currentHeight += fontSize*1.1;
 	} else {
-	    var currentHeight = 20;
+	    var currentHeight = 23; // account for 22px sample div
 	    // Make div for the sample
 	    var numreads = 0;
 	    var reads = alignBySample[samples[i]].split(";");
