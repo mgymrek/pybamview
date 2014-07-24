@@ -57,6 +57,15 @@
 		  </td>
 		  <td><input type='text' name='region' value='{{ REGION }}'></td>
 		  <td><input type='submit' class="button"></td>
+		  <td><button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button></td>
+		  <td><button class="arrow" id="rightzoom" type="button" onclick="scroll(1);"><b> &gt; </b></button></td>
+		  <td>
+		    <div class="helptext" id="helptextarrow">
+		      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionarrow">
+			To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
+		      </div>
+		    </div>
+		  </td>
 		</tr>
 	      </table>
 	    </form>
@@ -87,13 +96,12 @@
 	  <td>
 	    <div class="helptext" id="helptextzoom">
 	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionzoom">
-		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default. To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
+		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default.
 	      </div>
 	    </div>
 	  </td>
 	  <td><div id="zoomer">
 	      <b>-</b>
-	      <button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button>
 	      {% if MAXZOOM >= 100 %}
 	      <button class="zoomout" id="zoom{{ -100 }}" onclick="refreshZoom({{ -100 }} );" type="button"></button>
 	      {% endif %}
@@ -109,7 +117,6 @@
 	      {% for zl in range(2,4) %}
 	      <button class="zoomin" id="zoom{{ zl }}" onclick="refreshZoom({{ zl }});" type="button"></button>
 	      {% endfor %}
-	      <button class="arrow" id="rightzoom" type="button" onclick="scroll(1);"><b> &gt; </b></button>
 	      <input type="hidden" id="centerind" value="">
 	      <b>+</b>
 	  </div></td>
@@ -135,7 +142,7 @@
 	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionselect">
 		Mousing over a locus will update the "Selected" text box with the currently selected position.
 		<p>
-		  To select a specific region from a zoomed out view to zoom in on, draw a box around the region of the reference you would like to select. Note that it will only zoom if you select a region that is at least 100bp long. The "Selected" text box should update with the currently selected region.
+		  To select a specific region from a zoomed out view to zoom in on, draw a box around the region of the reference you would like to select. The "Selected" text box should update with the currently selected region.
 	      </div>
 	    </div>
 	  </td>

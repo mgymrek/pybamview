@@ -58,9 +58,11 @@ function AlignZoom(zoomlevel, center_index) {
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
     if (fromindex < 0) {
 	fromindex = 0;
+	toindex = fromindex + buffer/zoomlevel -1;
     }
     if (toindex >= positions.length) {
 	toindex = positions.length  - 1;
+	fromindex = toindex - buffer/zoomlevel + 1;
     }
     $("#centerind")[0].value = parseInt((fromindex+toindex)/2);
     // Redraw
@@ -207,7 +209,11 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    var extent0 = refbrush.extent(),
 		extent1;
 	    extent1 = [Math.floor(extent0[0]/gridWidth)*gridWidth, Math.ceil(extent0[1]/gridWidth)*gridWidth];
-	    if (extent1[1]-extent1[0]<gridWidth*100) {extent1[1] = extent1[0];} // don't redraw if only a couple bp
+	    if (extent1[1]-extent1[0]<gridWidth*100) {
+		var center = Math.round((extent1[1]+extent1[0])/2);
+		extent1[0] = center-50;
+		extent1[1] = center+50;
+	    } // make region be at least 100bp
 	    d3.select(this).call(refbrush.extent(extent1));
 	    d3.selectAll(".samplerect")
 		.attr("x", extent1[0])
@@ -546,6 +552,12 @@ $(document).ready(function()
 		$(this).children("#descriptionselect").show();
 	    }).mouseout(function() {
 		    $(this).children("#descriptionselect").hide();
+		});
+
+	$("#helptextarrow").mouseover(function() {
+		$(this).children("#descriptionarrow").show();
+	    }).mouseout(function() {
+		    $(this).children("#descriptionarrow").hide();
 		});
 
 	
