@@ -559,7 +559,5 @@ $(document).ready(function()
 	    }).mouseout(function() {
 		    $(this).children("#descriptionarrow").hide();
 		});
-
-	
     }
 });
