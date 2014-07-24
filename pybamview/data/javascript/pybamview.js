@@ -92,6 +92,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     gridWidth = BASE_W*zoomlevel;
     gridHeight = BASE_H*zoomlevel;
     fontSize = BASE_FONT*zoomlevel;
+    if (fontSize < 16) {
+	fontSize = 16;
+    }
     if (gridHeight < 10) {
 	gridHeight = 10;
     }
@@ -262,9 +265,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("dy","0.25em")
 		.attr("fill","black")
 		.style("font-family", "Courier")
-		.style("font-size", "16px;")
+		.style("font-size", fontSize)
 		.style("stroke-width", "3px");
-	    currentHeight += BASE_H;
+	    currentHeight += fontSize*1.1;
 	} else {
 	    var currentHeight = 20;
 	    // Make div for the sample
