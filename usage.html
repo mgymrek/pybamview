@@ -16,7 +16,7 @@
       <section id="main_content">
 	This page gives basic information on how to use PyBamView. To learn how to set up a web server to host a PyBamView instance, see <a href="serve-pybamview-remotely.html">Serving PyBamView remotely</a>.
 	<h1>example command</h1>
-	Here's an example command using files from the download to get you started. If you installed PyBamView using pip, you can find the example data files <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">here</a>. Keep reading for more detailed instructions.
+	Here's an example command using files from the download to get you started. You can find the example data files <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">here</a>. Keep reading for more detailed instructions.
 	{% highlight bash %}
 	pybamview --bamdir examples/
 	{% endhighlight %}
@@ -30,7 +30,7 @@
 	<p>
 	PyBamView will look for any indexed bams in that directory, detect which samples are in those bams, and display them as a checklist. If no samples are showing up, make sure you have indexed your bam files and that all reads are annotated with a read group (see <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files"> here for more information about read groups and BAM faq</a>). Select which samples you would like to view and click "View selected samples".
 	<p>
-	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all Ns). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
+	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all Ns). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Use the zoom buttons to zoom in and out of the alignment view. Mouse over the question marks for usage tips.
 	<p>
 	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest.
 	  <h1>exporting snapshots to PDF</h1>
@@ -40,8 +40,8 @@
 	{% highlight bash %}
 >pybamview --help
 usage: pybamview [-h] --bamdir BAMDIR [--ref REF] [--ip IP] [--port PORT]
-                 [--targets TARGETS] [--buffer BUFFER] [--no-browser]
-                 [--debug]
+                 [--targets TARGETS] [--buffer BUFFER] [--maxzoom MAXZOOM]
+                 [--no-browser] [--debug]
 
 pybamview: An Python-based BAM alignment viewer.
 
@@ -50,15 +50,18 @@ optional arguments:
   --bamdir BAMDIR    Directory to look for bam files. Bam files must be
                      indexed.
   --ref REF          Path to reference fasta file. If no reference is given,
-                     the reference track is displayed as Ns
+                     the reference track is displayed as "N"'s
   --ip IP            Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
                      have the server available externally.
   --port PORT        The port of the webserver. Defaults to 5000.
   --targets TARGETS  Bed file with chrom, start, end, and name. Allows you to
                      easily jump to these targets.
-  --buffer BUFFER    How many nucleotides to load into memory. Default: 500.
+  --buffer BUFFER    How many nucleotides to load into memory. Default: 200.
                      Buffering more allows you to scroll farther. Buffering
                      less is faster.
+  --maxzoom MAXZOOM  Maximum number of times to be able to zoom out. E.g.
+                     --maxzoom 10 allows zooming out up to 10x. Default: 100.
+                     Must be between one of 1-10, 50, or 100.
   --no-browser       Don't automatically open the web browser.
   --debug            Run PyBamView in Flask debug mode
 	{% endhighlight %}

@@ -37,7 +37,7 @@
 	  option "--ip 0.0.0.0", which will allow a remote user to
 	  view the results. Also set which port to serve the web
 	  application by setting "--port $PORT" where $PORT is some
-	  large number, between 1024-65535. The default port for
+	  large number, between 1024-65535. This must be a port for which your server's security settings allow incoming http traffic. The default port for
 	  PyBamView is 5000. An example command is shown below:
 	    {% highlight bash %}
 	    pybamview --bamdir . --ref hg19.fa --ip 0.0.0.0 --port 5000
@@ -48,8 +48,8 @@
 	    $HOSTNAME is the hostname mentioned above, and $PORT is
 	    the argument you used for the port. You can share this
 	    URL, or navigate to an interesting alignment view and copy
-	    the resulting URL from the browser, with another person that has access to the same server,
-	    they can use this same URL. Note that if you need VPN to
+	    the resulting URL from the browser, with another person that has access to the same server.
+	    Note that if you need VPN to
 	    access the server, the other user will probably also need
 	    VPN access to view the URL.
 	  </li>
