@@ -7,21 +7,20 @@ function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
 }
 
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function Noop() {
 }
 
 function InHover(i, usefont) {
-    if (usefont) {
-	// Update color
-	d3.selectAll(".p"+i).style("fill","pink");
-    } else {
-	var nodes = d3.selectAll(".p"+i)[0];
-	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 255, 255)" || nodes[j].style.fill == "white") {
-		nodes[j].style.fill = "rgb(255, 192, 203)";
-		nodes[j].style["stroke-width"] = 1;
-		nodes[j].style.stroke = "rgb(255, 192, 203)";
-	    }
+    var nodes = d3.selectAll(".p"+i)[0];
+    for (var j = 0; j < nodes.length; j++) {
+	if (nodes[j].style.fill == "rgb(255, 255, 255)" || nodes[j].style.fill == "white") {
+	    nodes[j].style.fill = "rgb(255, 192, 203)";
+	    nodes[j].style["stroke-width"] = 1;
+	    nodes[j].style.stroke = "rgb(255, 192, 203)";
 	}
     }
     // Update selected box
@@ -30,17 +29,12 @@ function InHover(i, usefont) {
 }
 
 function OutHover(i, usefont) {
-    if (usefont) {
-	// Update color
-	d3.selectAll(".p"+i).style("fill","white");
-    } else {
-	var nodes = d3.selectAll(".p"+i)[0];
-	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 192, 203)" || nodes[j].style.fill == "pink") {
-		nodes[j].style.fill = "rgb(255, 255, 255)";
-		nodes[j].style["stroke-width"] = 1;
-		nodes[j].style.stroke = "rgb(255, 255, 255)";
-	    }
+    var nodes = d3.selectAll(".p"+i)[0];
+    for (var j = 0; j < nodes.length; j++) {
+	if (nodes[j].style.fill == "rgb(255, 192, 203)" || nodes[j].style.fill == "pink") {
+	    nodes[j].style.fill = "rgb(255, 255, 255)";
+	    nodes[j].style["stroke-width"] = 1;
+	    nodes[j].style.stroke = "rgb(255, 255, 255)";
 	}
     }
     // Update selected box
@@ -58,9 +52,11 @@ function AlignZoom(zoomlevel, center_index) {
     var toindex = Math.round(center_index + (buffer/zoomlevel/2));
     if (fromindex < 0) {
 	fromindex = 0;
+	toindex = fromindex + buffer/zoomlevel -1;
     }
     if (toindex >= positions.length) {
 	toindex = positions.length  - 1;
+	fromindex = toindex - buffer/zoomlevel + 1;
     }
     $("#centerind")[0].value = parseInt((fromindex+toindex)/2);
     // Redraw
@@ -74,6 +70,9 @@ function AlignZoom(zoomlevel, center_index) {
 }
 
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot) {
+    // Update which region is displayed- TODO
+    var disp = document.getElementById("displayed");
+    disp.innerHTML = "Displayed: <b>" + chrom + ":" + positions[fromindex] + "-" + positions[toindex] + " (" + numberWithCommas((positions[toindex]-positions[fromindex]+1)) + " bp)" + "</b>";
     // Reset
     if (snapshot) {
 	document.getElementById("snapshot").innerHTML = "";
@@ -90,6 +89,9 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     gridWidth = BASE_W*zoomlevel;
     gridHeight = BASE_H*zoomlevel;
     fontSize = BASE_FONT*zoomlevel;
+    if (fontSize < 16) {
+	fontSize = 16;
+    }
     if (gridHeight < 10) {
 	gridHeight = 10;
     }
@@ -207,7 +209,11 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 	    var extent0 = refbrush.extent(),
 		extent1;
 	    extent1 = [Math.floor(extent0[0]/gridWidth)*gridWidth, Math.ceil(extent0[1]/gridWidth)*gridWidth];
-	    if (extent1[1]-extent1[0]<gridWidth*100) {extent1[1] = extent1[0];} // don't redraw if only a couple bp
+	    if (extent1[1]-extent1[0]<gridWidth*100) {
+		var center = Math.round((extent1[1]+extent1[0])/2);
+		extent1[0] = center-50;
+		extent1[1] = center+50;
+	    } // make region be at least 100bp
 	    d3.select(this).call(refbrush.extent(extent1));
 	    d3.selectAll(".samplerect")
 		.attr("x", extent1[0])
@@ -256,11 +262,11 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		.attr("dy","0.25em")
 		.attr("fill","black")
 		.style("font-family", "Courier")
-		.style("font-size", "16px;")
+		.style("font-size", fontSize)
 		.style("stroke-width", "3px");
-	    currentHeight += BASE_H;
+	    currentHeight += fontSize*1.1;
 	} else {
-	    var currentHeight = 20;
+	    var currentHeight = 23; // account for 22px sample div
 	    // Make div for the sample
 	    var numreads = 0;
 	    var reads = alignBySample[samples[i]].split(";");
@@ -548,6 +554,10 @@ $(document).ready(function()
 		    $(this).children("#descriptionselect").hide();
 		});
 
-	
+	$("#helptextarrow").mouseover(function() {
+		$(this).children("#descriptionarrow").show();
+	    }).mouseout(function() {
+		    $(this).children("#descriptionarrow").hide();
+		});
     }
 });
