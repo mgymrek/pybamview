@@ -7,21 +7,20 @@ function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
 }
 
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function Noop() {
 }
 
 function InHover(i, usefont) {
-    if (usefont) {
-	// Update color
-	d3.selectAll(".p"+i).style("fill","pink");
-    } else {
-	var nodes = d3.selectAll(".p"+i)[0];
-	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 255, 255)" || nodes[j].style.fill == "white") {
-		nodes[j].style.fill = "rgb(255, 192, 203)";
-		nodes[j].style["stroke-width"] = 1;
-		nodes[j].style.stroke = "rgb(255, 192, 203)";
-	    }
+    var nodes = d3.selectAll(".p"+i)[0];
+    for (var j = 0; j < nodes.length; j++) {
+	if (nodes[j].style.fill == "rgb(255, 255, 255)" || nodes[j].style.fill == "white") {
+	    nodes[j].style.fill = "rgb(255, 192, 203)";
+	    nodes[j].style["stroke-width"] = 1;
+	    nodes[j].style.stroke = "rgb(255, 192, 203)";
 	}
     }
     // Update selected box
@@ -30,17 +29,12 @@ function InHover(i, usefont) {
 }
 
 function OutHover(i, usefont) {
-    if (usefont) {
-	// Update color
-	d3.selectAll(".p"+i).style("fill","white");
-    } else {
-	var nodes = d3.selectAll(".p"+i)[0];
-	for (var j = 0; j < nodes.length; j++) {
-	    if (nodes[j].style.fill == "rgb(255, 192, 203)" || nodes[j].style.fill == "pink") {
-		nodes[j].style.fill = "rgb(255, 255, 255)";
-		nodes[j].style["stroke-width"] = 1;
-		nodes[j].style.stroke = "rgb(255, 255, 255)";
-	    }
+    var nodes = d3.selectAll(".p"+i)[0];
+    for (var j = 0; j < nodes.length; j++) {
+	if (nodes[j].style.fill == "rgb(255, 192, 203)" || nodes[j].style.fill == "pink") {
+	    nodes[j].style.fill = "rgb(255, 255, 255)";
+	    nodes[j].style["stroke-width"] = 1;
+	    nodes[j].style.stroke = "rgb(255, 255, 255)";
 	}
     }
     // Update selected box
@@ -76,6 +70,9 @@ function AlignZoom(zoomlevel, center_index) {
 }
 
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot) {
+    // Update which region is displayed- TODO
+    var disp = document.getElementById("displayed");
+    disp.innerHTML = "Displayed: <b>" + chrom + ":" + positions[fromindex] + "-" + positions[toindex] + " (" + numberWithCommas((positions[toindex]-positions[fromindex]+1)) + " bp)" + "</b>";
     // Reset
     if (snapshot) {
 	document.getElementById("snapshot").innerHTML = "";
