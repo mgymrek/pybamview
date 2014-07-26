@@ -20,9 +20,14 @@
 	{% highlight bash %}
 	pybamview --bamdir examples/
 	{% endhighlight %}
-	This will open a browser pointing to 127.0.0.1:5000. Select "mysample", and try navigating to different genomic locations, e.g. chr11:2192266.
+	This will open a browser pointing to 127.0.0.1:5000. Select one or more samples, and try navigating to different genomic locations, e.g. chr11:2192266.
         <h1>getting started</h1>
-	To get started with PyBamView, determine a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Optionally, you can also provide a reference genome in fasta format. Then simply type:
+	To get started with PyBamView, determine a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Assuming you already have samtools installed, this requires two simple commands:
+	{% highlight bash %}
+	samtools sort mybam.bam mybam.sorted
+	samtools index mybam.sorted.bam
+	{% endhighlight %}
+	Optionally, you can also provide a reference genome in fasta format. Then simply type:
 	{% highlight bash %}
 	pybamview --bamdir PATH/TO/BAM/DIRECTORY --ref REF.fasta
 	{% endhighlight %}
