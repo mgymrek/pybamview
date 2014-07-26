@@ -70,9 +70,11 @@ function AlignZoom(zoomlevel, center_index) {
 }
 
 function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot) {
-    // Update which region is displayed- TODO
-    var disp = document.getElementById("displayed");
-    disp.innerHTML = "Displayed: <b>" + chrom + ":" + positions[fromindex] + "-" + positions[toindex] + " (" + numberWithCommas((positions[toindex]-positions[fromindex]+1)) + " bp)" + "</b>";
+    // Update which region is displayed
+    if (!snapshot) {
+	var disp = document.getElementById("displayed");
+	disp.innerHTML = "Displayed: <b>" + chrom + ":" + positions[fromindex] + "-" + positions[toindex] + " (" + numberWithCommas((positions[toindex]-positions[fromindex]+1)) + " bp)" + "</b>";
+    }
     // Reset
     if (snapshot) {
 	document.getElementById("snapshot").innerHTML = "";
