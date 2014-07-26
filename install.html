@@ -21,20 +21,35 @@
       <section id="main_content">
 	Note: PyBamView requires Python2.7.<br><br>
 	<h1>easy installation</h1>
-	The easiest way to install PyBamView is using <a href="https://pypi.python.org/pypi/pip">pip</a>:
+	The easiest and preferred way to install PyBamView is using <a href="https://pypi.python.org/pypi/pip">pip</a>:
 	{% highlight bash %}
 	pip install pybamview
 	{% endhighlight %}
-	This will install <a href="https://pypi.python.org/pypi/pybamview/">the latest PyBamView version listed in PyPi</a>, and any missing libraries it depends on.
+	This will install <a href="https://pypi.python.org/pypi/pybamview/">the latest stable PyBamView version listed in PyPi</a>, and any missing libraries it depends on.
 	<br><br>
 	To use the "Export to PDF" feature, you will also need to install <a href="http://manpages.ubuntu.com/manpages/precise/man1/rsvg-convert.1.html">rsvg-convert</a>:
 	{% highlight bash %}
 	sudo apt-get install librsvg2-bin
 	{% endhighlight %}
-
+	(note that the "sudo apt-get" command is assuming you're using Ubuntu/Debian. If you're using a different system you will need to use that system's package manager.)
 	<h1>installing from source</h1>
-	<h2>obtain the source code</h2>
-	To install PyBamView, first obtain the source code by either:
+	<h2>requirements</h2>
+	First, make sure you have the required python packages installed:
+	<ul>
+	  <li><a href="http://flask.pocoo.org/">Flask</a></li>
+	  <li><a href="http://pandas.pydata.org/">pandas</a></li>
+	  <li><a href="https://pypi.python.org/pypi/pyfasta/">pyfasta</a></li>
+	  <li><a href="https://code.google.com/p/pysam/">pysam</a></li>
+	</ul>
+	You can install these using easy_install:
+	{% highlight bash %}
+	sudo easy_install Flask pandas pyfasta pysam
+	{% endhighlight %}
+	
+	If you want to use the "Download PDF" feature, you must have rsvg-convert installed (see above).
+
+	<h2>getting the source code</h2>
+	Obtain the source code by either:
 	<ul>
 	  <li>Downloading the tarball
 	    {% highlight bash %}
@@ -56,22 +71,7 @@
 	  </li>
 	</ul>
 
-	<h2>install requirements</h2>
-	Then, make sure you have the required python packages installed:
-	<ul>
-	  <li><a href="http://flask.pocoo.org/">Flask</a></li>
-	  <li><a href="http://pandas.pydata.org/">pandas</a></li>
-	  <li><a href="https://pypi.python.org/pypi/pyfasta/">pyfasta</a></li>
-	  <li><a href="https://code.google.com/p/pysam/">pysam</a></li>
-	</ul>
-	You can install these using easy_install:
-	{% highlight bash %}
-	sudo easy_install Flask pandas pyfasta pysam
-	{% endhighlight %}
-	
-	If you want to use the "Download PDF" feature, you must have rsvg-convert installed (see above).
-
-	<h2>install</h2>
+	<h2>building and installing</h2>
 	At the top of the PyBamView source directory, type:
 	{% highlight bash %}
 	sudo python setup.py install
