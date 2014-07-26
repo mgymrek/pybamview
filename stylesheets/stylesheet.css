@@ -68,16 +68,6 @@ header h2 {
   color: #666;
 }
 
-#downloads {
-  display: none;
-}
-
-#downloads .btn {
-  display: inline-block;
-  text-align: center;
-  margin: 0;
-}
-
 /* Main Content
 */
 
