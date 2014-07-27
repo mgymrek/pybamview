@@ -23,7 +23,7 @@ These can all be installed using ```pip``` or ```easy_install```. Additionally, 
 Installation
 ==========
 
-PyBamView can be easily installed using pip: ```easy_install pybamview```
+PyBamView can be easily installed using pip: ```pip install pybamview```
 
 To install from source, download or clone the package from github, ensure the required packages are installed, and run ```python setup.py install``` from the root directory of the pybamview package.
 
