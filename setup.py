@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "mgymrek@mit.edu"
 DOWNLOAD_URL = 'http://github.com/mgymrek/pybamview'
 LICENSE = 'MIT'
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 setup(name=NAME,
       version=VERSION,
