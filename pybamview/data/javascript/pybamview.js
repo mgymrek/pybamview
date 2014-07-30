@@ -91,8 +91,8 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
     gridWidth = BASE_W*zoomlevel;
     gridHeight = BASE_H*zoomlevel;
     fontSize = BASE_FONT*zoomlevel;
-    if (fontSize < 16) {
-	fontSize = 16;
+    if (fontSize < 10) {
+	fontSize = 10;
     }
     if (gridHeight < 10) {
 	gridHeight = 10;
