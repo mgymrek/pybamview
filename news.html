@@ -1,0 +1,39 @@
+---
+---
+<!DOCTYPE html>
+<html>
+{% include header.html %}
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pybamview</h1>
+        <h2>Browser-based application for viewing bam alignments</h2>
+	{% include menu.html %}<br>
+      </div>
+    </header>
+    <div class="container">
+      <section id="main_content">
+	<h1>News</h1>
+	<ul>
+	  <li><b>01/29/14</b> PyBamView initial version goes live</li>
+	  <li><b>05/23/14</b> PyBamView released on pypi</li>
+	  <li><b>07/23/14</b> PyBamView version 1.0.0 released. New in this version:
+	    <ul>
+	      <li>
+		The entire alignment view is now rendered using the <a href="d3js.org">D3 javascript library</a>
+	      </li>
+	      <li>
+		Significant speedups and bug fixes to allow for visualizing more samples and reads at once.
+	      </li>
+	      <li>
+		New features to allow zooming in and out of alignment views.
+	      </li>
+	    </ul>
+	  </li>
+	</ul>
+      </section>
+    </div>
+    
+  </body>
+</html>

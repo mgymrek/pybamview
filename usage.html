@@ -8,20 +8,26 @@
     <header>
       <div class="container">
         <h1>Pybamview</h1>
-        <h2>Browser based application for viewing bam alignments</h2>
+        <h2>Browser-based application for viewing bam alignments</h2>
 	{% include menu.html %}<br>
       </div>
     </header>
     <div class="container">
       <section id="main_content">
+	This page gives basic information on how to use PyBamView. To learn how to set up a web server to host a PyBamView instance, see <a href="serve-pybamview-remotely.html">Serving PyBamView remotely</a>.
 	<h1>example command</h1>
-	Here's an example command using files from the download to get you started. If you installed PyBamView using pip, you can find the example data files <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">here</a>. Keep reading for more detailed instructions.
+	Here's an example command using files from the download to get you started. You can find the example data files <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">here</a>. Keep reading for more detailed instructions.
 	{% highlight bash %}
 	pybamview --bamdir examples/
 	{% endhighlight %}
-	This will open a browser pointing to 127.0.0.1:5000. Select "mysample", and try navigating to different genomic locations, e.g. chr11:2192266.
+	This will open a browser pointing to 127.0.0.1:5000. Select one or more samples, and try navigating to different genomic locations, e.g. chr11:2192266.
         <h1>getting started</h1>
-	To get started with PyBamView, determine a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Optionally, you can also provide a reference genome in fasta format. Then simply type:
+	To get started with PyBamView, determine a directory where you have some BAM files that have been <a href="http://samtools.sourceforge.net/samtools.shtml">sorted and indexed using samtools</a>. Assuming you already have samtools installed, this requires two simple commands:
+	{% highlight bash %}
+	samtools sort mybam.bam mybam.sorted
+	samtools index mybam.sorted.bam
+	{% endhighlight %}
+	Optionally, you can also provide a reference genome in fasta format. Then simply type:
 	{% highlight bash %}
 	pybamview --bamdir PATH/TO/BAM/DIRECTORY --ref REF.fasta
 	{% endhighlight %}
@@ -29,36 +35,39 @@
 	<p>
 	PyBamView will look for any indexed bams in that directory, detect which samples are in those bams, and display them as a checklist. If no samples are showing up, make sure you have indexed your bam files and that all reads are annotated with a read group (see <a href="http://gatkforums.broadinstitute.org/discussion/1317/collected-faqs-about-bam-files"> here for more information about read groups and BAM faq</a>). Select which samples you would like to view and click "View selected samples".
 	<p>
-	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all Ns). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Click on a sample name to show/hide that sample.
-	<p>
-	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest.
+	This will take you to a page visualizating the alignments. If you specified a reference genome, that will be displayed at the top of the alignments (else it will be all Ns). Below the reference is a section for each sample contained in the bam files. You can navigate to a specific genomic region by entering a location in the form "$chrom:position" (e.g. chr1:1000) in the box that says "Enter region". Mouse over a column to see which genomic position you're at. Use the zoom buttons to zoom in and out of the alignment view. Mouse over the question marks for usage tips.
 	  <h1>exporting snapshots to PDF</h1>
 	  PyBamView can easily export alignment snapshots to PDF format. When viewing an alignment, click the "Export snapshot" button on the top left. This will open a new window where you can tweak the alignment display. When you're happy with the region and samples selected, click "Download PDF" to obtain the PDF file.
+	  <h1>viewing a set of target regions</h1>
+	  If you're interested in a specific set of target regions (for instance, Y-STRs), you can upload a bed file containing these targets using the "--targets" option. An example targets file is included in the <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">example data files</a>. Then you'll see a drop down box on the alignment page that will allow you to quickly navigate to a marker of interest.
 	  <h1>full command line usage</h1>
 	To see the usage information for PyBamView, type:
 	{% highlight bash %}
 >pybamview --help
 usage: pybamview [-h] --bamdir BAMDIR [--ref REF] [--ip IP] [--port PORT]
-                 [--targets TARGETS] [--buffer BUFFER] [--no-browser]
-                 [--debug]
+                 [--targets TARGETS] [--buffer BUFFER] [--maxzoom MAXZOOM]
+                 [--no-browser] [--debug]
 
 pybamview: An Python-based BAM alignment viewer.
 
 optional arguments:
-  -h, --help         show this help message and exit
+  -h, --help         show this message
   --bamdir BAMDIR    Directory to look for bam files. Bam files must be
                      indexed.
   --ref REF          Path to reference fasta file. If no reference is given,
                      the reference track is displayed as Ns
-  --ip IP            Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to
+  --ip IP            Host IP. 127.0.0.1 for localhost (default). 0.0.0.0 to
                      have the server available externally.
   --port PORT        The port of the webserver. Defaults to 5000.
   --targets TARGETS  Bed file with chrom, start, end, and name. Allows you to
                      easily jump to these targets.
-  --buffer BUFFER    How many nucleotides to load into memory. Default: 500.
+  --buffer BUFFER    How many nucleotides to load into memory. Default: 200.
                      Buffering more allows you to scroll farther. Buffering
                      less is faster.
-  --no-browser       Don't automatically open the web browser.
+  --maxzoom MAXZOOM  Maximum level to be able to zoom out. E.g.
+                     --maxzoom 10 allows zooming out up to 10x. Default: 100.
+                     Must be between one of 1-10, 50, or 100.
+  --no-browser       Do not automatically open the web browser.
   --debug            Run PyBamView in Flask debug mode
 	{% endhighlight %}
       </section>

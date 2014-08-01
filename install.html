@@ -8,56 +8,28 @@
     <header>
       <div class="container">
         <h1>Pybamview</h1>
-        <h2>Browser based application for viewing bam alignments</h2>
+        <h2>Browser-based application for viewing bam alignments</h2>
 	{% include menu.html %}<br><br>
-        <section id="downloads">
-          <a href="https://github.com/mgymrek/pybamview/zipball/master" class="btn">Download as .zip</a>
-          <a href="https://github.com/mgymrek/pybamview/tarball/master" class="btn">Download as .tar.gz</a>
-          <a href="https://github.com/mgymrek/pybamview" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-        </section>
       </div>
     </header>
     <div class="container">
       <section id="main_content">
 	Note: PyBamView requires Python2.7.<br><br>
 	<h1>easy installation</h1>
-	The easiest way to install PyBamView is using <a href="https://pypi.python.org/pypi/pip">pip</a>:
+	The easiest and preferred way to install PyBamView is using <a href="https://pypi.python.org/pypi/pip">pip</a>:
 	{% highlight bash %}
 	pip install pybamview
 	{% endhighlight %}
-	This will install PyBamView and any missing libraries it depends on.
+	This will install <a href="https://pypi.python.org/pypi/pybamview/">the latest stable PyBamView version listed in PyPi</a>, and any missing libraries it depends on.
 	<br><br>
 	To use the "Export to PDF" feature, you will also need to install <a href="http://manpages.ubuntu.com/manpages/precise/man1/rsvg-convert.1.html">rsvg-convert</a>:
 	{% highlight bash %}
 	sudo apt-get install librsvg2-bin
 	{% endhighlight %}
-
+	(note that the "sudo apt-get" command is assuming you're using Ubuntu/Debian. If you're using a different system you will need to use that system's package manager.)
 	<h1>installing from source</h1>
-	<h2>obtain the source code</h2>
-	To install PyBamView, first obtain the source code by either:
-	<ul>
-	  <li>Downloading the tarball
-	    {% highlight bash %}
-	    tar -xzvf mgymrek-pybamview-[version].tar.gz
-	    cd mgymrek-pybamview-[version]
-	    {% endhighlight %}
-	  </li>
-	  <li>Downloading the zip file
-	    {% highlight bash %}
-	    unzip mgymrek-pybamview-[version].zip
-	    cd mgymrek-pybamview-[version]
-	    {% endhighlight %}
-	  </li>
-	  <li>Cloning the git repository
-	    {% highlight bash %}
-	    git clone https://github.com/mgymrek/pybamview.git
-	    cd pybamview
-	    {% endhighlight %}
-	  </li>
-	</ul>
-
-	<h2>install requirements</h2>
-	Then, make sure you have the required python packages installed:
+	<h2>requirements</h2>
+	First, make sure you have the required python packages installed:
 	<ul>
 	  <li><a href="http://flask.pocoo.org/">Flask</a></li>
 	  <li><a href="http://pandas.pydata.org/">pandas</a></li>
@@ -71,7 +43,24 @@
 	
 	If you want to use the "Download PDF" feature, you must have rsvg-convert installed (see above).
 
-	<h2>install</h2>
+	<h2>getting the source code</h2>
+	Obtain the source code by either:
+	<ul>
+	  <li>Downloading the tarball <a href="https://github.com/mgymrek/pybamview/tarball/master">from github</a>.
+	    {% highlight bash %}
+	    tar -xzvf mgymrek-pybamview-[version].tar.gz
+	    cd mgymrek-pybamview-[version]
+	    {% endhighlight %}
+	  </li>
+	  <li>Cloning the git repository
+	    {% highlight bash %}
+	    git clone https://github.com/mgymrek/pybamview.git
+	    cd pybamview
+	    {% endhighlight %}
+	  </li>
+	</ul>
+
+	<h2>building and installing</h2>
 	At the top of the PyBamView source directory, type:
 	{% highlight bash %}
 	sudo python setup.py install
