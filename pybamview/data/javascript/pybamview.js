@@ -279,7 +279,7 @@ function DrawSnapshot(reference_track, samples, alignBySample, fromindex, toinde
 		    numreads = numreads + 1;
 		}
 	    }
-	    var samplesvg = d3.select("#"+samples[i]).append("svg:svg")
+	    var samplesvg = d3.select("#s"+samples[i]).append("svg:svg")
 		.attr("width",w)
 		.attr("height",(2+numreads)*gridHeight);
 	}
