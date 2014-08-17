@@ -160,7 +160,7 @@
       <div id="reference" class="reference"></div>
       <div id="alignments" class="alignments">
 	{% for sample in SAMPLES %}
-	<div class="sample">{{ sample }} <button onclick='toggleDiv("{{ sample }}");' type="button">show/hide</button></div>
+	<div class="sample">{{ sample }} <button onclick='toggleDiv("s{{ sample }}");' type="button">show/hide</button></div>
 	<div id="s{{ sample }}" class="sampleAlignment"></div>
 	<div class="spacer"><br><br></div>
 	{% endfor %}
