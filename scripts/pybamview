@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import argparse
+import optparse
 import errno
 import pybamview
 import pyfasta
@@ -101,15 +101,16 @@ def isnuc(x):
 def ParseTargets(targetfile):
     """ Return list of targets, each is dict with region and name """
     x = []
-    with open(targetfile, "r") as f:
-        for line in f:
-            items = line.strip().split("\t")
-            if len(items) != 4:
-                MESSAGE("invalid target file. should have 4 columns", ERROR)
-            chrom, start, end, name = items
-            region = "%s:%s"%(chrom, start)
-            x.append({"name": name, "region": region})
-        line = f.readline()
+    f = open(targetfile, "r")
+    for line in f:
+        items = line.strip().split("\t")
+        if len(items) != 4:
+            MESSAGE("invalid target file. should have 4 columns", ERROR)
+        chrom, start, end, name = items
+        region = "%s:%s"%(chrom, start)
+        x.append({"name": name, "region": region})
+    line = f.readline()
+    f.close()
     f = open(targetfile, "r")
     line = f.readline()
     f.close()
@@ -217,30 +218,32 @@ def export():
     return response
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='pybamview: An Python-based BAM alignment viewer.')
-    parser.add_argument('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type=str, required=True)
-    parser.add_argument('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s', type=str)
-    parser.add_argument('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type=str, required=False, default="127.0.0.1")
-    parser.add_argument('--port', help='The port of the webserver. Defaults to 5000.', type=int, required=False, default=5000)
-    parser.add_argument('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type=str, required=False)
-    parser.add_argument('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.', \
-                            type=int, required=False, default=200)
-    parser.add_argument("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type=int, default=100, required=False)
-    parser.add_argument('--no-browser', help="Don't automatically open the web browser.", action="store_true")
-    parser.add_argument('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
-    args = parser.parse_args()
+    parser = optparse.OptionParser(description='pybamview: An Python-based BAM alignment viewer.')
+    parser.add_option('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type='string')
+    parser.add_option('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s', type='string')
+    parser.add_option('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type='string', default="127.0.0.1")
+    parser.add_option('--port', help='The port of the webserver. Defaults to 5000.', type='int', default=5000)
+    parser.add_option('--targets', help='Bed file with chrom, start, end, and name. Allows you to easily jump to these targets.', type='string')
+    parser.add_option('--buffer', help='How many nucleotides to load into memory. Default: 200. Buffering more allows you to scroll farther. Buffering less is faster.', \
+                            type='int', default=200)
+    parser.add_option("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type='int', default=100)
+    parser.add_option('--no-browser', help="Don't automatically open the web browser.", action="store_true")
+    parser.add_option('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
+    (options, args) = parser.parse_args()
     # Get args
-    BAMDIR = args.bamdir
-    REFFILE = args.ref
-    HOST = args.ip
-    PORT = args.port
-    TARGETFILE = args.targets
-    NUMCHAR = args.buffer
-    MAXZOOM = args.maxzoom
+    if not options.bamdir:
+        raise ValueError('--bamdir is a required option')
+    BAMDIR = options.bamdir
+    REFFILE = options.ref
+    HOST = options.ip
+    PORT = options.port
+    TARGETFILE = options.targets
+    NUMCHAR = options.buffer
+    MAXZOOM = options.maxzoom
     if MAXZOOM not in range(1,11) + [50, 100]:
         MESSAGE("Must set --maxzoom to one of 1-10, 50, or 100", ERROR)
-    app.debug = args.debug
-    OPEN_BROWSER = (not args.no_browser)
+    app.debug = options.debug
+    OPEN_BROWSER = (not options.no_browser)
     SETTINGS["NUMCHAR"] = NUMCHAR
     SETTINGS["MAXZOOM"] = MAXZOOM
     SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]

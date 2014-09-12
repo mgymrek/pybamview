@@ -319,7 +319,7 @@ class BamView(object):
 
     def LoadRGDictionary(self):
         return [
-            {r["ID"]: r.get("SM", r["ID"]) for r in br.header.get("RG", [])}
+            dict([(r["ID"], r.get("SM", r["ID"])) for r in br.header.get("RG", [])])
             for br in self.bamreaders]
 
     def GetPositions(self, start_pos):
