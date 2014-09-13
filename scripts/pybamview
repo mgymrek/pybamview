@@ -277,7 +277,7 @@ if __name__ == "__main__":
             MESSAGE("No web browser found: %s."%e, WARNING)
         except socket.error as e:
             if e.errno == errno.EADDRINUSE:
-                MESSAGE("Port %s is already in use. Tyring another port"%port, WARNING)
+                MESSAGE("Port %s is already in use. Trying another port"%port, WARNING)
                 continue
             elif e.errno in (errno.EACCES, getattr(errno, "WSEACCES", errno.EACCES)):
                 MESSAGE("Permission denied to listen on port %s. Trying another port"%port, WARNING)
