@@ -331,10 +331,6 @@ class BamView(object):
         self.alignment_grid = None
         self.read_groups = self.LoadRGDictionary()
 
-    def samples(self):
-        return set(
-            chain.from_iterable(rg.itervalues() for rg in self.read_groups))
-
     def GetSamples(self):
         """
         Get list of samples
