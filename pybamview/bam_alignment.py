@@ -23,10 +23,11 @@ THE SOFTWARE.
 """
 
 from itertools import chain
-import sys
+import hashlib
 import pandas as pd
 import pysam
 import pyfasta
+import sys
 
 from .constants import ENDCHAR, GAPCHAR, DELCHAR
 from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
@@ -47,6 +48,12 @@ def GetSamplesFromBamFiles(bamfiles):
             if bam not in samplesToBam.get(sample, []):
                 samplesToBam[sample] = samplesToBam.get(sample, []) + [bam]
     return samplesToBam
+
+def HashSample(sample):
+    """
+    Return sample hash
+    """
+    return hashlib.sha256(sample.encode()).hexdigest()
 
 def ParseCigar(cigar, nucs):
     """
@@ -107,14 +114,26 @@ class AlignmentGrid(object):
         self.settings = _settings
         self.pos = self.startpos-int(self.settings["LOADCHAR"]*0.5)
         if self.pos < 0: self.pos = 0
-        self.samples = set(
-            chain.from_iterable(rg.itervalues() for rg in _read_groups))
+        self.samples = list(set(
+            chain.from_iterable(rg.itervalues() for rg in _read_groups)))
         for item in _samples:
             if item not in self.samples: sys.stderr.write("WARNING: %s not in BAM\n"%item)
         if len(_samples) > 0:
             self.samples = [item for item in _samples if item in self.samples]
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.LoadGrid()
+        
+    def GetSamples(self):
+        """
+        Return list of samples
+        """
+        return self.samples
+
+    def GetSampleHashes(self):
+        """
+        Return list of sample hashes
+        """
+        return map(HashSample, self.samples)
 
     def LoadGrid(self):
         """
@@ -207,7 +226,6 @@ class AlignmentGrid(object):
             alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
             self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
 
-
     def MergeRows(self, row1, row2, start, end):
         """ merge row2 into row1. row2 spans start-end """
         return row1[0:start] + row2[start:]
@@ -285,7 +303,7 @@ class AlignmentGrid(object):
             alignments = []
             for col in alncols:
                 alignments.append("".join(grid[col].values))
-            alignments_by_sample[sample] = alignments
+            alignments_by_sample[HashSample(sample)] = alignments
         return alignments_by_sample
 
     def __str__(self):
@@ -316,6 +334,18 @@ class BamView(object):
     def samples(self):
         return set(
             chain.from_iterable(rg.itervalues() for rg in self.read_groups))
+
+    def GetSamples(self):
+        """
+        Get list of samples
+        """
+        return self.alignment_grid.GetSamples()
+
+    def GetSampleHashes(self):
+        """
+        Get list of sample hashes
+        """
+        return self.alignment_grid.GetSampleHashes()
 
     def LoadRGDictionary(self):
         return [
