@@ -8,13 +8,13 @@
     <script>
       var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";
       var chrom = "{{ CHROM }}";
-      var samples = "{{ SAMPLES|join(',') }}".split(",");
+      var samples = "{{ SAMPLE_HASHES|join(',') }}".split(",");
       var startpos = {{ POSITIONS[0] }};
       var reference_track = "{{ REFERENCE }}";
       var buffer = {{ BUFFER }};
       var snapshot = false;
       var alignBySample = {
-      {% for s in SAMPLES %}
+      {% for s in SAMPLE_HASHES %}
       "{{ s }}": "{{ ALIGNMENTS[s]|join(';') }}",
       {% endfor %}
       };
@@ -124,9 +124,9 @@
 	  </div></td>
 	  <td>
 	    <form action="snapshot" target="_blank" name="snapform" method="post"> 
-	      {% for s in SAMPLES %}
-	      <input type='hidden' name='samples' value='{{ s }}'>
-	      <input type='hidden' name='alignment_{{ s }}', value='{{ ALIGNMENTS[s]|join(";") }}'>
+	      {% for i in range(SAMPLES|length) %}
+	      <input type='hidden' name='samples' value='{{ SAMPLES[i] }}'>
+	      <input type='hidden' name='alignment_{{ SAMPLES[i] }}', value='{{ ALIGNMENTS[SAMPLE_HASHES[i]]|join(";") }}'>
 	      {% endfor %}
 	      <input type='hidden' name='region' value='{{ REGION }}'>
 	      <input type='hidden' name='startpos' value='{{ POSITIONS[0] }}'>
@@ -159,9 +159,9 @@
     <div class='alntables' id='aln'>
       <div id="reference" class="reference"></div>
       <div id="alignments" class="alignments">
-	{% for sample in SAMPLES %}
-	<div class="sample">{{ sample }} <button onclick='toggleDiv("s{{ sample }}");' type="button">show/hide</button></div>
-	<div id="s{{ sample }}" class="sampleAlignment"></div>
+	{% for i in range(SAMPLES|length) %}
+	<div class="sample">{{ SAMPLES[i] }} <button onclick='toggleDiv("s{{ SAMPLE_HASHES[i] }}");' type="button">show/hide</button></div>
+	<div id="s{{ SAMPLE_HASHES[i] }}" class="sampleAlignment"></div>
 	<div class="spacer"><br><br></div>
 	{% endfor %}
       </div>

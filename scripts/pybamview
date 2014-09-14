@@ -175,7 +175,8 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
     return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=samples, BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
+                               REF_FILE=REFFILE, REGION=region, SAMPLES=bv.GetSamples(), SAMPLE_HASHES=bv.GetSampleHashes(), \
+                               BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
