@@ -153,10 +153,12 @@ def display_bam():
             samples_toinclude.append(s.split(":")[0])
             for item in s.split(":")[1:]:
                 bamfiles_toinclude.extend(item.split(","))
-    region = request.args.get("region","chr1:0")
+    region = request.args.get("region", pybamview.GetDefaultLocation(bamfiles_toinclude))
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
+    if region == "error":
+        return render_template("error.html", message="No aligned reads found in the selected BAM files")
     for bam in bamfiles:
         if not os.path.exists(join(BAMDIR,bam)):
             MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
@@ -167,10 +169,8 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
-    except: 
-        try:
-            chrom, pos = sorted(bv.reference.keys())[0], 0
-        except: chrom, pos = "None", 0
+    except:
+        return render_template("error.html", message="Invalid region specified %s. Region must be of the form chrom:position."%region)
     bv.LoadAlignmentGrid(chrom, pos, _samples=samples, _settings=SETTINGS)
     positions = bv.GetPositions(pos)
     region = "%s:%s"%(chrom, pos)
