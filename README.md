@@ -11,7 +11,7 @@ LICENSE: MIT (see LICENSE.txt)
 
 Requirements
 ==========
-PyBamView requires Python2.4 or greater. The following python packages are required:
+PyBamView requires Python2.6 or greater. The following python packages are required:
 
 * ```Flask```
 * ```pysam```
