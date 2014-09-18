@@ -28,9 +28,9 @@ setup(name=NAME,
       package_data={'pybamview': ['data/css/*.css', 'data/javascript/*.js', 'data/static/*.ico', 'data/static/*.png', 'data/templates/*.html', 'tests/data/*']},
       scripts=['scripts/pybamview'],
       test_suite='pybamview.tests',
-      install_requires=['argparse','flask','pandas','pyfasta','pysam'],
+      install_requires=['flask','pyfasta','pysam'],
       classifiers=['Development Status :: 4 - Beta',\
-                       'Programming Language :: Python :: 2.7',\
+                       'Programming Language :: Python :: 2.6',\
                        'License :: OSI Approved :: MIT License',\
                        'Operating System :: OS Independent',\
                        'Intended Audience :: Science/Research',\

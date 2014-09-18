@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 from itertools import chain
 import hashlib
-import pandas as pd
 import pysam
 import pyfasta
 import sys
@@ -147,6 +146,7 @@ class AlignmentGrid(object):
         if len(_samples) > 0:
             self.samples = [item for item in _samples if item in self.samples]
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
+        self.alnkeys_by_sample = dict([(sample, []) for sample in self.samples])
         self.LoadGrid()
         
     def GetSamples(self):
@@ -248,9 +248,8 @@ class AlignmentGrid(object):
             sample_dict = dict([(x, griddict[x]) for x in alnkeys+["position","reference"]])
             # Read stacking
             sample_dict_collapsed = self.CollapseGridByPosition(sample_dict, alnkeys, maxreadlength=maxreadlength)
-            # Make into a dataframe to return
-            alnkeys = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
-            self.grid_by_sample[sample] = pd.DataFrame(sample_dict_collapsed)[["position","reference"] + alnkeys]
+            self.alnkeys_by_sample[sample] = [item for item in alnkeys if item in sample_dict_collapsed.keys()]
+            self.grid_by_sample[sample] = sample_dict_collapsed
 
     def MergeRows(self, row1, row2, start, end):
         """ merge row2 into row1. row2 spans start-end """
@@ -304,7 +303,7 @@ class AlignmentGrid(object):
         Return string for the reference track
         """
         if len(self.grid_by_sample.keys()) == 0: return "N"*self.settings["LOADCHAR"]
-        refseries = self.grid_by_sample.values()[0].reference.values
+        refseries = self.grid_by_sample.values()[0]["reference"]
         reference = ""
         for i in range(len(refseries)):
             reference = reference + refseries[i]
@@ -313,7 +312,7 @@ class AlignmentGrid(object):
     def GetPositions(self, _pos):
         positions = []
         if len(self.grid_by_sample.keys()) == 0: return range(self.pos, self.pos+self.settings["LOADCHAR"])
-        refseries = self.grid_by_sample.values()[0].reference.values
+        refseries = self.grid_by_sample.values()[0]["reference"]
         for i in range(len(refseries)):
             positions.extend([self.pos+i]*len(refseries[i]))
         return positions
@@ -325,10 +324,9 @@ class AlignmentGrid(object):
         alignments_by_sample = {}
         for sample in self.grid_by_sample:
             grid = self.grid_by_sample[sample]
-            alncols = [item for item in grid.columns if item != "reference" and item != "position"]
             alignments = []
-            for col in alncols:
-                alignments.append("".join(grid[col].values))
+            for col in self.alnkeys_by_sample[sample]:
+                alignments.append("".join(grid[col]))
             alignments_by_sample[HashSample(sample)] = alignments
         return alignments_by_sample
 
