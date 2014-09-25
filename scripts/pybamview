@@ -27,7 +27,7 @@ import optparse
 import errno
 import pybamview
 import pyfasta
-from flask import Flask, request, send_from_directory, render_template, url_for, Response
+from flask import Flask, request, send_from_directory, redirect, render_template, url_for, Response
 import os
 from os.path import join
 import pkg_resources
@@ -124,25 +124,42 @@ def favicon():
 
 @app.route("/")
 def listsamples(methods=['POST','GET']):
-    bamfiles = request.args.getlist("bamfiles")
-    samples = request.args.getlist("samples")
-    if len(bamfiles) > 0 and len(samples) > 0:
-        return display_bam(samples)
-    try:
-        files = os.listdir(BAMDIR)
-    except OSError: files = []
-    bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
-    bamfiles = [f for f in bamfiles if f+".bai" in files]
-    try:
-        samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(os.path.abspath(BAMDIR), b) for b in bamfiles])
-    except ValueError, e:
-        return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
-    return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
+    # If a single file, jump right to the view for that file
+    if BAM:
+        if not os.path.exists(BAM) or not pybamview.CheckBam(BAM):
+            return render_template("error.html", message="%s not a valid BAM file"%BAM)
+        try:
+            samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.abspath(BAM)])
+        except ValueError, e:
+            return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAM)
+        if not os.path.exists(BAM+".bai"):
+            return render_template("error.html", message="No index found for %s"%BAM)
+        if len(samplesToBam.keys()) == 0:
+            return render_template("error.html", message="No samples found in BAM file", title="PyBamView - %s"%BAM)
+        argstring = "&".join(["samplebams=%s:%s"%(sample, os.path.abspath(BAM)) for sample in samplesToBam])
+        return redirect(url_for("display_bam")+"?"+argstring)
+    # If given a directory to look for bams, determine which samples are present
+    else:
+        bamfiles = request.args.getlist("bamfiles")
+        samples = request.args.getlist("samples")
+        if len(bamfiles) > 0 and len(samples) > 0:
+            return display_bam(samples)
+        try:
+            files = os.listdir(BAMDIR)
+        except OSError: files = []
+        bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
+        bamfiles = [f for f in bamfiles if f+".bai" in files]
+        try:
+            samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(os.path.abspath(BAMDIR), b) for b in bamfiles])
+        except ValueError, e:
+            return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
+        return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
 @app.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
     samplebams = request.args.getlist("samplebams")
     zoomlevel = request.args.get("zoomlevel")
+    print samplebams
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
@@ -220,6 +237,7 @@ def export():
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(description='pybamview: An Python-based BAM alignment viewer.')
+    parser.add_option('--bam', help='Run Pybamview on this BAM file only. The file must be indexed.', type='string')
     parser.add_option('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type='string')
     parser.add_option('--ref', help='Path to reference fasta file. If no reference is given, the reference track is displayed as "N"\'s', type='string')
     parser.add_option('--ip', help='Host IP. 127.0.0.1 for local host (default). 0.0.0.0 to have the server available externally.', type='string', default="127.0.0.1")
@@ -232,8 +250,11 @@ if __name__ == "__main__":
     parser.add_option('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
     (options, args) = parser.parse_args()
     # Get args
-    if not options.bamdir:
-        raise ValueError('--bamdir is a required option')
+    if not options.bamdir and not options.bam:
+        MESSAGE('You must specify either a bam file (--bam) or a directory to look for bam files (--bamdir)', ERROR)
+    if options.bamdir and options.bam:
+        MESSAGE('You must specify only one of --bam or --bamdir', ERROR)
+    BAM = options.bam
     BAMDIR = options.bamdir
     REFFILE = options.ref
     HOST = options.ip
