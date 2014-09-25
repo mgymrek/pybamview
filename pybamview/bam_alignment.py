@@ -32,6 +32,12 @@ from .constants import ENDCHAR, GAPCHAR, DELCHAR
 from .constants import BAM_CMATCH, BAM_CINS, BAM_CDEL, BAM_CREF_SKIP,\
     BAM_CSOFT_CLIP, BAM_CHARD_CLIP, BAM_CPAD, BAM_CEQUAL, BAM_CDIFF
 
+def CheckBam(bamfile):
+    try:
+        br = pysam.Samfile(bamfile, "rb")
+        return True
+    except: return False
+
 def GetSamplesFromBamFiles(bamfiles):
     """ Return dictionary of sample -> list of bam files """
     samplesToBam = {}
