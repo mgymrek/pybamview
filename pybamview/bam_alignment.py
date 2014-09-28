@@ -142,7 +142,9 @@ class AlignmentGrid(object):
         self.ref = _ref
         # Keep track of shortened chromosome names fasta entry has longer chrom string
         # e.g. "1 dna:chromosome" -> "1"
-        self.refkeys = dict([(key.split()[0], key) for key in self.ref.keys()])
+        if self.ref:
+            self.refkeys = dict([(key.split()[0], key) for key in self.ref.keys()])
+        else: self.refkeys = {}
         self.chrom = _chrom
         self.startpos = _pos
         self.settings = _settings
