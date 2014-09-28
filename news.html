@@ -16,8 +16,14 @@
       <section id="main_content">
 	<h1>News</h1>
 	<ul>
-	  <li><b>01/29/14</b> PyBamView initial version goes live</li>
-	  <li><b>05/23/14</b> PyBamView released on pypi</li>
+	  <li><b>09/28/14</b> PyBamView version 1.0.6 released. New in this version:
+	    <ul>
+	      <li>Removed pandas dependency and python2.7 requirements to make PyBamView compatible with Python2.6</li>
+	      <li>PyBamView can read from a single BAM file, or from a directory with BAM files as before.</li>
+	      <li>Fixed a bug that occurred when read groups start with numbers or have non alpha-numeric characters.</li>
+	      <li>Better determining of a default genomic location for the first time PyBamView is loaded.</li>
+	      <li>PyBamView can deal with extra information given in reference fasta header lines.</li>
+	    </ul>
 	  <li><b>07/23/14</b> PyBamView version 1.0.0 released. New in this version:
 	    <ul>
 	      <li>
@@ -31,6 +37,8 @@
 	      </li>
 	    </ul>
 	  </li>
+	  <li><b>05/23/14</b> PyBamView released on pypi</li>
+	  <li><b>01/29/14</b> PyBamView initial version goes live</li>
 	</ul>
       </section>
     </div>
