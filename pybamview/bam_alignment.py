@@ -140,6 +140,9 @@ class AlignmentGrid(object):
         self.bamreaders = _bamreaders
         self.read_groups = _read_groups
         self.ref = _ref
+        # Keep track of shortened chromosome names fasta entry has longer chrom string
+        # e.g. "1 dna:chromosome" -> "1"
+        self.refkeys = dict([(key.split()[0], key) for key in self.ref.keys()])
         self.chrom = _chrom
         self.startpos = _pos
         self.settings = _settings
@@ -172,15 +175,16 @@ class AlignmentGrid(object):
         Load grid of alignments with buffer around start pos
         """
         # Get reference
-        if self.ref is None or self.chrom not in self.ref.keys():
+        if self.ref is None or self.refkeys.get(self.chrom,"") not in self.ref.keys():
             reference = ["N"]*self.settings["LOADCHAR"]
         else:
-            chromlen = len(self.ref[self.chrom])
+            refchrom = self.refkeys[self.chrom]
+            chromlen = len(self.ref[refchrom])
             if chromlen <= self.pos:
                 return
             elif chromlen <= self.pos+self.settings["LOADCHAR"]:
-                reference = self.ref[self.chrom][self.pos:]
-            else: reference = self.ref[self.chrom][self.pos:self.pos+self.settings["LOADCHAR"]]
+                reference = self.ref[refchrom][self.pos:]
+            else: reference = self.ref[refchrom][self.pos:self.pos+self.settings["LOADCHAR"]]
             reference = [reference[i] for i in range(len(reference))]
         griddict = {"position": range(self.pos, self.pos+len(reference)), "reference": reference}
         # Get reads

@@ -159,7 +159,6 @@ def listsamples(methods=['POST','GET']):
 def display_bam():
     samplebams = request.args.getlist("samplebams")
     zoomlevel = request.args.get("zoomlevel")
-    print samplebams
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
