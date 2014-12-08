@@ -412,14 +412,25 @@ $(window).scroll(function(){
 function scroll(direction) {
     var zoomlevel = parseInt(document.forms["controlform"]["zoomlevel"].value);
     if (zoomlevel < 1) {
-	zoomlevel = -1/zoomlevel;
+      zoomlevel = -1/zoomlevel;
     }
+
+    var magantude;
+    if (Math.abs(direction) == 10) {
+      magnatude = 10 // base pairs
+    } else if (Math.abs(direction) == 100) {
+      magnatude = 100 // base pairs
+    } else {
+      magnatude = buffer/zoomlevel/2 // default
+    }
+
     var startpos;
-    if (direction == 0) { // scroll left
-	startpos = positions[0] - buffer/zoomlevel/2;
+    if (direction < 0) { // scroll left
+      startpos = positions[0] - magnatude;
     } else { // scroll right
-	startpos = positions[positions.length-1] + buffer/zoomlevel/2;
+      startpos = positions[positions.length-1] + magnatude;
     }
+
     document.forms["controlform"]["region"].value = chrom + ":" + startpos;
     document.forms["controlform"].submit();
 }

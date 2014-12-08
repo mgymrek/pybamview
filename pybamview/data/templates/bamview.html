@@ -59,7 +59,11 @@
 		  </td>
 		  <td><input type='text' name='region' value='{{ REGION }}'></td>
 		  <td><input type='submit' class="button"></td>
-		  <td><button class="arrow" id="leftzoom" onclick="scroll(0);" type="button"><b> &lt; </b></button></td>
+		  <td><button class="arrow" id="leftzoom" onclick="scroll(-1);" type="button"><b> &lt; </b></button></td>
+		  <td><button class="arrow" id="leftzoom100bp" onclick="scroll(-100);" type="button"><b> &lt; 100bp</b></button></td>
+		  <td><button class="arrow" id="leftzoom10bp" onclick="scroll(-10);" type="button"><b> &lt; 10bp</b></button></td>
+		  <td><button class="arrow" id="rightzoom10bp" type="button" onclick="scroll(10);"><b> &gt; 10bp </b></button></td>
+		  <td><button class="arrow" id="rightzoom100bp" type="button" onclick="scroll(100);"><b> &gt; 100bp </b></button></td>
 		  <td><button class="arrow" id="rightzoom" type="button" onclick="scroll(1);"><b> &gt; </b></button></td>
 		  <td>
 		    <div class="helptext" id="helptextarrow">
