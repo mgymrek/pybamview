@@ -426,9 +426,9 @@ function scroll(direction) {
 
     var startpos;
     if (direction < 0) { // scroll left
-      startpos = positions[0] - magnatude;
+      startpos = targetpos - magnatude;
     } else { // scroll right
-      startpos = positions[positions.length-1] + magnatude;
+      startpos = targetpos + magnatude;
     }
 
     document.forms["controlform"]["region"].value = chrom + ":" + startpos;

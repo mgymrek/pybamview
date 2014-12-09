@@ -10,6 +10,7 @@
       var chrom = "{{ CHROM }}";
       var samples = "{{ SAMPLE_HASHES|join(',') }}".split(",");
       var startpos = {{ POSITIONS[0] }};
+      var targetpos = {{ TARGETPOS }};
       var reference_track = "{{ REFERENCE }}";
       var buffer = {{ BUFFER }};
       var snapshot = false;

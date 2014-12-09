@@ -194,7 +194,7 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
                                REF_FILE=REFFILE, REGION=region, SAMPLES=bv.GetSamples(), SAMPLE_HASHES=bv.GetSampleHashes(), \
                                BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
-                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
+                               TARGETPOS=pos, POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
 @app.route('/snapshot', methods=['POST', 'GET'])
 def snapshot():
