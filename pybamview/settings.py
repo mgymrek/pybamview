@@ -10,3 +10,5 @@ class DefaultConfig:
   BAMDIR = None
   REFFILE = None
   TARGETFILE = None
+
+  BAMFILE_TO_BAMVIEW = {}

@@ -31,22 +31,16 @@ from flask import (request, redirect, render_template, url_for, Response,
                    current_app)
 import os
 from os.path import join
-import random
 import re
 import socket
-import sys
 import threading
 import tempfile
 import webbrowser
 
 from .app import create_app
+from .utils import message, ParseTargets, random_ports
 
 app = create_app()
-
-PORT_RETRIES = 50
-BAMFILE_TO_BAMVIEW = {}
-TARGET_LIST = []
-SETTINGS = {}
 
 NUC_TO_COLOR = {
     "A": "red",
@@ -62,57 +56,6 @@ NUC_TO_COLOR = {
     "-": "white",
     ".": "gray",
 }
-
-PROGRESS = 0
-WARNING = 1
-ERROR = 2
-DEBUG = 3
-
-
-def MESSAGE(msg, msgtype=PROGRESS):
-    if msgtype == PROGRESS:
-        msg = "[PROGRESS]: " + msg
-    elif msgtype == WARNING:
-        msg = "[WARNING]: " + msg
-    elif msgtype == ERROR:
-        msg = "[ERROR]: " + msg
-        sys.stderr.write(msg.strip() + "\n")
-        sys.exit(1)
-    elif msgtype == DEBUG:
-        msg = "[DEBUG]: " + msg
-    sys.stderr.write(msg.strip()+"\n")
-
-
-def random_ports(port, n):
-    """Generate a list of n random ports near the given port.
-
-    The first 5 ports will be sequential, and the remaining n-5 will be
-    randomly selected in the range [port-2*n, port+2*n].
-    (copied from IPython notebookapp.py)
-    """
-    for i in range(min(5, n)):
-        yield port + i
-    for i in range(n-5):
-        yield max(1, port + random.randint(-2*n, 2*n))
-
-
-def ParseTargets(targetfile):
-    """ Return list of targets, each is dict with region and name """
-    x = []
-    f = open(targetfile, "r")
-    for line in f:
-        items = line.strip().split("\t")
-        if len(items) != 4:
-            MESSAGE("invalid target file. should have 4 columns", ERROR)
-        chrom, start, end, name = items
-        region = "%s:%s"%(chrom, start)
-        x.append({"name": name, "region": region})
-    line = f.readline()
-    f.close()
-    f = open(targetfile, "r")
-    line = f.readline()
-    f.close()
-    return x
 
 
 @app.route('/')
@@ -170,34 +113,50 @@ def display_bam():
 
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
-    BAMDIR = current_app.config['BAMDIR']
-    REFFILE = current_app.config['REFFILE']
+    bamdir = current_app.config["BAMDIR"]
+    reffile = current_app.config["REFFILE"]
+    settings = current_app.config["SETTINGS"]
+    bamfile_to_bamview = current_app.config["BAMFILE_TO_BAMVIEW"]
     if region == "error":
         return render_template("error.html", message="No aligned reads found in the selected BAM files")
     for bam in bamfiles:
-        if not os.path.exists(join(BAMDIR,bam)):
-            MESSAGE("bam file %s does not exist"%join(BAMDIR, bam), WARNING)
-    if ";".join(bamfiles) not in BAMFILE_TO_BAMVIEW:
-        bv = pybamview.BamView([join(BAMDIR, bam) for bam in bamfiles], REFFILE)
-        BAMFILE_TO_BAMVIEW[";".join(bamfiles)] = bv
-    else: bv = BAMFILE_TO_BAMVIEW[";".join(bamfiles)]
+        if not os.path.exists(join(bamdir,bam)):
+            message("bam file %s does not exist"%join(bamdir, bam), "warning")
+    if ";".join(bamfiles) not in bamfile_to_bamview:
+        bv = pybamview.BamView([join(bamdir, bam) for bam in bamfiles], reffile)
+        bamfile_to_bamview[";".join(bamfiles)] = bv
+    else: bv = bamfile_to_bamview[";".join(bamfiles)]
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
     except:
         return render_template("error.html", message="Invalid region specified %s. Region must be of the form chrom:position."%region)
-    bv.LoadAlignmentGrid(chrom, pos, _samples=samples, _settings=SETTINGS)
+    bv.LoadAlignmentGrid(chrom, pos, _samples=samples, _settings=settings)
     positions = bv.GetPositions(pos)
-    region = "%s:%s"%(chrom, pos)
-    return render_template("bamview.html", title="PyBamView - %s"%region, BAM_FILES=bamfiles,\
-                               REF_FILE=REFFILE, REGION=region, SAMPLES=bv.GetSamples(), SAMPLE_HASHES=bv.GetSampleHashes(), \
-                               BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
-                               REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
-                               TARGETPOS=pos, POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
+    region = "%s:%s" % (chrom, pos)
+    return render_template("bamview.html",
+        title="PyBamView - %s" % region,
+        BAM_FILES=bamfiles,
+        REF_FILE=reffile,
+        REGION=region,
+        SAMPLES=bv.GetSamples(),
+        SAMPLE_HASHES=bv.GetSampleHashes(),
+        BUFFER=settings["NUMCHAR"],
+        MAXZOOM=settings["MAXZOOM"],
+        ZOOMLEVEL=zoomlevel,
+        REFERENCE=bv.GetReferenceTrack(pos),
+        ALIGNMENTS=bv.GetAlignmentTrack(pos),
+        TARGETPOS=pos,
+        POSITIONS=positions,
+        NUC_TO_COLOR=NUC_TO_COLOR,
+        CHROM=chrom,
+        TARGET_LIST=current_app.config.get("TARGET_LIST", [])
+    )
 
 
 @app.route('/snapshot', methods=['POST', 'GET'])
 def snapshot():
+    settings = current_app.config['SETTINGS']
     samples = request.form.getlist("samples")
     alignments_by_sample = {}
     for s in samples:
@@ -212,7 +171,7 @@ def snapshot():
     chrom, start = region.split(":")
     region = "%s-%s"%(max(int(int(start)-25/zoomlevel),0), int(int(start)+50+25/zoomlevel))
     return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, ZOOMLEVEL=zoom, \
-                               CHROM=chrom, REGION=region, MINSTART=int(start)-SETTINGS["LOADCHAR"]/2, MAXEND=int(start)+SETTINGS["LOADCHAR"]/2,\
+                               CHROM=chrom, REGION=region, MINSTART=int(start)-settings["LOADCHAR"]/2, MAXEND=int(start)+settings["LOADCHAR"]/2,\
                                REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
 
 
@@ -227,7 +186,7 @@ def export():
     cmd = "rsvg-convert -o %s -f pdf %s"%(output_file_name, input_file.name)
     retcode = os.system(cmd)
     if retcode != 0:
-        MESSAGE("Error exporting to PDF. Is rsvg-convert installed?", WARNING)
+        message("Error exporting to PDF. Is rsvg-convert installed?", "warning")
     if os.path.exists(output_file_name):
         pdf_data = open(output_file_name, "r").read()
     else: pdf_data = ""
@@ -259,51 +218,56 @@ def cli():
     (options, args) = parse_args()
 
     if not options.bamdir and not options.bam:
-        MESSAGE('You must specify either a bam file (--bam) or a directory to look for bam files (--bamdir)', ERROR)
+        message('You must specify either a bam file (--bam) or a directory to look for bam files (--bamdir)', "error")
 
     if options.bamdir and options.bam:
-        MESSAGE('You must specify only one of --bam or --bamdir', ERROR)
+        message('You must specify only one of --bam or --bamdir', "error")
 
-    app.config['BAM'] = options.bam
-    app.config['BAMDIR'] = options.bamdir
-    app.config['REFFILE'] = REFFILE = options.ref
+    app.config["BAM"] = options.bam
+    app.config["BAMDIR"] = options.bamdir
+    app.config["REFFILE"] = REFFILE = options.ref
     HOST = options.ip
     PORT = options.port
     TARGETFILE = options.targets
     NUMCHAR = options.buffer
     MAXZOOM = options.maxzoom
     if MAXZOOM not in range(1,11) + [50, 100]:
-        MESSAGE("Must set --maxzoom to one of 1-10, 50, or 100", ERROR)
+        message("Must set --maxzoom to one of 1-10, 50, or 100", "error")
     app.debug = options.debug
     OPEN_BROWSER = (not options.no_browser)
-    SETTINGS["NUMCHAR"] = NUMCHAR
-    SETTINGS["MAXZOOM"] = MAXZOOM
-    SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
+
+    app.config["BAMFILE_TO_BAMVIEW"] = {}
+    app.config["PORT_RETRIES"] = 50
+    app.config["SETTINGS"] = {
+        "NUMCHAR": NUMCHAR,
+        "MAXZOOM": MAXZOOM,
+        "LOADCHAR": NUMCHAR * MAXZOOM
+    }
 
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"
     elif not os.path.exists(REFFILE):
-        MESSAGE("Could not find reference file %s"%REFFILE, WARNING)
+        message("Could not find reference file %s"%REFFILE, "warning")
         REFFILE = "Could not find reference file %s"%REFFILE
     else:
         try:
             _ = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
         except:
-            MESSAGE("Invalid reference fasta file %s"%REFFILE, WARNING)
+            message("Invalid reference fasta file %s"%REFFILE, "warning")
             REFFILE = "Invalid fasta file %s"%REFFILE
 
     # Parse targets
     if TARGETFILE is not None:
         if not os.path.exists(TARGETFILE):
-            MESSAGE("Target file %s does not exist"%TARGETFILE, WARNING)
+            message("Target file %s does not exist"%TARGETFILE, "warning")
             TARGETFILE = None
         else:
             app.config['TARGET_LIST'] = ParseTargets(TARGETFILE)
 
     # Start app
     success = False
-    for port in random_ports(PORT, PORT_RETRIES+1):
+    for port in random_ports(PORT, app.config["PORT_RETRIES"] + 1):
         try:
             if OPEN_BROWSER:
                 url = "http://%(host)s:%(port)s" % dict(host=HOST, port=port)
@@ -311,17 +275,17 @@ def cli():
             app.run(host=HOST, port=port)
             success = True
         except webbrowser.Error as e:
-            MESSAGE("No web browser found: %s."%e, WARNING)
+            message("No web browser found: %s."%e, "warning")
         except socket.error as e:
             if e.errno == errno.EADDRINUSE:
-                MESSAGE("Port %s is already in use. Trying another port"%port, WARNING)
+                message("Port %s is already in use. Trying another port"%port, "warning")
                 continue
             elif e.errno in (errno.EACCES, getattr(errno, "WSEACCES", errno.EACCES)):
-                MESSAGE("Permission denied to listen on port %s. Trying another port"%port, WARNING)
+                message("Permission denied to listen on port %s. Trying another port"%port, "warning")
                 continue
             else: raise
         except OverflowError:
-            MESSAGE("Invalid port specified (%s)."%port, ERROR)
+            message("Invalid port specified (%s)."%port, "error")
         else: break
     if not success:
-        MESSAGE("PyBamView could not find an available port. Quitting", ERROR)
+        message("PyBamView could not find an available port. Quitting", "error")
