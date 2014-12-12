@@ -4,6 +4,8 @@ import pkg_resources
 
 from flask import Flask
 
+from .settings import DefaultConfig
+
 
 def create_app(config_object=None):
     """Application factory.
@@ -15,9 +17,16 @@ def create_app(config_object=None):
     app = Flask(__name__, static_folder=join(sprefix, "data"),
                 template_folder=join(sprefix, "data", "templates"))
 
+    configure_app(app, config_obj=config_object)
     configure_template_filters(app)
 
     return app
+
+
+def configure_app(app, config_obj=None):
+    """Configure the app in different ways."""
+    # http://flask.pocoo.org/docs/api/#configuration
+    app.config.from_object(config_obj or DefaultConfig)
 
 
 def configure_template_filters(app):

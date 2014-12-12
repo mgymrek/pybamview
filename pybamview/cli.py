@@ -260,8 +260,10 @@ def cli():
 
     if not options.bamdir and not options.bam:
         MESSAGE('You must specify either a bam file (--bam) or a directory to look for bam files (--bamdir)', ERROR)
+
     if options.bamdir and options.bam:
         MESSAGE('You must specify only one of --bam or --bamdir', ERROR)
+
     app.config['BAM'] = options.bam
     app.config['BAMDIR'] = options.bamdir
     app.config['REFFILE'] = REFFILE = options.ref
@@ -277,6 +279,7 @@ def cli():
     SETTINGS["NUMCHAR"] = NUMCHAR
     SETTINGS["MAXZOOM"] = MAXZOOM
     SETTINGS["LOADCHAR"] = SETTINGS["NUMCHAR"]*SETTINGS["MAXZOOM"]
+
     # Load reference
     if REFFILE is None:
         REFFILE = "No reference loaded"
@@ -289,6 +292,7 @@ def cli():
         except:
             MESSAGE("Invalid reference fasta file %s"%REFFILE, WARNING)
             REFFILE = "Invalid fasta file %s"%REFFILE
+
     # Parse targets
     if TARGETFILE is not None:
         if not os.path.exists(TARGETFILE):
@@ -296,14 +300,15 @@ def cli():
             TARGETFILE = None
         else:
             app.config['TARGET_LIST'] = ParseTargets(TARGETFILE)
+
     # Start app
     success = False
     for port in random_ports(PORT, PORT_RETRIES+1):
         try:
             if OPEN_BROWSER:
-                URL = "http://%s:%s"%(HOST, port)
-                threading.Timer(1.5, lambda: webbrowser.open(URL)).start()
-            app.run(port=port, host=HOST)
+                url = "http://%(host)s:%(port)s" % dict(host=HOST, port=port)
+                threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+            app.run(host=HOST, port=port)
             success = True
         except webbrowser.Error as e:
             MESSAGE("No web browser found: %s."%e, WARNING)
