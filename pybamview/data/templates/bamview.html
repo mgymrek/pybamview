@@ -2,8 +2,10 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    <link rel='shortcut icon' href='/favicon.ico'>
-    <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <link rel='shortcut icon'
+          href="{{ url_for('static', filename='static/favicon.ico') }}">
+    <link rel="stylesheet" screen="media" type="text/css"
+          href="{{ url_for('static', filename='css/pybamview.css') }}">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
     <script>
       var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";

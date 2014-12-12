@@ -27,10 +27,10 @@ import optparse
 import errno
 import pybamview
 import pyfasta
-from flask import Flask, request, send_from_directory, redirect, render_template, url_for, Response, current_app
+from flask import (request, redirect, render_template, url_for, Response,
+                   current_app)
 import os
 from os.path import join
-import pkg_resources
 import random
 import re
 import socket
@@ -39,10 +39,9 @@ import threading
 import tempfile
 import webbrowser
 
-SPREFIX = pkg_resources.resource_filename("pybamview","")
+from .app import create_app
 
-app = Flask(__name__, static_folder=join(SPREFIX, "data"),
-            template_folder=join(SPREFIX, "data", "templates"))
+app = create_app()
 
 PORT_RETRIES = 50
 BAMFILE_TO_BAMVIEW = {}
@@ -69,6 +68,7 @@ WARNING = 1
 ERROR = 2
 DEBUG = 3
 
+
 def MESSAGE(msg, msgtype=PROGRESS):
     if msgtype == PROGRESS:
         msg = "[PROGRESS]: " + msg
@@ -82,6 +82,7 @@ def MESSAGE(msg, msgtype=PROGRESS):
         msg = "[DEBUG]: " + msg
     sys.stderr.write(msg.strip()+"\n")
 
+
 def random_ports(port, n):
     """Generate a list of n random ports near the given port.
 
@@ -92,10 +93,8 @@ def random_ports(port, n):
     for i in range(min(5, n)):
         yield port + i
     for i in range(n-5):
-        yield max(1, port + random.randint(-2*n, 2*n))    
+        yield max(1, port + random.randint(-2*n, 2*n))
 
-def isnuc(x):
-    return str(x).upper() in ["A","C","G","T"]
 
 def ParseTargets(targetfile):
     """ Return list of targets, each is dict with region and name """
@@ -115,11 +114,6 @@ def ParseTargets(targetfile):
     f.close()
     return x
 
-# Apparently all applications should have an icon
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(join(SPREFIX, 'data', 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/')
 def listsamples(methods=['POST','GET']):
@@ -156,6 +150,7 @@ def listsamples(methods=['POST','GET']):
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
         return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
+
 @app.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
     samplebams = request.args.getlist("samplebams")
@@ -172,6 +167,7 @@ def display_bam():
                 bamfiles_toinclude.extend(item.split(","))
     region = request.args.get("region", pybamview.GetDefaultLocation(bamfiles_toinclude))
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
+
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
     BAMDIR = current_app.config['BAMDIR']
@@ -199,6 +195,7 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
                                TARGETPOS=pos, POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
+
 @app.route('/snapshot', methods=['POST', 'GET'])
 def snapshot():
     samples = request.form.getlist("samples")
@@ -217,6 +214,7 @@ def snapshot():
     return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, ZOOMLEVEL=zoom, \
                                CHROM=chrom, REGION=region, MINSTART=int(start)-SETTINGS["LOADCHAR"]/2, MAXEND=int(start)+SETTINGS["LOADCHAR"]/2,\
                                REFERENCE_TRACK=reference, ALIGN_BY_SAMPLE=alignments_by_sample, STARTPOS=startpos)
+
 
 @app.route('/export', methods=["POST"])
 def export():
@@ -299,7 +297,6 @@ def cli():
         else:
             app.config['TARGET_LIST'] = ParseTargets(TARGETFILE)
     # Start app
-    app.jinja_env.filters.update({'isnuc': isnuc})
     success = False
     for port in random_ports(PORT, PORT_RETRIES+1):
         try:
