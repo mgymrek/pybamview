@@ -26,8 +26,12 @@ setup(name=NAME,
       packages=['pybamview', 'pybamview.tests'],
       package_dir={'pybamview': 'pybamview'},
       package_data={'pybamview': ['data/css/*.css', 'data/javascript/*.js', 'data/static/*.ico', 'data/static/*.png', 'data/templates/*.html', 'tests/data/*']},
-      scripts=['scripts/pybamview'],
       test_suite='pybamview.tests',
+      entry_points={
+        'console_scripts': [
+          'pybamview = pybamview.cli:cli',
+        ],
+      },
       install_requires=['flask','pyfasta','pysam'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 2.6',\

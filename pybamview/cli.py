@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 The MIT License (MIT)
 
@@ -27,7 +27,7 @@ import optparse
 import errno
 import pybamview
 import pyfasta
-from flask import Flask, request, send_from_directory, redirect, render_template, url_for, Response
+from flask import Flask, request, send_from_directory, redirect, render_template, url_for, Response, current_app
 import os
 from os.path import join
 import pkg_resources
@@ -41,9 +41,8 @@ import webbrowser
 
 SPREFIX = pkg_resources.resource_filename("pybamview","")
 
-app = Flask(__name__, static_folder=join(SPREFIX, "data"), \
-                static_path=join(SPREFIX, "data"), \
-                template_folder=join(SPREFIX, "data", "templates"))
+app = Flask(__name__, static_folder=join(SPREFIX, "data"),
+            template_folder=join(SPREFIX, "data", "templates"))
 
 PORT_RETRIES = 50
 BAMFILE_TO_BAMVIEW = {}
@@ -122,9 +121,11 @@ def favicon():
     return send_from_directory(join(SPREFIX, 'data', 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-@app.route("/")
+@app.route('/')
 def listsamples(methods=['POST','GET']):
     # If a single file, jump right to the view for that file
+    BAM = current_app.config['BAM']
+    BAMDIR = current_app.config['BAMDIR']
     if BAM:
         if not os.path.exists(BAM) or not pybamview.CheckBam(BAM):
             return render_template("error.html", message="%s not a valid BAM file"%BAM)
@@ -173,6 +174,8 @@ def display_bam():
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
+    BAMDIR = current_app.config['BAMDIR']
+    REFFILE = current_app.config['REFFILE']
     if region == "error":
         return render_template("error.html", message="No aligned reads found in the selected BAM files")
     for bam in bamfiles:
@@ -194,7 +197,7 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
                                REF_FILE=REFFILE, REGION=region, SAMPLES=bv.GetSamples(), SAMPLE_HASHES=bv.GetSampleHashes(), \
                                BUFFER=SETTINGS["NUMCHAR"], MAXZOOM=SETTINGS["MAXZOOM"], ZOOMLEVEL=zoomlevel, \
                                REFERENCE=bv.GetReferenceTrack(pos), ALIGNMENTS=bv.GetAlignmentTrack(pos),\
-                               POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
+                               TARGETPOS=pos, POSITIONS=positions, NUC_TO_COLOR=NUC_TO_COLOR, CHROM=chrom, TARGET_LIST=TARGET_LIST)
 
 @app.route('/snapshot', methods=['POST', 'GET'])
 def snapshot():
@@ -234,7 +237,8 @@ def export():
     response.headers["Content-Disposition"] = "attachment; filename=%s"%filename
     return response
 
-if __name__ == "__main__":
+
+def parse_args():
     parser = optparse.OptionParser(description='pybamview: An Python-based BAM alignment viewer.')
     parser.add_option('--bam', help='Run Pybamview on this BAM file only. The file must be indexed.', type='string')
     parser.add_option('--bamdir', help='Directory to look for bam files. Bam files must be indexed.', type='string')
@@ -247,15 +251,22 @@ if __name__ == "__main__":
     parser.add_option("--maxzoom", help="Maximum number of times to be able to zoom out. E.g. --maxzoom 10 allows zooming out up to 10x. Default: 100. Must be between one of 1-10, 50, or 100.", type='int', default=100)
     parser.add_option('--no-browser', help="Don't automatically open the web browser.", action="store_true")
     parser.add_option('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
-    (options, args) = parser.parse_args()
-    # Get args
+
+    return parser.parse_args()
+
+
+def cli():
+    """Launch command line interface."""
+    # Get command line args and options
+    (options, args) = parse_args()
+
     if not options.bamdir and not options.bam:
         MESSAGE('You must specify either a bam file (--bam) or a directory to look for bam files (--bamdir)', ERROR)
     if options.bamdir and options.bam:
         MESSAGE('You must specify only one of --bam or --bamdir', ERROR)
-    BAM = options.bam
-    BAMDIR = options.bamdir
-    REFFILE = options.ref
+    app.config['BAM'] = options.bam
+    app.config['BAMDIR'] = options.bamdir
+    app.config['REFFILE'] = REFFILE = options.ref
     HOST = options.ip
     PORT = options.port
     TARGETFILE = options.targets
@@ -276,7 +287,7 @@ if __name__ == "__main__":
         REFFILE = "Could not find reference file %s"%REFFILE
     else:
         try:
-            x = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
+            _ = pyfasta.Fasta(REFFILE) # Make sure we can open the fasta file
         except:
             MESSAGE("Invalid reference fasta file %s"%REFFILE, WARNING)
             REFFILE = "Invalid fasta file %s"%REFFILE
@@ -286,7 +297,7 @@ if __name__ == "__main__":
             MESSAGE("Target file %s does not exist"%TARGETFILE, WARNING)
             TARGETFILE = None
         else:
-            TARGET_LIST = ParseTargets(TARGETFILE)
+            app.config['TARGET_LIST'] = ParseTargets(TARGETFILE)
     # Start app
     app.jinja_env.filters.update({'isnuc': isnuc})
     success = False

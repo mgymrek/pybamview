@@ -7,3 +7,8 @@ build/*
 data/*
 dist/*
 pybamview.egg-info/
+
+# Mr. Developer
+.vagrant
+Vagrantfile
+*.sublime-*
