@@ -3,8 +3,11 @@
 class DefaultConfig:
   DEBUG = False
 
-  NUMCHAR = 200
-  MAXZOOM = 100
+  PORT_RETRIES = 50
+  SETTINGS = {
+    "NUMCHAR": 200,
+    "MAXZOOM": 100
+  }
 
   BAM = None
   BAMDIR = None
@@ -12,3 +15,4 @@ class DefaultConfig:
   TARGETFILE = None
 
   BAMFILE_TO_BAMVIEW = {}
+  TARGET_LIST = []
