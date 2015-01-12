@@ -3,7 +3,7 @@
   <head>
     <title>{{ title }}</title>
     <link rel='shortcut icon' href='/favicon.ico'>
-    <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('static', filename='css/pybamview.css') }}">
+    <link rel="stylesheet" screen="media" type="text/css" href="{{ url_for('browser.static', filename='css/pybamview.css') }}">
     <script>
       var reference_track = "{{ REFERENCE_TRACK }}";
       var samples = "{{ SAMPLES|join(",") }}".split(",");
@@ -45,6 +45,6 @@
     </div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
     <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
-    <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
+    <script src="{{ url_for('browser.static', filename='javascript/pybamview.js') }}"></script>
   </body>
 </html>
