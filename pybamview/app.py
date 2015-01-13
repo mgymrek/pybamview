@@ -17,7 +17,8 @@ def create_app(config_object=None, blueprints=None):
     if blueprints is None:
         blueprints = DEFAULT_BLUEPRINTS
 
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="browser/templates",
+                static_folder="browser/static")
 
     configure_app(app, config_obj=config_object)
     register_blueprints(app, blueprints=blueprints)
