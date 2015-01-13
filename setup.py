@@ -25,7 +25,10 @@ setup(name=NAME,
       license=LICENSE,
       packages=['pybamview', 'pybamview.tests'],
       package_dir={'pybamview': 'pybamview'},
-      package_data={'pybamview': ['data/css/*.css', 'data/javascript/*.js', 'data/static/*.ico', 'data/static/*.png', 'data/templates/*.html', 'tests/data/*']},
+      package_data={
+        'pybamview': ['browser/static/**/*', 'browser/templates/*.html',
+                      'tests/data/*']
+      },
       test_suite='pybamview.tests',
       entry_points={
         'console_scripts': [
