@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 DESCRIPTION = "Python based BAM alignment viewer"
 LONG_DESCRIPTION = DESCRIPTION
@@ -23,10 +23,12 @@ setup(name=NAME,
       url=DOWNLOAD_URL,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
-      packages=['pybamview', 'pybamview.tests'],
-      package_dir={'pybamview': 'pybamview'},
+      packages=find_packages(exclude=('examples')),
       package_data={
-        'pybamview': ['browser/static/**/*', 'browser/templates/*.html',
+        'pybamview': ['browser/static/css/*.css',
+                      'browser/static/img/*',
+                      'browser/static/javascript/*.js',
+                      'browser/templates/*.html',
                       'tests/data/*']
       },
       test_suite='pybamview.tests',
