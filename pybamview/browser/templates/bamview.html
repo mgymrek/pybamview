@@ -3,9 +3,9 @@
   <head>
     <title>{{ title }}</title>
     <link rel='shortcut icon'
-          href="{{ url_for('static', filename='static/favicon.ico') }}">
+          href="{{ url_for('browser.static', filename='img/favicon.ico') }}">
     <link rel="stylesheet" screen="media" type="text/css"
-          href="{{ url_for('static', filename='css/pybamview.css') }}">
+          href="{{ url_for('browser.static', filename='css/pybamview.css') }}">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
     <script>
       var region = "{{ POSITIONS[0] }}-{{ POSITIONS[REFERENCE|length-1] }}";
@@ -56,7 +56,7 @@
 		  <td>Enter region: </td>
 		  <td>
  		    <div class="helptext" id="helptextregion">
-		      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"> <div class="description" id="descriptionregion">
+		      <img width="18" src="{{ url_for('browser.static', filename='img/question_mark.png') }}"> <div class="description" id="descriptionregion">
 			Enter a region in the form chr:position and click "Submit".
 		    </div></div> 
 		  </td>
@@ -70,7 +70,7 @@
 		  <td><button class="arrow" id="rightzoom" type="button" onclick="scroll(1);"><b> &gt; </b></button></td>
 		  <td>
 		    <div class="helptext" id="helptextarrow">
-		      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionarrow">
+		      <img width="18" src="{{ url_for('browser.static', filename='img/question_mark.png') }}"><div class="description" id="descriptionarrow">
 			To navigate to a genomic location nearby, click the "&lt;" or "&gt;" buttons to scroll left or right.
 		      </div>
 		    </div>
@@ -104,7 +104,7 @@
 	  <td><div id="zoomvalue">Zoom: <input type="text" maxlength="4" size="4" value="1x" readonly></div></td>
 	  <td>
 	    <div class="helptext" id="helptextzoom">
-	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionzoom">
+	      <img width="18" src="{{ url_for('browser.static', filename='img/question_mark.png') }}"><div class="description" id="descriptionzoom">
 		Use the <button class="zoomout" type="button"></button> buttons to zoom in and out. The black button gives the current zoom level. The gray button gives the default zoom level of 1x. To zoom in, click to the right of the default. To zoom out, click to the left of the default.
 	      </div>
 	    </div>
@@ -149,7 +149,7 @@
 	<tr>
 	  <td>
 	    <div class="helptext" id="helptextselect">
-	      <img width="18" src="{{ url_for('static', filename='static/question_mark.png') }}"><div class="description" id="descriptionselect">
+	      <img width="18" src="{{ url_for('browser.static', filename='img/question_mark.png') }}"><div class="description" id="descriptionselect">
 		Mousing over a locus will update the "Selected" text box with the currently selected position.
 		<p>
 		  To select a specific region from a zoomed out view to zoom in on, draw a box around the region of the reference you would like to select. The "Selected" text box should update with the currently selected region.
@@ -184,7 +184,7 @@
     </div>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>    
-    <script src="{{ url_for('static', filename='javascript/pybamview.js') }}"></script>
+    <script src="{{ url_for('browser.static', filename='javascript/pybamview.js') }}"></script>
     <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>

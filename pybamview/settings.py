@@ -6,7 +6,8 @@ class DefaultConfig:
   PORT_RETRIES = 50
   SETTINGS = {
     "NUMCHAR": 200,
-    "MAXZOOM": 100
+    "MAXZOOM": 100,
+    "LOADCHAR": 200 * 100,
   }
 
   BAM = None

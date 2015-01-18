@@ -25,7 +25,8 @@ NUC_TO_COLOR = {
     ".": "gray",
 }
 
-blueprint = Blueprint("browser", __name__, static_folder="../data/static")
+blueprint = Blueprint("browser", __name__, template_folder="templates",
+                      static_folder="static")
 
 
 @blueprint.route('/')

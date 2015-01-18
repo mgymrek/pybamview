@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from os.path import join
-import pkg_resources
-
 from flask import Flask
 
 from .settings import DefaultConfig
@@ -20,9 +17,8 @@ def create_app(config_object=None, blueprints=None):
     if blueprints is None:
         blueprints = DEFAULT_BLUEPRINTS
 
-    sprefix = pkg_resources.resource_filename("pybamview", "")
-    app = Flask(__name__, static_folder=join(sprefix, "data"),
-                template_folder=join(sprefix, "data", "templates"))
+    app = Flask(__name__, template_folder="browser/templates",
+                static_folder="browser/static")
 
     configure_app(app, config_obj=config_object)
     register_blueprints(app, blueprints=blueprints)
