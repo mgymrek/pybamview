@@ -66,6 +66,7 @@ def listsamples(methods=['POST','GET']):
             samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(os.path.abspath(BAMDIR), b) for b in bamfiles])
         except ValueError, e:
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
+        print('samplesToBam: %s' % samplesToBam)
         return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
 
