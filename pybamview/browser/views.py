@@ -47,8 +47,7 @@ def listsamples(methods=['POST','GET']):
         if len(samplesToBam.keys()) == 0:
             return render_template("error.html", message="No samples found in BAM file", title="PyBamView - %s"%BAM)
         argstring = "&".join(["samplebams=%s:%s"%(sample, os.path.abspath(BAM)) for sample in samplesToBam])
-        print('argstring: %s' % argstring)
-        return redirect(url_for("display_bam")+"?"+argstring)
+        return redirect(url_for(".display_bam")+"?"+argstring)
     # If given a directory to look for bams, determine which samples are present
     else:
         bamfiles = request.args.getlist("bamfiles")
@@ -69,8 +68,11 @@ def listsamples(methods=['POST','GET']):
 
 @blueprint.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
+    print('Display bam!!!!!!!!')
     samplebams = request.args.getlist("samplebams")
     zoomlevel = request.args.get("zoomlevel")
+    print(samplebams)
+    print(zoomlevel)
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))

@@ -62,6 +62,8 @@ def GetDefaultLocation(bamfiles):
     """
     default_chrom = None
     default_pos = None
+    aligned = False
+    position = 'error'
     for bam in bamfiles:
         try:
             br = pysam.Samfile(bam, "rb")
@@ -69,16 +71,18 @@ def GetDefaultLocation(bamfiles):
             sys.stderr.write("ERROR: Could not open %s. Is this a valid bam file?\n"%bam)
             continue
         # Peak at the first read
-        try:
-            aligned_read = br.next()
-        except StopIteration:
-            continue
-        if not aligned_read.is_unmapped:
-            default_chrom = br.getrname(aligned_read.tid)
-            default_pos = aligned_read.pos
-            break
-    if default_chrom is None: return "error"
-    else: return "%s:%s"%(default_chrom, default_pos)
+        while not aligned:
+            try:
+                aligned_read = br.next()
+            except StopIteration:
+                continue
+            if not aligned_read.is_unmapped:
+                default_chrom = br.getrname(aligned_read.tid)
+                default_pos = str(aligned_read.pos)
+                aligned = True
+                position = ':'.join([default_chrom, default_pos])
+    
+    return position
 
 def HashSample(sample):
     """
