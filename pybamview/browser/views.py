@@ -68,11 +68,8 @@ def listsamples(methods=['POST','GET']):
 
 @blueprint.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
-    print('Display bam!!!!!!!!')
     samplebams = request.args.getlist("samplebams")
     zoomlevel = request.args.get("zoomlevel")
-    print(samplebams)
-    print(zoomlevel)
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
