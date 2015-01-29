@@ -53,9 +53,7 @@ def listsamples(methods=['POST','GET']):
     else:
         bamfiles = request.args.getlist("bamfiles")
         samples = request.args.getlist("samples")
-        print('Samples: %s' % samples)
         if len(bamfiles) > 0 and len(samples) > 0:
-            print('Kontigt?')
             return display_bam(samples)
         try:
             files = os.listdir(BAMDIR)
@@ -66,17 +64,13 @@ def listsamples(methods=['POST','GET']):
             samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(os.path.abspath(BAMDIR), b) for b in bamfiles])
         except ValueError, e:
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
-        print('samplesToBam: %s' % samplesToBam)
         return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
 
 @blueprint.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
-    print('HEJ')
     samplebams = request.args.getlist("samplebams")
     zoomlevel = request.args.get("zoomlevel")
-    print('samplebams: %s' % samplebams)
-    print('zoomlevel: %s' % zoomlevel)
     if len(samplebams) == 0:
         samples_toinclude = list(set(request.args.getlist("samples")))
         bamfiles_toinclude = list(set(request.args.getlist("bamfiles")))
@@ -92,7 +86,6 @@ def display_bam():
 
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
-    print('DU')
     bamdir = current_app.config["BAMDIR"]
     reffile = current_app.config["REFFILE"]
     settings = current_app.config["SETTINGS"]
@@ -105,7 +98,8 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
     if ";".join(bamfiles) not in bamfile_to_bamview:
         bv = pybamview.BamView([join(bamdir, bam) for bam in bamfiles], reffile)
         bamfile_to_bamview[";".join(bamfiles)] = bv
-    else: bv = bamfile_to_bamview[";".join(bamfiles)]
+    else: 
+        bv = bamfile_to_bamview[";".join(bamfiles)]
     try:
         chrom, pos = region.split(":")
         pos = int(pos)
@@ -147,7 +141,8 @@ def snapshot():
     reference = request.form["reference"]
     zoom = request.form["zoomlevel"]
     zoomlevel = float(zoom)
-    if zoomlevel < 0: zoomlevel = -1/zoomlevel
+    if zoomlevel < 0: 
+        zoomlevel = -1/zoomlevel
     chrom, start = region.split(":")
     region = "%s-%s"%(max(int(int(start)-25/zoomlevel),0), int(int(start)+50+25/zoomlevel))
     return render_template("snapshot.html", title="Pybamview - take snapshot", SAMPLES=samples, ZOOMLEVEL=zoom, \
