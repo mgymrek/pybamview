@@ -59,6 +59,13 @@ def GetDefaultLocation(bamfiles):
     Return default location to jump to if no location given.
     Look at the first read we see and go there.
     If no reads aligned, return 'error'
+    
+    Args:
+        bamfiles (list): A list with paths to bamfiles
+    
+    Returns:
+        position (string): A string with chromosome and position
+    
     """
     default_chrom = None
     default_pos = None
@@ -81,6 +88,7 @@ def GetDefaultLocation(bamfiles):
                 default_pos = str(aligned_read.pos)
                 aligned = True
                 position = ':'.join([default_chrom, default_pos])
+                break
     
     return position
 
