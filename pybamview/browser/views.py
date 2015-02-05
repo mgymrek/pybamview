@@ -46,7 +46,7 @@ def listsamples(methods=['POST','GET']):
         if len(samplesToBam.keys()) == 0:
             return render_template("error.html", message="No samples found in BAM file", title="PyBamView - %s"%BAM)
         argstring = "&".join(["samplebams=%s:%s"%(sample, os.path.abspath(BAM)) for sample in samplesToBam])
-        return redirect(url_for("display_bam")+"?"+argstring)
+        return redirect(url_for(".display_bam")+"?"+argstring)
     # If given a directory to look for bams, determine which samples are present
     else:
         bamfiles = request.args.getlist("bamfiles")
