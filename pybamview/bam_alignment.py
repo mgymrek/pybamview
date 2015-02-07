@@ -77,8 +77,9 @@ def GetDefaultLocation(bamfiles):
         except:
             sys.stderr.write("ERROR: Could not open %s. Is this a valid bam file?\n"%bam)
             continue
-        # Peak at the first read
-        while not aligned:
+        # Peak at the first hundred reads
+        read_count = 0
+        while not (aligned or read_count > 100):
             try:
                 aligned_read = br.next()
             except StopIteration:
@@ -89,6 +90,8 @@ def GetDefaultLocation(bamfiles):
                 aligned = True
                 position = ':'.join([default_chrom, default_pos])
                 break
+            else:
+                read_count += 1
     
     return position
 
