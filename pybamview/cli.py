@@ -55,6 +55,11 @@ def parse_args():
                            "Default: 100. Must be between one of 1-10, 50, "
                            "or 100.", 
                       type='int', default=DefaultConfig.SETTINGS["MAXZOOM"])
+    parser.add_option("--downsample",
+                      help="Downsample reads to this maximum coverage level. "
+                           "Default: 50. Values over 100 not recommended "
+                           "since it results in poor performance.",
+                      type='int', default=DefaultConfig.SETTINGS["DOWNSAMPLE"])
     parser.add_option('--no-browser', help="Don't automatically open the web browser.", action="store_true")
     parser.add_option('--debug', help='Run PyBamView in Flask debug mode', action="store_true")
 
@@ -83,11 +88,16 @@ def cli():
     config.SETTINGS = {
         "NUMCHAR": options.buffer,
         "MAXZOOM": options.maxzoom,
-        "LOADCHAR": options.buffer * options.maxzoom
+        "LOADCHAR": options.buffer * options.maxzoom,
+        "DOWNSAMPLE": options.downsample
     }
 
     if options.maxzoom not in range(1,11) + [50, 100]:
         message("Must set --maxzoom to one of 1-10, 50, or 100", "error")
+    if options.downsample <= 0:
+        message("Must set --downsample to be greater than 0", "error")
+    if options.downsample > 100:
+        message("Setting --downsample to >100 may result in poor performance", "warning")
     OPEN_BROWSER = (not options.no_browser)
 
     # Load reference
