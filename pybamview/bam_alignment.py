@@ -26,6 +26,7 @@ from itertools import chain
 import hashlib
 import pysam
 import pyfasta
+import random
 import sys
 
 from .constants import ENDCHAR, GAPCHAR, DELCHAR
@@ -147,6 +148,7 @@ def AddInsertionLocations(all_locs, new_locs):
         all_locs[pos] = max(all_locs.get(pos, 0), size)
     return all_locs
 
+
 class AlignmentGrid(object):
     """
     Class for storing a grid of alignments
@@ -209,8 +211,14 @@ class AlignmentGrid(object):
         aligned_reads = []
         for bi, br in enumerate(self.bamreaders):
             try:
-                aligned_reads.extend((bi, read) for read in
-                                     br.fetch(region=region))
+                reads = list(br.fetch(region=region))
+                pileup = br.pileup(region=region)
+                maxcov = 0
+                for pcol in br.pileup(region=region):
+                    if pcol.n > maxcov: maxcov = pcol.n
+                if maxcov > self.settings["DOWNSAMPLE"]:
+                    reads = [item for item in reads if random.random() < self.settings["DOWNSAMPLE"]/float(maxcov)]
+                aligned_reads.extend((bi, read) for read in reads)
             except: pass
         readindex = 0
         read_properties = []

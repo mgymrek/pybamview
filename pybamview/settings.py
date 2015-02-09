@@ -8,6 +8,7 @@ class DefaultConfig:
     "NUMCHAR": 200,
     "MAXZOOM": 100,
     "LOADCHAR": 200 * 100,
+    "DOWNSAMPLE": 50,
   }
 
   BAM = None
