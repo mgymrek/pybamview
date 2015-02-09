@@ -1,4 +1,3 @@
-argparse
 pandas
 pysam
 pyfasta
