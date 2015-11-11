@@ -1,7 +1,7 @@
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
-REFCOLOR = "black"
+REFCOLOR = "black";
 
 function IsNuc(x) {
     return (x=="A" || x=="C" || x=="G" || x=="T");
