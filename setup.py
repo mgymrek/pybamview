@@ -29,12 +29,14 @@ setup(name=NAME,
                       'browser/static/img/*',
                       'browser/static/javascript/*.js',
                       'browser/templates/*.html',
+                      'snapshot.js',
                       'tests/data/*']
       },
       test_suite='pybamview.tests',
       entry_points={
         'console_scripts': [
           'pybamview = pybamview.cli:cli',
+          'snapbam = pybamview.snapshot:cli',
         ],
       },
       install_requires=['flask','pyfasta','pysam'],

@@ -6,3 +6,17 @@ read tag info
 option to click on read and get read info, also highlight pairs
 load VCF file, when mouse over location show variant call info for each sample in their div elements. star reference locations that have VCF info
 option to click on variant call and get new page with more info about it
+
+
+install node and npm (https://nodejs.org/en/)
+
+global:
+sudo npm install npm --global
+sudo npm install d3 --global
+sudo npm install jsdom --global
+export NODE_PATH=/usr/local/lib/node_modules/
+
+local: (must run from that directory)
+npm install d3
+npm install jsdom
+

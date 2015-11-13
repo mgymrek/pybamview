@@ -1,5 +1,9 @@
-var exports = module.exports = {}; // TODO edit pybamview.js: remove redundant functions, make sure works with exports
-var	d3 = require('d3'); // TODO check if this is in browser or node js
+var exports = module.exports = {};
+
+if (typeof window === 'undefined') {
+   var d3 = require('d3');
+}
+
 BASE_W = 15;
 BASE_H = 20;
 BASE_FONT = 16;
@@ -45,7 +49,7 @@ function OutHover(i, usefont) {
     x.innerHTML = "Selected ";
 }
 
-exports.DrawSnapshot = function(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot, elt) {
+var DrawSnapshot = function(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, snapshot, elt) {
     // Update which region is displayed
     if (!snapshot) {
 	var disp = document.getElementById("displayed");
@@ -375,3 +379,4 @@ exports.DrawSnapshot = function(reference_track, samples, alignBySample, fromind
 	currentHeight += gridHeight*1.5;
     }
 }
+exports.DrawSnapshot = DrawSnapshot

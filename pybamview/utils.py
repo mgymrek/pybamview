@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 import random
 import sys
-
+from subprocess import Popen, PIPE, STDOUT
 
 def message(msg, msgtype='progress'):
     """Send a message to console.
@@ -41,10 +42,60 @@ def ParseTargets(targetfile):
                 message("invalid target file. should have 4 columns", "error")
             chrom, start, end, name = items
             region = "%s:%s"%(chrom, start)
-            x.append({"name": name, "region": region})
+            x.append({"name": name, "region": region, "coords": (chrom, int(start), int(end))})
         line = f.readline()
 
     with open(targetfile, "r") as f:
         line = f.readline()
 
     return x
+
+def WriteParamFile(paramfile, jspath, filetype, reference_track, samples, alignments_by_sample, fromindex, toindex):
+    """
+    Generate paramfile for creating snapshots from the command line
+    """
+    f = open(paramfile, "w")
+    f.write('var exports = module.exports = {};\n')
+    f.write('exports.reference_track = "%s";\n' % reference_track)
+    f.write('exports.samples = %s;\n' % str(samples))
+    f.write('exports.alignBySample = {\n')
+    for sample in alignments_by_sample:
+        f.write('"%s": "%s",\n' % (sample, alignments_by_sample[sample]))
+    f.write('};\n')
+    f.write('exports.fromindex = %s;\n' % fromindex)
+    f.write('exports.toindex = %s;\n' % toindex)
+    f.write('exports.jspath = "%s";\n' % jspath)
+    if filetype in ["html","svg"]:
+        f.write('exports.filetype = "%s";\n' % filetype)
+    elif filetype == "pdf":
+        f.write('exports.filetype = "svg";\n')
+    else:
+        f.write('exports.filetype = "none";\n')
+    f.close()
+
+def RunCommand(cmd):
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, \
+                  stderr=STDOUT, close_fds=True)
+    ex = p.wait()
+    if ex != 0:
+        stdout, stderr = "", ""
+        if p.stdout is not None: stdout = p.stdout.read()
+        if p.stderr is not None: stderr = p.stderr.read()
+        message("ERROR: command '%s' failed.\n\nSTDOUT:%s\nSTDERR:%s"%(cmd, stdout, stderr))
+    return ex
+
+def CheckProgram(program):
+    """ Check whether a program is installed """
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    for path in os.environ["PATH"].split(os.pathsep):
+        path = path.strip('"')
+        exe_file = os.path.join(path, program)
+        if is_exe(exe_file): return True
+    return False
+
+def CheckNodeJSPackage(package):
+    """ Check whether a node.js package is installed """
+    cmd = "node -e \"var d3=require('%s');\"" % package
+    x = RunCommand(cmd)
+    return x == 0

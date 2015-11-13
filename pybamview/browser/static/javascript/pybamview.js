@@ -16,7 +16,7 @@ function AlignZoom(zoomlevel, center_index) {
     }
     $("#centerind")[0].value = parseInt((fromindex+toindex)/2);
     // Redraw
-    exports.DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, false);
+    DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, false);
     // Scroll (try to keep previously visible section in the center)
     var w = parseInt($(".sample").css("width"));
     var vis1 = w/(BASE_W*zoomlevel);
@@ -105,7 +105,7 @@ $(document).ready(function()
 	if (zoomlevel < 0) {
 	    zoomlevel = -1/zoomlevel;
 	}
-	exports.DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, true, undefined);
+	DrawSnapshot(reference_track, samples, alignBySample, fromindex, toindex, zoomlevel, true, undefined);
 	var samples_subset = [];
 	
 	// Redraw if you want to change something
@@ -151,7 +151,7 @@ $(document).ready(function()
 		     alert("End position must be greater than the start position");
 		     return;
 		 }
-		 exports.DrawSnapshot(reference_track, samples_subset, alignBySample, fromindex, toindex, zoomlevel, true, undefined);
+		 DrawSnapshot(reference_track, samples_subset, alignBySample, fromindex, toindex, zoomlevel, true, undefined);
 	     }
 	     );
 	
