@@ -1,13 +1,13 @@
-var exports = module.exports = {};
-
-if (typeof window === 'undefined') {
+var USING_NODEJS = (typeof window == 'undefined');
+if (USING_NODEJS) {
    var d3 = require('d3');
+   var exports = module.exports = {};
 }
 
-BASE_W = 15;
-BASE_H = 20;
-BASE_FONT = 16;
-REFCOLOR = "black";
+var BASE_W = 15;
+var BASE_H = 20;
+var BASE_FONT = 16;
+var REFCOLOR = "black";
 
 
 function IsNuc(x) {
@@ -68,11 +68,11 @@ var DrawSnapshot = function(reference_track, samples, alignBySample, fromindex, 
 	}
     }
     // Set positioning variables
-    usefont = true;
-    drawnucs = true;
-    gridWidth = BASE_W*zoomlevel;
-    gridHeight = BASE_H*zoomlevel;
-    fontSize = BASE_FONT*zoomlevel;
+    var usefont = true;
+    var drawnucs = true;
+    var gridWidth = BASE_W*zoomlevel;
+    var gridHeight = BASE_H*zoomlevel;
+    var fontSize = BASE_FONT*zoomlevel;
     if (fontSize < 10) {
 	fontSize = 10;
     }
@@ -272,7 +272,7 @@ var DrawSnapshot = function(reference_track, samples, alignBySample, fromindex, 
 		.attr("height",(2+numreads)*gridHeight);
 	}
 	// Draw reads
-	sample_data = alignBySample[samples[i]];
+	var sample_data = alignBySample[samples[i]];
 	sample_data_reads = sample_data.split(";");
 	for (var j = 0; j < sample_data_reads.length; j++) {
 	    readdata = sample_data_reads[j].slice(fromindex, toindex+1);
@@ -379,4 +379,7 @@ var DrawSnapshot = function(reference_track, samples, alignBySample, fromindex, 
 	currentHeight += gridHeight*1.5;
     }
 }
-exports.DrawSnapshot = DrawSnapshot
+
+if (USING_NODEJS) {
+	exports.DrawSnapshot = DrawSnapshot	
+}
