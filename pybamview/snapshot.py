@@ -124,19 +124,16 @@ def cli():
         message("Processing %s" % region["name"])
         chrom, start, end = region["coords"]
         start = start - options.buffer
-        end = end + options.buffer
+        end = end + options.buffer 
         minstart = start - settings["LOADCHAR"]/2
         maxend = start + settings["LOADCHAR"]/2
         # Check coords
         if start < minstart:
-            message("Start position must be at least %s" % minstart)
-            continue
+            message("Start position must be at least %s" % minstart, "error")
         if end > maxend:
-            message("End position must be less than %s" % maxend)
-            continue
+            message("End position must be less than %s" % maxend, "error")
         if start > end:
-            message("End position must be greater than the start position")
-            continue
+            message("End position must be greater than the start position", "error")
 
         # Load alignment data
         bv.LoadAlignmentGrid(chrom, start, _samples=samples, _settings=settings)
@@ -151,9 +148,8 @@ def cli():
         alignments_by_sample = {}
         for i in range(len(sample_names)):
             alignments_by_sample[sample_names[i]] = ";".join(alignments[sample_hashes[i]])
-        fromindex = start - startpos
-        toindex = end - startpos
-
+        fromindex = bv.GetIndex(start)
+        toindex = bv.GetIndex(end-1)
         # Print params
         paramfile = os.path.join(tmpdir, "params.js")
         WriteParamFile(paramfile, JSPATH, options.filetype, reference_track, samples, alignments_by_sample, fromindex, toindex)

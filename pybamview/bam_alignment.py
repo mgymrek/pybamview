@@ -413,6 +413,15 @@ class BamView(object):
         """
         return self.alignment_grid.GetPositions(start_pos)
 
+    def GetIndex(self, coord):
+        """
+        Get index into positions vector for a given coordinate
+        Return -1 if coord not in range
+        """
+        positions = self.GetPositions(0)
+        if coord < positions[0] or coord > positions[-1]: return -1
+        return positions.index(coord)
+
     def LoadAlignmentGrid(self, _chrom, _pos, _samples=[], _settings={}):
         """
         Load an alignment grid for a view at a specific chr:pos
