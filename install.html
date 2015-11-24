@@ -22,7 +22,7 @@
 	{% endhighlight %}
 	This will install <a href="https://pypi.python.org/pypi/pybamview/">the latest stable PyBamView version listed in PyPi</a>, and any missing libraries it depends on.
 	<br><br>
-	To use the "Export to PDF" feature, you will also need to install <a href="http://manpages.ubuntu.com/manpages/precise/man1/rsvg-convert.1.html">rsvg-convert</a>:
+	To use the "Export to PDF" feature or generate PDF snapshots using the <code>snapbam</code> tool, you will also need to install <a href="http://manpages.ubuntu.com/manpages/precise/man1/rsvg-convert.1.html">rsvg-convert</a>:
 	{% highlight bash %}
 	sudo apt-get install librsvg2-bin
 	{% endhighlight %}
@@ -37,7 +37,7 @@
 	</ul>
 	You can install these using easy_install:
 	{% highlight bash %}
-	sudo easy_install Flask pandas pyfasta pysam
+	sudo easy_install Flask pyfasta pysam
 	{% endhighlight %}
 	
 	If you want to use the "Download PDF" feature, you must have rsvg-convert installed (see above).
