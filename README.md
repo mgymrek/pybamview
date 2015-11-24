@@ -39,11 +39,13 @@ Snapshots
 ===========
 PyBamView can also be used to take alignment "snapshots" from the command line. This requires node.js and npm to be installed ([https://nodejs.org/en/](https://nodejs.org/en/)) and the libraries d3 and jsdom to be installed. You can install these using:
 
-```npm install npm --global
+```
+npm install npm --global
 npm install d3 --global
 npm install jsdom --global
 ```
 and setting NODE_PATH to the install location, e.g.:
+
 ```
 export NODE_PATH=/usr/local/lib/node_modules/
 ```
@@ -61,4 +63,5 @@ snapbam \
 	--buffer 40 \
 	--ref hg19.fa
 ```
+
 Full usage is available on the [pybamview website](http://melissagymrek.com/pybamview/).
