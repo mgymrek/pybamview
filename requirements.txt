@@ -1,4 +1,3 @@
-pandas
 pysam
 pyfasta
 flask
