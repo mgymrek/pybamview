@@ -15,9 +15,32 @@
     <div class="container">
       <section id="main_content">
       <h1>snapbam: automatically generate PyBamView snapshots</h1>
-      This page describes how to make alignment snapshots on the command line. It assumes you have already gone through the <a href="install.html">install</a> instructions 
+      <p>
+      This page describes how to make alignment snapshots on the command line. It assumes you have already gone through the <a href="install.html">install</a> instructions. 
+      </p>
+      <h2>setup</h2>
+      <p>
+      In addition to <a href="install.html">installing the PyBamView package</a>, you will also need to install Node.js and its installer npm, available at <a href="https://nodejs.org/en/">https://nodejs.org/en/</a>. You then need to install the d3 and jsdom libraries, which can be done by:
 
+      {% highlight bash %}
+npm install npm --global
+npm install d3 --global
+npm install jsdom --global
+      {% endhighlight %}
+
+      Finally, set NODE_PATH to where these libraries have been installed, usually:
+      {% highlight bash %}
+export NODE_PATH=/usr/local/lib/node_modules/
+      {% endhighlight %}
+
+      To test that this worked, from the command line run:
+      {% highlight bash %}
+      node -e 'require("d3");require("jsdom");'
+      {% endhighlight %}
+      If this does not result in errors, you should be ready to go.
+      </p>
       <h2>example command</h2>
+      <p>
       To get started with files from the <a href="http://www.broadinstitute.org/~gymrek/pybamview_example_data.tar.gz">examples download</a>:
         {% highlight bash %}
     snapbam \
@@ -30,7 +53,7 @@
     --buffer 100
     {% endhighlight %}
     This will generate html files for each locus in the current directory, e.g. "PentaE.html".
-
+</p>
       <h2>full command line usage</h2>
 To see the usage information for snapbam, type:
 {% highlight bash %}
