@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 import optparse
 import errno
-import pyfasta
+import pyfaidx
 import os
 import socket
 import threading
@@ -108,8 +108,8 @@ def cli():
         config.REFFILE = "Could not find reference file %s" % ref_file
     else:
         try:
-            _ = pyfasta.Fasta(ref_file) # Make sure we can open the fasta file
-        except:
+            _ = pyfaidx.Fasta(ref_file) # Make sure we can open the fasta file
+        except pyfaidx.FastaIndexingError:
             message("Invalid reference fasta file %s" % ref_file, "warning")
             config.REFFILE = "Invalid fasta file %s" % ref_file
 
