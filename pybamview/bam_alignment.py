@@ -25,7 +25,7 @@ THE SOFTWARE.
 from itertools import chain
 import hashlib
 import pysam
-import pyfasta
+import pyfaidx
 import random
 import sys
 
@@ -383,7 +383,7 @@ class BamView(object):
                 sys.stderr.write("ERROR: could not open %s. Is this a valid bam file?\n"%bam)
         if _reffile != "":
             try:
-                self.reference = pyfasta.Fasta(_reffile)
+                self.reference = pyfaidx.Fasta(_reffile)
             except:
                 self.reference = None
         else: self.reference = None
