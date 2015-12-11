@@ -1,3 +1,3 @@
 pysam
-pyfasta
+pyfaidx
 flask
