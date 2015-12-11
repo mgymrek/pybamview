@@ -15,7 +15,7 @@ PyBamView requires Python2.6 or greater. The following python packages are requi
 
 * ```Flask```
 * ```pysam```
-* ```pyfasta```
+* ```pysam```
 
 These can all be installed using ```pip``` or ```easy_install```. Additionally, the package ```rsvg-convert``` is required for exporting alignment snapshots to PDF.
 
