@@ -25,7 +25,7 @@ THE SOFTWARE.
 from itertools import chain
 import hashlib
 import pysam
-import pyfasta
+import pyfaidx
 import random
 import sys
 
@@ -60,13 +60,13 @@ def GetDefaultLocation(bamfiles):
     Return default location to jump to if no location given.
     Look at the first read we see and go there.
     If no reads aligned, return 'error'
-    
+
     Args:
         bamfiles (list): A list with paths to bamfiles
-    
+
     Returns:
         position (string): A string with chromosome and position
-    
+
     """
     default_chrom = None
     default_pos = None
@@ -93,7 +93,7 @@ def GetDefaultLocation(bamfiles):
                 break
             else:
                 read_count += 1
-    
+
     return position
 
 def HashSample(sample):
@@ -176,7 +176,7 @@ class AlignmentGrid(object):
         self.grid_by_sample = dict([(sample, {}) for sample in self.samples])
         self.alnkeys_by_sample = dict([(sample, []) for sample in self.samples])
         self.LoadGrid()
-        
+
     def GetSamples(self):
         """
         Return list of samples
@@ -383,7 +383,7 @@ class BamView(object):
                 sys.stderr.write("ERROR: could not open %s. Is this a valid bam file?\n"%bam)
         if _reffile != "":
             try:
-                self.reference = pyfasta.Fasta(_reffile)
+                self.reference = pyfaidx.Fasta(_reffile, as_raw=True)
             except:
                 self.reference = None
         else: self.reference = None

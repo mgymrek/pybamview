@@ -39,7 +39,7 @@ setup(name=NAME,
           'snapbam = pybamview.snapshot:cli',
         ],
       },
-      install_requires=['flask','pyfasta','pysam'],
+      install_requires=['flask','pyfaidx','pysam'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 2.6',\
                        'License :: OSI Approved :: MIT License',\
