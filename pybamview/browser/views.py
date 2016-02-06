@@ -41,11 +41,13 @@ def listsamples(methods=['POST','GET']):
             samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.abspath(BAM)])
         except ValueError, e:
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAM)
-        
+
         if not os.path.exists(BAM+".bai"):
             return render_template("error.html", message="No index found for %s"%BAM)
         if len(samplesToBam.keys()) == 0:
-            return render_template("error.html", message="No samples found in BAM file", title="PyBamView - %s"%BAM)
+            return render_template("error.html", message=
+                "No samples found in BAM file. Check read groups are properly assigned.",
+                 title="PyBamView - %s"%BAM)
         argstring = "&".join(["samplebams=%s:%s"%(sample, os.path.abspath(BAM)) for sample in samplesToBam])
         return redirect(url_for(".display_bam")+"?"+argstring)
     # If given a directory to look for bams, determine which samples are present
@@ -97,7 +99,7 @@ def display_bam_region(bamfiles, samples, region, zoomlevel):
     if ";".join(bamfiles) not in bamfile_to_bamview:
         bv = pybamview.BamView([join(bamdir, bam) for bam in bamfiles], reffile)
         bamfile_to_bamview[";".join(bamfiles)] = bv
-    else: 
+    else:
         bv = bamfile_to_bamview[";".join(bamfiles)]
     try:
         chrom, pos = region.split(":")
@@ -140,7 +142,7 @@ def snapshot():
     reference = request.form["reference"]
     zoom = request.form["zoomlevel"]
     zoomlevel = float(zoom)
-    if zoomlevel < 0: 
+    if zoomlevel < 0:
         zoomlevel = -1/zoomlevel
     chrom, start = region.split(":")
     region = "%s-%s"%(max(int(int(start)-25/zoomlevel),0), int(int(start)+50+25/zoomlevel))
