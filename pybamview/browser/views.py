@@ -67,7 +67,6 @@ def listsamples(methods=['POST','GET']):
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAMDIR)
         return render_template("index.html", samplesToBam=samplesToBam, title="PyBamView - %s"%BAMDIR)
 
-
 @blueprint.route('/bamview', methods=['POST', 'GET'])
 def display_bam():
     samplebams = request.args.getlist("samplebams")
@@ -84,7 +83,6 @@ def display_bam():
                 bamfiles_toinclude.extend(item.split(","))
     region = request.args.get("region", pybamview.GetDefaultLocation(bamfiles_toinclude))
     return display_bam_region(list(set(bamfiles_toinclude)), samples_toinclude, region, zoomlevel)
-
 
 def display_bam_region(bamfiles, samples, region, zoomlevel):
     bamdir = current_app.config["BAMDIR"]

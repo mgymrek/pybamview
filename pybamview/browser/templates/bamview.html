@@ -28,14 +28,17 @@
     <div class='outer' id='header_wrap'>
       <header class='inner'>
 	<h1 id='display_info'>PyBamView</h1>
-	<div id='viewparams' class='param_info'><button onclick='toggleDiv("descriptionparams");' type="button">View/hide parameters</button>
+	<a href="/">Home</a>
+	<div id='viewparams' class='param_info'>
+	<button onclick='toggleDiv("descriptionparams");' type="button">View/hide parameters</button>
 	<div id="descriptionparams" style="display:none;">
 	  <b>Bam file(s):</b><br>
 	  {% for b in BAM_FILES %}
 	  &nbsp;&nbsp;{{ b }}<br>
 	  {% endfor %}
 	  <b>Reference:</b> {{ REF_FILE }}
-	</div></div>
+	</div>
+	</div>
       </header>
     </div>
 

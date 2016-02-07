@@ -167,6 +167,7 @@ class AlignmentGrid(object):
         self.settings = _settings
         self.pos = self.startpos-int(self.settings["LOADCHAR"]*0.5)
         if self.pos < 0: self.pos = 0
+        self.usesamples = _samples
         self.samples = list(set(
             chain.from_iterable(rg.itervalues() for rg in _read_groups)))
         for item in _samples:
@@ -237,11 +238,12 @@ class AlignmentGrid(object):
             # get sample
             rg = self.read_groups[bamindex].get(
                 dict(read.tags).get("RG",""),"")
-            read_properties.append({"pos": position,"sample":rg})
+            if rg not in self.usesamples: continue
             # get representation
             if cigar is None:
                 sys.stderr.write("WARNING: read %s has no CIGAR string. It will not be displayed.\n"%read.qname)
                 continue
+            read_properties.append({"pos": position,"sample":rg})
             rep = ParseCigar(cigar, nucs)
             readlen = len(rep)
             if readlen > maxreadlength: maxreadlength = readlen
@@ -426,13 +428,8 @@ class BamView(object):
         """
         Load an alignment grid for a view at a specific chr:pos
         """
-        reload = True
-        if self.alignment_grid is not None:
-            if (self.alignment_grid.chrom == _chrom) and (self.alignment_grid.startpos >= (_pos-5)) and (self.alignment_grid.startpos <= (_pos+5)):
-                reload = False
-        if reload:
-            self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, \
-                                                    _chrom, _pos, _samples=_samples, _settings=_settings)
+        self.alignment_grid = AlignmentGrid(self.bamreaders, self.read_groups, self.reference, \
+                                                _chrom, _pos, _samples=_samples, _settings=_settings)
 
     def GetReferenceTrack(self, start_pos):
         """
