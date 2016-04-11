@@ -42,7 +42,7 @@ def listsamples(methods=['POST','GET']):
         except ValueError, e:
             return render_template("error.html", message="Problem parsing BAM file: %s"%e, title="PyBamView - %s"%BAM)
 
-        if not os.path.exists(BAM+".bai"):
+        if not (os.path.exists(BAM+".bai") or os.path.exists(BAM.replace(".bam",".bai"))):
             return render_template("error.html", message="No index found for %s"%BAM)
         if len(samplesToBam.keys()) == 0:
             return render_template("error.html", message=
@@ -60,7 +60,8 @@ def listsamples(methods=['POST','GET']):
             files = os.listdir(BAMDIR)
         except OSError: files = []
         bamfiles = [f for f in files if re.match(".*.bam$", f) is not None]
-        bamfiles = [f for f in bamfiles if f+".bai" in files]
+        bamfiles = [f for f in bamfiles if ((f+".bai") in files or \
+                f.replace(".bam",".bai") in files)]
         try:
             samplesToBam = pybamview.GetSamplesFromBamFiles([os.path.join(os.path.abspath(BAMDIR), b) for b in bamfiles])
         except ValueError, e:
